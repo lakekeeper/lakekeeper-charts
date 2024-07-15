@@ -1,0 +1,122 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "iceberg-catalog.fullname" . }}
+  {{- if .Values.catalog.annotations }}
+  annotations:
+    {{- toYaml .Values.catalog.annotations | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "iceberg-catalog.labels" . | nindent 4 }}
+    component: catalog
+spec:
+  replicas: {{ .Values.catalog.replicas }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      {{- include "iceberg-catalog.selectorLabels" . | nindent 6 }}
+      component: catalog
+  template:
+    metadata:
+      annotations:
+        checksum/secret-config-envs: {{ include (print $.Template.BasePath "/config/secret-config-envs.yaml") . | sha256sum }}
+        {{- if .Values.catalog.podAnnotations -}}
+        {{- toYaml .Values.catalog.podAnnotations | nindent 8 }}
+        {{- end }}
+        {{- if .Values.catalog.safeToEvict }}
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+        {{- end }}
+      labels:
+        {{- include "iceberg-catalog.labels" . | nindent 8 }}
+        component: catalog
+        {{- with .Values.catalog.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      restartPolicy: Always
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.catalog.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.catalog.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.catalog.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.catalog.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      {{- if .Values.catalog.affinity }}
+      affinity:
+        {{- toYaml .Values.catalog.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.catalog.tolerations }}
+      tolerations:
+        {{- toYaml .Values.catalog.tolerations | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "iceberg-catalog.serviceAccountName" . }}
+      {{- if .Values.catalog.podSecurityContext -}}
+      securityContext:
+        {{- toYaml .Values.catalog.podSecurityContext | nindent 8 }}
+      {{- end }}
+      {{- if .Values.catalog.extraInitContainers }}
+      initContainers:
+        {{- toYaml .Values.catalog.extraInitContainers | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          {{- include "iceberg-catalog.image" . | indent 10 }}
+          env:
+            {{- include "iceberg-catalog.env" . | indent 12 }}
+            {{- if .Values.catalog.extraEnv -}}
+            {{- toYaml .Values.catalog.extraEnv | nindent 12 }}
+            {{- end }}
+          envFrom:
+            {{- include "iceberg-catalog.envFrom" . | indent 12 }}
+            {{- if .Values.catalog.envFrom -}}
+            {{- toYaml .Values.catalog.envFrom | nindent 12 }}
+            {{- end }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          {{- if .Values.catalog.command -}}
+          command:
+            {{- toYaml .Values.catalog.command | nindent 12 }}
+          {{- end }}
+          args:
+            - serve
+          {{- if .Values.catalog.livenessProbe.enabled }}
+          livenessProbe:
+            initialDelaySeconds: {{ .Values.catalog.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.catalog.livenessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.catalog.livenessProbe.failureThreshold }}
+            timeoutSeconds: {{ .Values.catalog.livenessProbe.timeoutSeconds }}
+            httpGet:
+              path: /health
+              port: 8080
+          {{- end }}
+          {{- if .Values.catalog.readinessProbe.enabled }}
+          readinessProbe:
+            initialDelaySeconds: {{ .Values.catalog.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.catalog.readinessProbe.periodSeconds }}
+            failureThreshold: {{ .Values.catalog.readinessProbe.failureThreshold }}
+            timeoutSeconds: {{ .Values.catalog.readinessProbe.timeoutSeconds }}
+            httpGet:
+              path: /health
+              port: 8080
+          {{- end }}
+          resources:
+            {{- toYaml .Values.catalog.resources | nindent 12 }}
+          {{- with .Values.extraVolumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.extraVolumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

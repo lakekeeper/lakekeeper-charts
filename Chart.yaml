@@ -1,0 +1,23 @@
+apiVersion: v2
+name: iceberg-catalog
+description: A Helm chart for Kubernetes
+version: 0.0.0
+appVersion: 0.1.0
+type: application
+home: https://github.com/hansetag/iceberg-catalog
+maintainers:
+  - name: Tobias
+    url: https://github.com/twuebi
+  - name: Christian
+    url: https://github.com/c-thiel
+keywords:
+  - iceberg
+  - catalog
+  - tip
+  - rest
+  - lakehouse
+dependencies:
+  - name: postgresql
+    version: 8.6.4
+    repository: https://charts.helm.sh/stable
+    condition: postgresql.enabled

@@ -1,0 +1,314 @@
+# -- (list of [image pull secrets](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/))
+# pull secrets for private repositories
+imagePullSecrets: []
+# -- Override the name of the chart.
+# @default -- `<chart-name>`
+nameOverride: ""
+# -- Override the fully qualified chart name.
+# @default -- `<release-name>-<chart-name>`
+fullnameOverride: ""
+
+# -- kubernetes cluster domain name.
+# Used for service discovery in the catalog.
+clusterDomain: "cluster.local"
+
+catalog:
+  image:
+    # -- The image repository to pull from
+    repository: quay.io/hansetag/iceberg-catalog
+    # -- The image tag to pull
+    tag: latest
+    pullPolicy: IfNotPresent
+    # -- 65532 = nonroot of google container distroless
+    uid: 65532
+    # -- 65534 = nobody of google container distroless
+    gid: 65534
+
+  # -- Number of replicas to deploy. Replicas are stateless.
+  replicas: 1
+
+  # -- [resource requirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core)
+  # resources for the catalog container of the catalog pod
+  resources: {}
+  # ---- EXAMPLE ----
+  # resources:
+  #   limits:
+  #     cpu: 100m
+  #     memory: 128Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
+
+  # -- ([nodeSelector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector))
+  # node selector configs for the catalog Pods
+  nodeSelector: {}
+
+  # -- ([affinity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#affinity-v1-core))
+  # -- affinity for the catalog Pods
+  affinity: {}
+
+  # -- ([toleration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#toleration-v1-core))
+  # tolerations for the catalog Pods
+  tolerations: []
+
+  # -- ([topologySpreadConstraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/))
+  # topology spread constraints the catalog Pods
+  topologySpreadConstraints: []
+
+  # -- ([podsecuritycontext-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core))
+  # security context for the catalog Pods.
+  # `runAsUser` and `runAsGroup` are ignored for the catalog container, please set with `catalog.image.uid` and `catalog.image.gid`
+  podSecurityContext: {}
+  # ---- EXAMPLE ----
+  # securityContext:
+  #   capabilities:
+  #     drop:
+  #     - ALL
+  #   readOnlyRootFilesystem: true
+  #   runAsNonRoot: true
+
+  # -- ([podsecuritycontext-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core))
+  # security context for the catalog container.
+  # `runAsUser` is ignored, please set with `catalog.image.uid`, `runAsGroup` is ignored, please set with `catalog.image.gid`
+  containerSecurityContext: {}
+
+  # -- Labels for the catalog Deployment
+  labels: {}
+
+  # -- Pod labels for the catalog Deployment
+  podLabels: {}
+
+  # -- Annotations for the catalog Deployment
+  annotations: {}
+
+  # -- Pod annotations for the catalog Deployment
+  podAnnotations: {}
+
+  # -- (list of [envvar-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envvar-v1-core))
+  # extra variables for the catalog Pods
+  extraEnv: []
+
+  # -- (list of [envfromsource-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envfromsource-v1-core))
+  # extra variables for the catalog Pods
+  extraEnvFrom: []
+
+  # -- Configuration options for the catalog.
+  # Please check the documentation for the available options.
+  # Configuration items are mounted as environment variables.
+  config: {}
+  # ---- EXAMPLE ----
+  # config:
+  #   ICEBERG_REST__OPENID_PROVIDER_URI: "https://my-oidc-provider.com"
+
+  # -- if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true"
+  safeToEvict: true
+
+  podDisruptionBudget:
+    # -- if a PodDisruptionBudget resource is created for the catalog
+    enabled: false
+
+    # -- the maximum unavailable pods/percentage for the catalog
+    maxUnavailable: ""
+
+    # -- the minimum available pods/percentage for the catalog
+    minAvailable: ""
+
+  livenessProbe:
+    enabled: true
+    initialDelaySeconds: 1
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 5
+
+  # configuration of the readiness probes of the catalog pods
+  readinessProbe:
+    enabled: true
+    initialDelaySeconds: 1
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 5
+
+  autoscaling:
+    # -- if the HorizontalPodAutoscaler is enabled for the catalog Pods
+    enabled: false
+    # -- maximum number of replicas for the catalog Pods
+    maxReplicas: 2
+    # -- metrics for the HorizontalPodAutoscaler
+    metrics: []
+  # ____ EXAMPLE _______________
+  #   autoscaling:
+  #     enabled: true
+  #     maxReplicas: 16
+  #     metrics:
+  #     - type: Resource
+  #       resource:
+  #         name: memory
+  #         target:
+  #           type: Utilization
+  #           averageUtilization: 80
+
+  # -- how many seconds to wait after SIGTERM before SIGKILL of the catalog
+  terminationPeriod: 60
+
+  # -- (list of [containers](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core))
+  # extra containers for the catalog Pods
+  extraContainers: []
+
+  # -- ([container](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core))
+  # extra init-containers for the catalog Pods
+  extraInitContainers: []
+
+  # -- ([volume mount](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volumemount-v1-core))
+  # extra VolumeMounts for the catalog Pods
+  extraVolumeMounts: []
+  # ---- EXAMPLE ----
+  # extraVolumeMounts:
+  # - name: foo
+  #   mountPath: "/etc/foo"
+  #   readOnly: true
+
+  # -- ([volume](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volume-v1-core))
+  # extra Volumes for the catalog Pods
+  extraVolumes: []
+  # ---- EXAMPLE ----
+  # extraVolumes:
+  # - name: foo
+  #   secret:
+  #     secretName: mysecret
+  #     optional: false
+
+  # -- Overwrite the command of the catalog container.
+  # If not set, the default entrypoint of the image is used
+  command: ""
+
+  # configs for the (backend) Service of the catalog Pods (REST-API)
+  service:
+    # -- catalog service annotations
+    annotations: {}
+    # -- catalog service session affinity
+    sessionAffinity: "None"
+    # -- catalog service session affinity config
+    sessionAffinityConfig: {}
+    # -- catalog service type
+    type: ClusterIP
+    # -- catalog service external port
+    externalPort: 8080
+    # -- catalog service ip of the load balancer service.
+    # Only used when `type: LoadBalancer`
+    loadBalancerIP: ""
+    # -- Source ip ranges for the catalog services.
+    # Only used when `type: LoadBalancer`
+    loadBalancerSourceRanges: []
+    # -- catalog service node port
+    # Only used when `type: NodePort`
+    nodePort:
+      http: ""
+
+###################################
+# CONFIG | Kubernetes ServiceAccount
+###################################
+serviceAccount:
+  # -- Specifies whether a service account should be created.
+  # If `false`, you must create the you must create the service account outside this chart with name: `serviceAccount.name`
+  create: true
+
+  # -- Option to opt-out of the default behavior of service account token auto-mounting.
+  automount: true
+
+  # -- Name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname
+  name: ""
+
+  # -- Annotations to add to the service account
+  annotations: {}
+  # ____ EXAMPLE _______________
+  #   # EKS - IAM Roles for Service Accounts
+  #   annotations:
+  #     eks.amazonaws.com/role-arn: "arn:aws:iam::XXXXXXXXXX:role/<<MY-ROLE-NAME>>"
+  #
+
+###################################
+## DATABASE | Embedded Postgres
+###################################
+postgresql:
+  # -- if the `stable/postgresql` chart is used.
+  # [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead.
+  # set to `false` if using `externalDatabase.*`
+  enabled: true
+
+  # -- the postgres database to use
+  postgresqlDatabase: catalog
+
+  # -- the postgres user to create
+  postgresqlUsername: postgres
+
+  # -- the postgres user's password
+  postgresqlPassword: catalog
+
+  # -- the name of a pre-created secret containing the postgres password
+  existingSecret: ""
+
+  # -- the key within `postgresql.existingSecret` containing the password string
+  existingSecretKey: "postgresql-password"
+
+  # configs for the PVC of postgresql
+  persistence:
+    # -- if postgres will use Persistent Volume Claims to store data.
+    # if false, data will be LOST as postgres Pods restart
+    enabled: true
+
+    # -- the StorageClass used by the PVC
+    storageClass: ""
+
+    # -- the access modes of the PVC
+    accessModes:
+      - ReadWriteOnce
+
+    # -- the size of PVC to request
+    size: 5Gi
+
+###################################
+## DATABASE | External Database
+###################################
+externalDatabase:
+  # -- the type of external database.
+  # allowed values: "postgres"
+  type: postgres
+
+  # -- hostname to use for read instances of the external database
+  host_read: "localhost"
+
+  # -- hostname to use for write instances of the external database.
+  # For single read/write instances, this should be the same as `host_read`
+  host_write: "localhost"
+
+  # port of the external database
+  port: 5432
+
+  # the database/scheme to use within the external database
+  database: catalog
+
+  # the username for the external database
+  user: catalog
+
+  # the name of a pre-created secret containing the external database user
+  # - if set, this overrides `externalDatabase.user`
+  userSecret: ""
+
+  # the key within `externalDatabase.userSecret` containing the user string
+  userSecretKey: "postgresql-user"
+
+  # the password for the external database
+  # - [WARNING] to avoid storing the password in plain-text within your values,
+  #   create a Kubernetes secret and use `externalDatabase.passwordSecret`
+  password: ""
+
+  # the name of a pre-created secret containing the external database password
+  # - if set, this overrides `externalDatabase.password`
+  passwordSecret: ""
+
+  # the key within `externalDatabase.passwordSecret` containing the password string
+  passwordSecretKey: "postgresql-password"
+
+  # Additional connection properties can be specified via environment variables
+  # in the `catalog.extraEnv` list

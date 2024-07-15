@@ -1,0 +1,65 @@
+---
+# pre-install hook for the migration job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "iceberg-catalog.fullname" . }}
+  labels:
+    {{- include "iceberg-catalog.labels" . | nindent 4 }}
+spec:
+  template:
+    metadata:
+      name: "{{ include "iceberg-catalog.fullname" . }}-migration"
+      labels: {{- include "iceberg-catalog.labels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- if .Values.catalog.nodeSelector }}
+      nodeSelector:
+        {{- toYaml .Values.catalog.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.catalog.topologySpreadConstraints }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.catalog.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      {{- if .Values.catalog.affinity }}
+      affinity:
+        {{- toYaml .Values.catalog.affinity | nindent 8 }}
+      {{- end }}
+      {{- if .Values.catalog.tolerations }}
+      tolerations:
+        {{- toYaml .Values.catalog.tolerations | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "iceberg-catalog.serviceAccountName" . }}
+      {{- if .Values.catalog.podSecurityContext -}}
+      securityContext:
+        {{- toYaml .Values.catalog.podSecurityContext | nindent 8 }}
+      {{- end }}
+      {{- if .Values.catalog.extraInitContainers }}
+      initContainers:
+        {{- toYaml .Values.catalog.extraInitContainers | nindent 8 }}
+      {{- end }}
+      containers:
+        - name: migration
+          {{- include "iceberg-catalog.image" . | indent 10 }}
+          env:
+            {{- include "iceberg-catalog.env" . | indent 12 }}
+            {{- if .Values.catalog.extraEnv -}}
+            {{- toYaml .Values.catalog.extraEnv | nindent 12 }}
+            {{- end }}
+          envFrom:
+            {{- include "iceberg-catalog.envFrom" . | indent 12 }}
+            {{- if .Values.catalog.envFrom -}}
+            {{- toYaml .Values.catalog.envFrom | nindent 12 }}
+            {{- end }}
+          {{- if .Values.catalog.command -}}
+          command:
+            {{- toYaml .Values.catalog.command | nindent 12 }}
+          {{- end }}
+          args:
+            - migrate
+          resources:
+            {{- toYaml .Values.catalog.resources | nindent 12 }}

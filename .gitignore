@@ -1,0 +1,6 @@
+### Helm ###
+# Chart dependencies
+**/charts/*.tgz
+
+### Local Development ###
+local
