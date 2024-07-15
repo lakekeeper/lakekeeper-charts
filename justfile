@@ -1,1 +1,2 @@
-# 
+update-readme:
+  helm-docs
