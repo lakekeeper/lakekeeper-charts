@@ -181,6 +181,41 @@ catalog:
   # If not set, the default entrypoint of the image is used
   command: ""
 
+  dbMigrations:
+    # -- if the db-migrations Job is created.
+    # if `false`, you have to MANUALLY run `airflow db upgrade` when required
+    enabled: true
+
+    # -- [resource requirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core)
+    # resources for the catalog container of the catalog pod
+    resources: {}
+    # ---- EXAMPLE ----
+    # resources:
+    #   limits:
+    #     cpu: 100m
+    #     memory: 128Mi
+    #   requests:
+    #     cpu: 100m
+    #     memory: 128Mi
+
+    # -- Labels for the catalog migration job
+    labels: {}
+
+    # -- Labels for the migration pod
+    podLabels: {}
+
+    # -- Annotations for the migration job
+    annotations: {}
+
+    # -- Annotations for the migration pod
+    podAnnotations: {}
+
+    # -- ([container](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core))
+    # extra init-containers for the migration Pod
+    extraInitContainers: []
+
+    # Other configurations are equal to the `catalog` section
+
   # configs for the (backend) Service of the catalog Pods (REST-API)
   service:
     # -- catalog service annotations
@@ -204,9 +239,35 @@ catalog:
     nodePort:
       http: ""
 
-###################################
-# CONFIG | Kubernetes ServiceAccount
-###################################
+  ingress:
+    # -- if we should deploy Ingress resources
+    enabled: false
+
+    # -- annotations for the catalog Ingress
+    annotations: {}
+
+    # -- additional labels for the catalog Ingress
+    labels: {}
+
+    # -- the path for the catalog Ingress.
+    # To host the catalog at the url
+    # `https://data.example.com/catalog`, set `path: "/catalog"`
+    path: ""
+
+    # -- the hostname for the catalog Ingress.
+    # For example, `data.example.com`.
+    host: ""
+
+    # -- the Ingress Class for the catalog Ingress
+    ingressClassName: ""
+
+    tls:
+      # -- enable TLS termination for the catalog Ingress
+      enabled: false
+
+      # -- the name of a pre-created Secret containing a TLS private key and certificate
+      secretName: ""
+
 serviceAccount:
   # -- Specifies whether a service account should be created.
   # If `false`, you must create the you must create the service account outside this chart with name: `serviceAccount.name`
@@ -227,9 +288,6 @@ serviceAccount:
   #     eks.amazonaws.com/role-arn: "arn:aws:iam::XXXXXXXXXX:role/<<MY-ROLE-NAME>>"
   #
 
-###################################
-## DATABASE | Embedded Postgres
-###################################
 postgresql:
   # -- if the `stable/postgresql` chart is used.
   # [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead.

@@ -1,18 +1,37 @@
----
-# pre-install hook for the migration job
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "iceberg-catalog.fullname" . }}
+  name: {{ include "iceberg-catalog.fullname" . }}-db-migration
   labels:
     {{- include "iceberg-catalog.labels" . | nindent 4 }}
+    component: db-migration
+    {{- if .Values.catalog.dbMigrations.labels }}
+    {{- toYaml .Values.catalog.dbMigrations.labels | nindent 4 }}
+    {{- end }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-weight: "-100"
+    helm.sh/hook-delete-policy: before-hook-creation
+    {{- if .Values.catalog.dbMigrations.annotations }}
+    {{- toYaml .Values.catalog.dbMigrations.annotations | nindent 4 }}
+    {{- end }}
 spec:
   template:
     metadata:
       name: "{{ include "iceberg-catalog.fullname" . }}-migration"
-      labels: {{- include "iceberg-catalog.labels" . | nindent 8 }}
+      annotations:
+        checksum/secret-config-envs: {{ include (print $.Template.BasePath "/config/secret-config-envs.yaml") . | sha256sum }}
+        {{- if .Values.catalog.podAnnotations -}}
+        {{- toYaml .Values.catalog.podAnnotations | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "iceberg-catalog.labels" . | nindent 8 }}
+        component: db-migration
+        {{- if .Values.catalog.dbMigrations.podLabels }}
+        {{- toYaml .Values.catalog.dbMigrations.podLabels | nindent 8 }}
+        {{- end }}
     spec:
-      restartPolicy: Never
+      restartPolicy: OnFailure
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -20,10 +39,6 @@ spec:
       {{- if .Values.catalog.nodeSelector }}
       nodeSelector:
         {{- toYaml .Values.catalog.nodeSelector | nindent 8 }}
-      {{- end }}
-      {{- if .Values.catalog.topologySpreadConstraints }}
-      topologySpreadConstraints:
-        {{- toYaml .Values.catalog.topologySpreadConstraints | nindent 8 }}
       {{- end }}
       {{- if .Values.catalog.affinity }}
       affinity:
@@ -38,9 +53,9 @@ spec:
       securityContext:
         {{- toYaml .Values.catalog.podSecurityContext | nindent 8 }}
       {{- end }}
-      {{- if .Values.catalog.extraInitContainers }}
+      {{- if .Values.catalog.dbMigrations.extraInitContainers }}
       initContainers:
-        {{- toYaml .Values.catalog.extraInitContainers | nindent 8 }}
+        {{- toYaml .Values.catalog.dbMigrations.extraInitContainers | nindent 8 }}
       {{- end }}
       containers:
         - name: migration
