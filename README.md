@@ -31,6 +31,13 @@ A Helm chart for Kubernetes
 | catalog.command | string | `""` | Overwrite the command of the catalog container. If not set, the default entrypoint of the image is used |
 | catalog.config | object | `{}` | Configuration options for the catalog. Please check the documentation for the available options. Configuration items are mounted as environment variables. |
 | catalog.containerSecurityContext | [podsecuritycontext-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core | `{}` | ) security context for the catalog container. `runAsUser` is ignored, please set with `catalog.image.uid`, `runAsGroup` is ignored, please set with `catalog.image.gid` |
+| catalog.dbMigrations.annotations | object | `{}` | Annotations for the migration job |
+| catalog.dbMigrations.enabled | bool | `true` | if the db-migrations Job is created. if `false`, you have to MANUALLY run `airflow db upgrade` when required |
+| catalog.dbMigrations.extraInitContainers | [container](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core | `[]` | ) extra init-containers for the migration Pod |
+| catalog.dbMigrations.labels | object | `{}` | Labels for the catalog migration job |
+| catalog.dbMigrations.podAnnotations | object | `{}` | Annotations for the migration pod |
+| catalog.dbMigrations.podLabels | object | `{}` | Labels for the migration pod |
+| catalog.dbMigrations.resources | object | `{}` | [resource requirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core) resources for the catalog container of the catalog pod |
 | catalog.extraContainers | list of [containers](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core | `[]` | ) extra containers for the catalog Pods |
 | catalog.extraEnv | list of [envvar-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envvar-v1-core | `[]` | ) extra variables for the catalog Pods |
 | catalog.extraEnvFrom | list of [envfromsource-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envfromsource-v1-core | `[]` | ) extra variables for the catalog Pods |
@@ -42,6 +49,14 @@ A Helm chart for Kubernetes
 | catalog.image.repository | string | `"quay.io/hansetag/iceberg-catalog"` | The image repository to pull from |
 | catalog.image.tag | string | `"latest"` | The image tag to pull |
 | catalog.image.uid | int | `65532` | 65532 = nonroot of google container distroless |
+| catalog.ingress.annotations | object | `{}` | annotations for the catalog Ingress |
+| catalog.ingress.enabled | bool | `false` | if we should deploy Ingress resources |
+| catalog.ingress.host | string | `""` | the hostname for the catalog Ingress. For example, `data.example.com`. |
+| catalog.ingress.ingressClassName | string | `""` | the Ingress Class for the catalog Ingress |
+| catalog.ingress.labels | object | `{}` | additional labels for the catalog Ingress |
+| catalog.ingress.path | string | `""` | the path for the catalog Ingress. To host the catalog at the url `https://data.example.com/catalog`, set `path: "/catalog"` |
+| catalog.ingress.tls.enabled | bool | `false` | enable TLS termination for the catalog Ingress |
+| catalog.ingress.tls.secretName | string | `""` | the name of a pre-created Secret containing a TLS private key and certificate |
 | catalog.labels | object | `{}` | Labels for the catalog Deployment |
 | catalog.livenessProbe.enabled | bool | `true` |  |
 | catalog.livenessProbe.failureThreshold | int | `5` |  |
