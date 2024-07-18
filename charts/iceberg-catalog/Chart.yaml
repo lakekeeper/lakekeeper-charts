@@ -1,10 +1,11 @@
 apiVersion: v2
 name: iceberg-catalog
 description: A Helm chart for Kubernetes
-version: 0.0.0
+version: 0.0.1
 appVersion: 0.1.0
 type: application
 home: https://github.com/hansetag/iceberg-catalog
+icon: https://hansetag.com/landing/logo-BLQxxCCG.png
 maintainers:
   - name: Tobias
     url: https://github.com/twuebi

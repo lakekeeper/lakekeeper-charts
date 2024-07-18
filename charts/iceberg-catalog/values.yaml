@@ -59,13 +59,14 @@ catalog:
   # security context for the catalog Pods.
   # `runAsUser` and `runAsGroup` are ignored for the catalog container, please set with `catalog.image.uid` and `catalog.image.gid`
   podSecurityContext:
-    # ---- EXAMPLE ----
-    # securityContext:
-    capabilities:
-      drop:
-        - ALL
-    readOnlyRootFilesystem: true
-    runAsNonRoot: true
+    {}
+    # # ---- EXAMPLE ----
+    # # securityContext:
+    # capabilities:
+    #   drop:
+    #     - ALL
+    # readOnlyRootFilesystem: true
+    # runAsNonRoot: true
 
   # -- ([podsecuritycontext-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core))
   # security context for the catalog container.
@@ -179,8 +180,7 @@ catalog:
 
   # -- Overwrite the command of the catalog container.
   # If not set, the default entrypoint of the image is used
-  command:
-    - "/home/nonroot/iceberg-catalog"
+  command: []
 
   dbMigrations:
     # -- if the db-migrations Job is created.
