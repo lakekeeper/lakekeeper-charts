@@ -1,4 +1,0 @@
-auth:
-  oauth2:
-    provider_uri: "https://keycloak.local/realms/test"
-    client_id: "123-456-789"
