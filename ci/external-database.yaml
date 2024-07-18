@@ -1,3 +1,0 @@
-postgresql:
-  enabled: false
-  passwordSecret: iceberg-catalog-postgresql

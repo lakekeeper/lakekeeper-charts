@@ -1,6 +1,8 @@
 ### Helm ###
 # Chart dependencies
-**/charts/*.tgz
+*.tgz
 
 ### Local Development ###
 local
+
+Chart.lock
