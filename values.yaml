@@ -25,7 +25,7 @@ catalog:
     gid: 65534
 
   # -- Number of replicas to deploy. Replicas are stateless.
-  replicas: 2
+  replicas: 1
 
   # -- [resource requirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core)
   # resources for the catalog container of the catalog pod
@@ -58,14 +58,14 @@ catalog:
   # -- ([podsecuritycontext-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core))
   # security context for the catalog Pods.
   # `runAsUser` and `runAsGroup` are ignored for the catalog container, please set with `catalog.image.uid` and `catalog.image.gid`
-  podSecurityContext: {}
-  # ---- EXAMPLE ----
-  # securityContext:
-  #   capabilities:
-  #     drop:
-  #     - ALL
-  #   readOnlyRootFilesystem: true
-  #   runAsNonRoot: true
+  podSecurityContext:
+    # ---- EXAMPLE ----
+    # securityContext:
+    capabilities:
+      drop:
+        - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
 
   # -- ([podsecuritycontext-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core))
   # security context for the catalog container.
