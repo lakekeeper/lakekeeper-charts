@@ -10,5 +10,5 @@ catalog:
     qux: quux
   podDisruptionBudget:
     enabled: true
-    maxUnavailable: 1
+    # maxUnavailable: 1
     minAvailable: 1
