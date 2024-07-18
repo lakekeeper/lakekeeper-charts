@@ -84,7 +84,7 @@ spec:
             - name: http
               containerPort: 8080
               protocol: TCP
-          {{- if .Values.catalog.command -}}
+          {{- if .Values.catalog.command }}
           command:
             {{- toYaml .Values.catalog.command | nindent 12 }}
           {{- end }}

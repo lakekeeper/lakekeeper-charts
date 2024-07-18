@@ -17,7 +17,7 @@ catalog:
     # -- The image repository to pull from
     repository: quay.io/hansetag/iceberg-catalog
     # -- The image tag to pull
-    tag: latest
+    tag: latest-main
     pullPolicy: IfNotPresent
     # -- 65532 = nonroot of google container distroless
     uid: 65532
@@ -179,7 +179,8 @@ catalog:
 
   # -- Overwrite the command of the catalog container.
   # If not set, the default entrypoint of the image is used
-  command: ""
+  command:
+    - "/home/nonroot/iceberg-catalog"
 
   dbMigrations:
     # -- if the db-migrations Job is created.
@@ -294,20 +295,21 @@ postgresql:
   # set to `false` if using `externalDatabase.*`
   enabled: true
 
-  # -- the postgres database to use
-  postgresqlDatabase: catalog
-
-  # -- the postgres user to create
-  postgresqlUsername: postgres
-
-  # -- the postgres user's password
-  postgresqlPassword: catalog
-
-  # -- the name of a pre-created secret containing the postgres password
-  existingSecret: ""
-
-  # -- the key within `postgresql.existingSecret` containing the password string
-  existingSecretKey: "postgresql-password"
+  auth:
+    # -- the postgres user to create
+    username: catalog
+    # -- the postgres user's password.
+    # if not specified, a random password is generated and stored in a secret
+    password: ""
+    # -- the postgres database to create
+    database: catalog
+    # -- the name of a pre-created secret containing the postgres password
+    existingSecret: ""
+    secretKeys:
+      # -- the key within `postgresql.existingSecret` containing the admin (postgres) password string
+      adminPasswordKey: "postgres-password"
+      # -- the key within `postgresql.existingSecret` containing the user password string
+      userPasswordKey: "password"
 
   # configs for the PVC of postgresql
   persistence:
@@ -325,9 +327,6 @@ postgresql:
     # -- the size of PVC to request
     size: 5Gi
 
-###################################
-## DATABASE | External Database
-###################################
 externalDatabase:
   # -- the type of external database.
   # allowed values: "postgres"
@@ -370,3 +369,15 @@ externalDatabase:
 
   # Additional connection properties can be specified via environment variables
   # in the `catalog.extraEnv` list
+
+auth:
+  oauth2:
+    # -- If set, access to rest endpoints is secured via an external OIDC-capable IdP.
+    # The IdP must expose `{provider_url}/.well-known/openid-configuration`
+    # and the openid-configuration needs to have the jwks_uri and issuer defined.
+    # For keycloak set: https://keycloak.local/realms/test
+    # For Entra-ID set: https://login.microsoftonline.com/{your-tenant-id}/v2.0
+    provider_uri: ""
+    # -- The client id of the OIDC App of the catalog.
+    # The aud (audience) claim of the JWT token must match this id.
+    client_id: ""

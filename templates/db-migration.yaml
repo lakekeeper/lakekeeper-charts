@@ -70,7 +70,7 @@ spec:
             {{- if .Values.catalog.envFrom -}}
             {{- toYaml .Values.catalog.envFrom | nindent 12 }}
             {{- end }}
-          {{- if .Values.catalog.command -}}
+          {{- if .Values.catalog.command }}
           command:
             {{- toYaml .Values.catalog.command | nindent 12 }}
           {{- end }}

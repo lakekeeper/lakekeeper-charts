@@ -107,7 +107,7 @@ The list of `env` catalog Pods
 {{- /* set ICEBERG_REST__PG_USER */ -}}
 {{- if .Values.postgresql.enabled }}
 - name: ICEBERG_REST__PG_USER
-  value: {{ .Values.postgresql.postgresqlUsername | quote }}
+  value: {{ .Values.postgresql.auth.username | quote }}
 {{- else }}
 {{- if .Values.externalDatabase.userSecret }}
 - name: ICEBERG_REST__PG_USER
@@ -122,18 +122,18 @@ The list of `env` catalog Pods
 
 {{- /* set ICEBERG_REST__PG_PASSWORD */ -}}
 {{- if .Values.postgresql.enabled }}
-{{- if .Values.postgresql.existingSecret }}
+{{- if .Values.postgresql.auth.existingSecret }}
 - name: ICEBERG_REST__PG_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.postgresql.existingSecret }}
-      key: {{ .Values.postgresql.existingSecretKey }}
+      name: {{ .Values.postgresql.auth.existingSecret }}
+      key: {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
 {{- else }}
 - name: ICEBERG_REST__PG_PASSWORD
   valueFrom:
     secretKeyRef:
       name: {{ include "iceberg-catalog.postgresql.fullname" . }}
-      key: postgresql-password
+      key: {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
 {{- end }}
 {{- else }}
 {{- if .Values.externalDatabase.passwordSecret }}
