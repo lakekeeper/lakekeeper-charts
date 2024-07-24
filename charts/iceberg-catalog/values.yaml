@@ -22,8 +22,8 @@ catalog:
     repository: quay.io/hansetag/iceberg-catalog
     # -- The image tag to pull
     tag: latest-main
-    # ToDo: IfNotPresent
-    pullPolicy: Always
+    # -- The image pull policy
+    pullPolicy: IfNotPresent
     # -- 65532 = nonroot of google container distroless
     uid: 65532
     # -- 65534 = nobody of google container distroless
