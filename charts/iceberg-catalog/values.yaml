@@ -1,4 +1,4 @@
-# -- (list of [image pull secrets](https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/))
+# -- (list of <html><a href="https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/">image pull secrets</a></html>)
 # pull secrets for private repositories
 imagePullSecrets: []
 # -- Override the name of the chart.
@@ -27,7 +27,7 @@ catalog:
   # -- Number of replicas to deploy. Replicas are stateless.
   replicas: 1
 
-  # -- [resource requirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core)
+  # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html>)
   # resources for the catalog container of the catalog pod
   resources: {}
   # ---- EXAMPLE ----
@@ -39,23 +39,23 @@ catalog:
   #     cpu: 100m
   #     memory: 128Mi
 
-  # -- ([nodeSelector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector))
+  # -- (<html><a href="https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/#nodeselector">)
   # node selector configs for the catalog Pods
   nodeSelector: {}
 
-  # -- ([affinity](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#affinity-v1-core))
+  # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#affinity-v1-core">affinity</a></html>)
   # -- affinity for the catalog Pods
   affinity: {}
 
-  # -- ([toleration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#toleration-v1-core))
+  # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#toleration-v1-core">toleration</a></html>)
   # tolerations for the catalog Pods
   tolerations: []
 
-  # -- ([topologySpreadConstraints](https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/))
+  # -- (<html><a href="https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/">topologySpreadConstraints</a></html>)
   # topology spread constraints the catalog Pods
   topologySpreadConstraints: []
 
-  # -- ([podsecuritycontext-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core))
+  # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core">podsecuritycontext-v1-core</a></html>)
   # security context for the catalog Pods.
   # `runAsUser` and `runAsGroup` are ignored for the catalog container, please set with `catalog.image.uid` and `catalog.image.gid`
   podSecurityContext:
@@ -68,7 +68,7 @@ catalog:
     # readOnlyRootFilesystem: true
     # runAsNonRoot: true
 
-  # -- ([podsecuritycontext-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core))
+  # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core">podsecuritycontext-v1-core</a></html>)
   # security context for the catalog container.
   # `runAsUser` is ignored, please set with `catalog.image.uid`, `runAsGroup` is ignored, please set with `catalog.image.gid`
   containerSecurityContext: {}
@@ -85,11 +85,11 @@ catalog:
   # -- Pod annotations for the catalog Deployment
   podAnnotations: {}
 
-  # -- (list of [envvar-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envvar-v1-core))
+  # -- (list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envvar-v1-core">envvar-v1-core</a></html>)
   # extra variables for the catalog Pods
   extraEnv: []
 
-  # -- (list of [envfromsource-v1-core](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envfromsource-v1-core))
+  # -- (list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envfromsource-v1-core">envfromsource-v1-core</a></html>)
   # extra variables for the catalog Pods
   extraEnvFrom: []
 
@@ -115,6 +115,7 @@ catalog:
     minAvailable: ""
 
   livenessProbe:
+    # -- if the liveness probes of the catalog Pods are enabled
     enabled: true
     initialDelaySeconds: 1
     periodSeconds: 5
@@ -123,6 +124,7 @@ catalog:
 
   # configuration of the readiness probes of the catalog pods
   readinessProbe:
+    # -- if the readiness probes of the catalog Pods are enabled
     enabled: true
     initialDelaySeconds: 1
     periodSeconds: 5
@@ -148,18 +150,19 @@ catalog:
   #           type: Utilization
   #           averageUtilization: 80
 
-  # -- how many seconds to wait after SIGTERM before SIGKILL of the catalog
+  # -- how many seconds to wait after SIGTERM before SIGKILL of the catalog.
+  # Default is 60 seconds.
   terminationPeriod: 60
 
-  # -- (list of [containers](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core))
+  # -- (list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core">containers</a></html>)
   # extra containers for the catalog Pods
   extraContainers: []
 
-  # -- ([container](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core))
+  # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core">container</a></html>)
   # extra init-containers for the catalog Pods
   extraInitContainers: []
 
-  # -- ([volume mount](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volumemount-v1-core))
+  # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volumemount-v1-core">volume mount</a></html>)
   # extra VolumeMounts for the catalog Pods
   extraVolumeMounts: []
   # ---- EXAMPLE ----
@@ -168,7 +171,7 @@ catalog:
   #   mountPath: "/etc/foo"
   #   readOnly: true
 
-  # -- ([volume](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volume-v1-core))
+  # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volume-v1-core">volume</a></html>)
   # extra Volumes for the catalog Pods
   extraVolumes: []
   # ---- EXAMPLE ----
@@ -187,7 +190,7 @@ catalog:
     # if `false`, you have to MANUALLY run `airflow db upgrade` when required
     enabled: true
 
-    # -- [resource requirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core)
+    # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html>)
     # resources for the catalog container of the catalog pod
     resources: {}
     # ---- EXAMPLE ----
@@ -211,7 +214,7 @@ catalog:
     # -- Annotations for the migration pod
     podAnnotations: {}
 
-    # -- ([container](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core))
+    # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core">container</a></html>)
     # extra init-containers for the migration Pod
     extraInitContainers: []
 
