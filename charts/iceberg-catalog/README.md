@@ -6,6 +6,21 @@ A Helm chart for Kubernetes
 
 **Homepage:** <https://github.com/hansetag/iceberg-catalog>
 
+## Quickstart
+
+```sh
+## add this helm repository
+helm repo add hansetag https://hansetag.github.io/iceberg-catalog-charts/
+## update your helm repo cache
+helm repo update
+## install in namespace "iceberg-catalog"
+helm -n iceberg-catalog install hansetag/iceberg-catalog
+```
+
+The catalog server should now spin up.
+Next you will have to create a warehouse using the management API of the Catalog. This helm-chart does not spin up any storage for your tables (i.e. S3).
+Please check the catalogs [Homepage](<https://github.com/hansetag/iceberg-catalog>) including the [example notebooks](https://github.com/hansetag/iceberg-catalog/tree/main/examples) for more information.
+
 ## Maintainers
 
 | Name      | Email | Url                          |
