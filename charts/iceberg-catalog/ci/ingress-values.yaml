@@ -1,3 +1,4 @@
+helmWait: true
 catalog:
   ingress:
     enabled: true
