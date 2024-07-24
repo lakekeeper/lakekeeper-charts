@@ -3,6 +3,34 @@ entries:
   iceberg-catalog:
   - apiVersion: v2
     appVersion: 0.1.0
+    created: "2024-07-24T14:41:14.45465176Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 15.5.17
+    description: A Helm chart for Kubernetes
+    digest: 0c22632eafcc3c5b040d94406aec2394f72a09f268019f30d04157b43ca563f3
+    home: https://github.com/hansetag/iceberg-catalog
+    icon: https://hansetag.com/landing/logo-BLQxxCCG.png
+    keywords:
+    - iceberg
+    - catalog
+    - tip
+    - rest
+    - lakehouse
+    maintainers:
+    - name: Tobias
+      url: https://github.com/twuebi
+    - name: Christian
+      url: https://github.com/c-thiel
+    name: iceberg-catalog
+    type: application
+    urls:
+    - https://github.com/hansetag/iceberg-catalog-charts/releases/download/iceberg-catalog-0.0.3/iceberg-catalog-0.0.3.tgz
+    version: 0.0.3
+  - apiVersion: v2
+    appVersion: 0.1.0
     created: "2024-07-24T14:06:20.82277365Z"
     dependencies:
     - condition: postgresql.enabled
@@ -29,4 +57,4 @@ entries:
     urls:
     - https://github.com/hansetag/iceberg-catalog-charts/releases/download/iceberg-catalog-0.0.2/iceberg-catalog-0.0.2.tgz
     version: 0.0.2
-generated: "2024-07-24T14:06:20.822783549Z"
+generated: "2024-07-24T14:41:14.454664093Z"
