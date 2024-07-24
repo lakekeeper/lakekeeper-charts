@@ -18,7 +18,8 @@ catalog:
     repository: quay.io/hansetag/iceberg-catalog
     # -- The image tag to pull
     tag: latest-main
-    pullPolicy: IfNotPresent
+    # ToDo: IfNotPresent
+    pullPolicy: Always
     # -- 65532 = nonroot of google container distroless
     uid: 65532
     # -- 65534 = nobody of google container distroless
@@ -219,6 +220,12 @@ catalog:
     extraInitContainers: []
 
     # Other configurations are equal to the `catalog` section
+
+  initContainers:
+    checkDb:
+      # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html>)
+      # resource requests/limits for the "check-db" init-containers
+      resources: {}
 
   # configs for the (backend) Service of the catalog Pods (REST-API)
   service:
