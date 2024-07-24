@@ -33,7 +33,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: {{ include "iceberg-catalog" . }}
+                name: {{ include "iceberg-catalog.fullname" . }}
                 port:
                   name: http
 {{- end }}

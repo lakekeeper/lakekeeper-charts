@@ -9,9 +9,14 @@ metadata:
     {{- toYaml .Values.catalog.dbMigrations.labels | nindent 4 }}
     {{- end }}
   annotations:
+    {{- if not .Values.helmWait }}
     helm.sh/hook: post-install,post-upgrade
     helm.sh/hook-weight: "-100"
     helm.sh/hook-delete-policy: before-hook-creation
+    helm-hook-enabled: "true"
+    {{- else }}
+    helm-hook-enabled: "false"
+    {{- end }}
     {{- if .Values.catalog.dbMigrations.annotations }}
     {{- toYaml .Values.catalog.dbMigrations.annotations | nindent 4 }}
     {{- end }}
@@ -53,10 +58,11 @@ spec:
       securityContext:
         {{- toYaml .Values.catalog.podSecurityContext | nindent 8 }}
       {{- end }}
-      {{- if .Values.catalog.dbMigrations.extraInitContainers }}
       initContainers:
+        {{- include "iceberg-catalog.init_container.check_db" (dict "Release" .Release "Values" .Values "Chart" .Chart "awaitMigration" false) | indent 8 }}
+        {{- if .Values.catalog.dbMigrations.extraInitContainers }}
         {{- toYaml .Values.catalog.dbMigrations.extraInitContainers | nindent 8 }}
-      {{- end }}
+        {{- end }}
       containers:
         - name: migration
           {{- include "iceberg-catalog.image" . | indent 10 }}
