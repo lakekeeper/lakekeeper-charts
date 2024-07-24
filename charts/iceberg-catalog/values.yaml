@@ -14,7 +14,7 @@ clusterDomain: "cluster.local"
 
 # -- If true, remove the helm.sh/hook for jobs that need to run before the catalog is started.
 # If this is false, helm install --wait will not work.
-helmWait: false
+helmWait: true
 
 catalog:
   image:
