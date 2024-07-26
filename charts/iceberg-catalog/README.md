@@ -31,7 +31,7 @@ A Helm chart for Kubernetes
 | catalog.autoscaling.maxReplicas | int | `2` | maximum number of replicas for the catalog Pods |
 | catalog.autoscaling.metrics | list | `[]` | metrics for the HorizontalPodAutoscaler |
 | catalog.command | list | `[]` | Overwrite the command of the catalog container. If not set, the default entrypoint of the image is used |
-| catalog.config | object | `{}` | Configuration options for the catalog. Please check the documentation for the available options. Configuration items are mounted as environment variables. ICEBERG_REST__BASE_URL is required if ingress is disabled - otherwise the catalog will only work inside the cluster. Specify the external URL of the catalog as ICEBERG_REST__BASE_URL |
+| catalog.config | object | `{}` | Configuration options for the catalog. Please check the documentation for the available options. Configuration items are mounted as environment variables. ICEBERG_REST__BASE_URI is required if ingress is disabled - otherwise the catalog will only work inside the cluster. Specify the external URL of the catalog as ICEBERG_REST__BASE_URI |
 | catalog.containerSecurityContext | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core">podsecuritycontext-v1-core</a></html> | `{}` |  security context for the catalog container. `runAsUser` is ignored, please set with `catalog.image.uid`, `runAsGroup` is ignored, please set with `catalog.image.gid` |
 | catalog.dbMigrations.annotations | object | `{}` | Annotations for the migration job |
 | catalog.dbMigrations.enabled | bool | `true` | if the db-migrations Job is created. if `false`, you have to MANUALLY run `airflow db upgrade` when required |

@@ -101,14 +101,14 @@ catalog:
   # -- Configuration options for the catalog.
   # Please check the documentation for the available options.
   # Configuration items are mounted as environment variables.
-  # ICEBERG_REST__BASE_URL is required if ingress is disabled - otherwise
+  # ICEBERG_REST__BASE_URI is required if ingress is disabled - otherwise
   # the catalog will only work inside the cluster.
-  # Specify the external URL of the catalog as ICEBERG_REST__BASE_URL
+  # Specify the external URL of the catalog as ICEBERG_REST__BASE_URI
   config: {}
   # ---- EXAMPLE ----
   # config:
   #   ICEBERG_REST__OPENID_PROVIDER_URI: "https://my-oidc-provider.com"
-  #   ICEBERG_REST__BASE_URL: "https://data.example.com"
+  #   ICEBERG_REST__BASE_URI: "https://data.example.com"
 
   # -- if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true"
   safeToEvict: true
