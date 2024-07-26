@@ -1,7 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "iceberg-catalog.fullname" . }}-db-migration
+  name: {{ include "iceberg-catalog.fullname" . }}-db-migration-{{ .Release.Revision }}
   labels:
     {{- include "iceberg-catalog.labels" . | nindent 4 }}
     component: db-migration

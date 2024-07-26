@@ -21,7 +21,7 @@ catalog:
     # -- The image repository to pull from
     repository: quay.io/hansetag/iceberg-catalog
     # -- The image tag to pull
-    tag: latest-main
+    tag: v0.2.0
     # -- The image pull policy
     pullPolicy: IfNotPresent
     # -- 65532 = nonroot of google container distroless
@@ -101,10 +101,14 @@ catalog:
   # -- Configuration options for the catalog.
   # Please check the documentation for the available options.
   # Configuration items are mounted as environment variables.
+  # ICEBERG_REST__BASE_URL is required if ingress is disabled - otherwise
+  # the catalog will only work inside the cluster.
+  # Specify the external URL of the catalog as ICEBERG_REST__BASE_URL
   config: {}
   # ---- EXAMPLE ----
   # config:
   #   ICEBERG_REST__OPENID_PROVIDER_URI: "https://my-oidc-provider.com"
+  #   ICEBERG_REST__BASE_URL: "https://data.example.com"
 
   # -- if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true"
   safeToEvict: true
@@ -266,7 +270,11 @@ catalog:
 
     # -- the path for the catalog Ingress.
     # To host the catalog at the url
-    # `https://data.example.com/catalog`, set `path: "/catalog"`
+    # `https://data.example.com/iceberg-catalog`, set `path: "/iceberg-catalog"`.
+    # If a path is set, the ingress must strip the path before forwarding to the service!
+    # This helm-chart does not take care of this, as it depends on the type of Ingress Controller used.
+    # For example, for NGINX Ingress Controller, set the annotation
+    # `nginx.ingress.kubernetes.io/rewrite-target: /`
     path: ""
 
     # -- the hostname for the catalog Ingress.
