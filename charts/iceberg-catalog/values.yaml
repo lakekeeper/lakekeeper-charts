@@ -311,6 +311,41 @@ serviceAccount:
   #     eks.amazonaws.com/role-arn: "arn:aws:iam::XXXXXXXXXX:role/<<MY-ROLE-NAME>>"
   #
 
+secretBackend:
+  # -- the type of secret store to use.
+  # Available values: "Postgres", "KV2"
+  type: "Postgres"
+
+  # postgres specific configurations.
+  postgres:
+    # -- Name of the secret containing the encryption key.
+    # If not set, a random key is generated and stored in a secret.
+    # We recommend setting this to a pre-existing secret. If you loose the key, you loose
+    # access to all secrets.
+    encryptionKeySecret: ""
+    # -- Name of the key within `encryptionKeySecret` containing the encryption key string
+    encryptionKeySecretKey: "encryptionKey"
+
+  # kv2 specific configurations
+  kv2:
+    # -- the URL of the KV2 secret store
+    url: ""
+    # -- user name for authentication
+    user: ""
+    # -- password for authentication
+    # consider using a secret for the password
+    password: ""
+    # -- path to the secret mount in the KV2 secret store.
+    secretMount: "kv/data/iceberg"
+    # -- the name of a pre-created secret containing the KV2 user
+    userSecret: ""
+    # -- the key within `kv2.userSecret` containing the user string
+    userSecretKey: "username"
+    # -- the name of a pre-created secret containing the KV2 password
+    passwordSecret: ""
+    # -- the key within `kv2.passwordSecret` containing the password string
+    passwordSecretKey: "password"
+
 postgresql:
   # -- if the `stable/postgresql` chart is used.
   # [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead.
