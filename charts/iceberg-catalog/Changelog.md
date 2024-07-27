@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- BREAKING: Secure default Postgres secret encryption. To upgrade, create a secret with your previous encryption key (default was `<This is unsafe, please set a proper key>`) and set `secretBackend.postgres.encryptionKeySecret` and `secretBackend.postgres.encryptionKeySecretKey` to point to your secret accordingly.
+
 
 ## [0.1.0] - 2024-07-26
 
