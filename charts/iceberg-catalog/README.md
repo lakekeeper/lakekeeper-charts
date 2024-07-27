@@ -8,15 +8,15 @@ A Helm chart for Kubernetes
 
 ## Maintainers
 
-| Name      | Email | Url                          |
-|-----------|-------|------------------------------|
-| Tobias    |       | <https://github.com/twuebi>  |
-| Christian |       | <https://github.com/c-thiel> |
+| Name | Email | Url |
+| ---- | ------ | --- |
+| Tobias |  | <https://github.com/twuebi> |
+| Christian |  | <https://github.com/c-thiel> |
 
 ## Requirements
 
-| Repository                               | Name       | Version |
-|------------------------------------------|------------|---------|
+| Repository | Name | Version |
+|------------|------|---------|
 | oci://registry-1.docker.io/bitnamicharts | postgresql | 15.5.17 |
 
 ## Values
