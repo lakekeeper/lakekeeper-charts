@@ -119,6 +119,17 @@ A Helm chart for Kubernetes
 | postgresql.persistence.enabled | bool | `true` | if postgres will use Persistent Volume Claims to store data. if false, data will be LOST as postgres Pods restart |
 | postgresql.persistence.size | string | `"5Gi"` | the size of PVC to request |
 | postgresql.persistence.storageClass | string | `""` | the StorageClass used by the PVC |
+| secretBackend.kv2.password | string | `""` | password for authentication consider using a secret for the password |
+| secretBackend.kv2.passwordSecret | string | `""` | the name of a pre-created secret containing the KV2 password |
+| secretBackend.kv2.passwordSecretKey | string | `"password"` | the key within `kv2.passwordSecret` containing the password string |
+| secretBackend.kv2.secretMount | string | `"kv/data/iceberg"` | path to the secret mount in the KV2 secret store. |
+| secretBackend.kv2.url | string | `""` | the URL of the KV2 secret store |
+| secretBackend.kv2.user | string | `""` | user name for authentication |
+| secretBackend.kv2.userSecret | string | `""` | the name of a pre-created secret containing the KV2 user |
+| secretBackend.kv2.userSecretKey | string | `"username"` | the key within `kv2.userSecret` containing the user string |
+| secretBackend.postgres.encryptionKeySecret | string | `""` | Name of the secret containing the encryption key. If not set, a random key is generated and stored in a secret. We recommend setting this to a pre-existing secret. If you loose the key, you loose access to all secrets. |
+| secretBackend.postgres.encryptionKeySecretKey | string | `"encryptionKey"` | Name of the key within `encryptionKeySecret` containing the encryption key string |
+| secretBackend.type | string | `"Postgres"` | the type of secret store to use. Available values: "Postgres", "KV2" |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
 | serviceAccount.automount | bool | `true` | Option to opt-out of the default behavior of service account token auto-mounting. |
 | serviceAccount.create | bool | `true` | Specifies whether a service account should be created. If `false`, you must create the you must create the service account outside this chart with name: `serviceAccount.name` |

@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+### Changed
+
+## [0.2.0] - 2024-07-29
+
+### Added
+
+- BREAKING: Secure default Postgres secret encryption. To upgrade, create a secret with your previous encryption key (default was `<This is unsafe, please set a proper key>`) and set `secretBackend.postgres.encryptionKeySecret` and `secretBackend.postgres.encryptionKeySecretKey` to point to your secret accordingly.
+- KeyVault secret backend configuration via Helm-Chart
+
+### Changed
+- Default App-Version is now 0.2.1
+
 
 ## [0.1.0] - 2024-07-26
 

@@ -147,6 +147,46 @@ The list of `env` catalog Pods
 {{- end }}
 {{- end }}
 
+{{- /* set ICEBERG_REST__PG_ENCRYPTION_KEY */ -}}
+{{- if eq "postgres" (lower .Values.secretBackend.type) }}
+{{- if .Values.secretBackend.postgres.encryptionKeySecret }}
+- name: ICEBERG_REST__PG_ENCRYPTION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.secretBackend.postgres.encryptionKeySecret }}
+      key: {{ .Values.secretBackend.postgres.encryptionKeySecretKey }}
+{{- else }}
+- name: ICEBERG_REST__PG_ENCRYPTION_KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "iceberg-catalog.fullname" . }}-postgres-encryption
+      key: encryptionKey
+{{- end }}
+{{- end }}
+
+{{- if eq "kv2" (lower .Values.secretBackend.type) }}
+{{- /* set ICEBERG_REST__KV2__USER */ -}}
+{{- if empty .Values.secretBackend.kv2.user }}
+{{- if .Values.secretBackend.kv2.userSecret }}
+- name: ICEBERG_REST__KV2__USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.secretBackend.kv2.userSecret }}
+      key: {{ .Values.secretBackend.kv2.userSecretKey }}
+{{- end }}
+{{- end }}
+
+{{- if empty .Values.secretBackend.kv2.password }}
+{{- if .Values.secretBackend.kv2.passwordSecret }}
+- name: ICEBERG_REST__KV2__PASSWORD
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.secretBackend.kv2.passwordSecret }}
+      key: {{ .Values.secretBackend.kv2.passwordSecretKey }}
+{{- end }}
+{{- end }}
+{{- end }}
+
 {{- /* user-defined environment variables */ -}}
 {{- if .Values.catalog.extraEnv }}
 {{ toYaml .Values.catalog.extraEnv }}
