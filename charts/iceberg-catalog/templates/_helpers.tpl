@@ -159,7 +159,7 @@ The list of `env` catalog Pods
 - name: ICEBERG_REST__PG_ENCRYPTION_KEY
   valueFrom:
     secretKeyRef:
-      name: {{ include "iceberg-catalog.fullname" }}-postgres-encryption
+      name: {{ include "iceberg-catalog.fullname" . }}-postgres-encryption
       key: encryptionKey
 {{- end }}
 {{- end }}
@@ -185,12 +185,6 @@ The list of `env` catalog Pods
       key: {{ .Values.secretBackend.kv2.passwordSecretKey }}
 {{- end }}
 {{- end }}
-{{- end }}
-
-{{- if eq "vault" (lower .Values.secretBackend.type) }}
-{{- /* set ICEBERG_REST__VAULT__ROLE_ID */ -}}
-{{- if empty .Values.secretBackend.vault.roleId }}
-{{- if .Values.secretBackend.vault.roleIdSecret }}
 {{- end }}
 
 {{- /* user-defined environment variables */ -}}
