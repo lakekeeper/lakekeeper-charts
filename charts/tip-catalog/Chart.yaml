@@ -1,6 +1,6 @@
 apiVersion: v2
-name: iceberg-catalog
-description: A Helm chart for Kubernetes
+name: tip-catalog
+description: Helm Chart of the TIP Catalog for Apache Iceberg
 version: 0.2.0
 appVersion: 0.2.1
 type: application
@@ -19,6 +19,6 @@ keywords:
   - lakehouse
 dependencies:
   - name: postgresql
-    version: 15.5.17
+    version: 15.5.24
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: postgresql.enabled
