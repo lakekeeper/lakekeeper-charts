@@ -113,4 +113,33 @@ entries:
     urls:
     - https://github.com/hansetag/iceberg-catalog-charts/releases/download/iceberg-catalog-0.0.2/iceberg-catalog-0.0.2.tgz
     version: 0.0.2
-generated: "2024-07-29T18:05:42.332475968Z"
+  tip-catalog:
+  - apiVersion: v2
+    appVersion: 0.2.1
+    created: "2024-08-24T13:28:49.582354114Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 15.5.24
+    description: Helm Chart of the TIP Catalog for Apache Iceberg
+    digest: 60cd377e4bbf200ac5bba3e2d4fe4ee400311db9c6e281e1edac4e26030c534e
+    home: https://github.com/hansetag/iceberg-catalog
+    icon: https://hansetag.com/landing/logo-BLQxxCCG.png
+    keywords:
+    - iceberg
+    - catalog
+    - tip
+    - rest
+    - lakehouse
+    maintainers:
+    - name: Tobias
+      url: https://github.com/twuebi
+    - name: Christian
+      url: https://github.com/c-thiel
+    name: tip-catalog
+    type: application
+    urls:
+    - https://github.com/hansetag/tip-catalog-charts/releases/download/tip-catalog-0.2.0/tip-catalog-0.2.0.tgz
+    version: 0.2.0
+generated: "2024-08-24T13:28:49.5823681Z"
