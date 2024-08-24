@@ -21,7 +21,7 @@ catalog:
     # -- The image repository to pull from
     repository: quay.io/hansetag/tip-catalog
     # -- The image tag to pull
-    tag: v0.3.0
+    tag: v0.2.1
     # -- The image pull policy
     pullPolicy: IfNotPresent
     # -- 65532 = nonroot of google container distroless
