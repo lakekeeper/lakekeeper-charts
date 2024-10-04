@@ -1,8 +1,8 @@
 apiVersion: v2
-name: tip-catalog
-description: Helm Chart of the TIP Catalog for Apache Iceberg
-version: 0.2.1
-appVersion: 0.3.0
+name: lakekeeper
+description: Helm Chart of the Lakekeeper for Apache Iceberg
+version: 0.1.0
+appVersion: 0.4.0
 type: application
 home: https://github.com/hansetag/iceberg-catalog
 icon: https://hansetag.com/landing/logo-BLQxxCCG.png
@@ -12,6 +12,7 @@ maintainers:
   - name: Christian
     url: https://github.com/c-thiel
 keywords:
+  - lakekeeper
   - iceberg
   - catalog
   - tip
