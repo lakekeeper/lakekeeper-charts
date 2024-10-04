@@ -19,7 +19,7 @@ helmWait: true
 catalog:
   image:
     # -- The image repository to pull from
-    repository: quay.io/hansetag/tip-catalog
+    repository: quay.io/lakekeeper/catalog
     # -- The image tag to pull
     tag: v0.4.0
     # -- The image pull policy

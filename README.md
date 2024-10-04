@@ -1,2 +1,2 @@
-<h1 align="center"><a href="https://github.com/hansetag/tip-catalog-charts/tree/main/charts/tip-catalog">Chart Homepage in charts/tip-catalog Folder</a></h1>
+<h1 align="center"><a href="https://github.com/lakekeeper/lakekeeper-charts/tree/main/charts/lakekeeper">Chart Homepage in charts/lakekeeper Folder</a></h1>
 
