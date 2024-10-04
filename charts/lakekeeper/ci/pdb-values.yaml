@@ -1,0 +1,15 @@
+helmWait: true
+catalog:
+  replicas: 2
+  labels:
+    foo: bar
+  podLabels:
+    bar: baz
+  annotations:
+    baz: qux
+  podAnnotations:
+    qux: quux
+  podDisruptionBudget:
+    enabled: true
+    # maxUnavailable: 1
+    minAvailable: 1

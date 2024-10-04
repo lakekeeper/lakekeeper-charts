@@ -1,0 +1,12 @@
+helmWait: true
+catalog:
+  autoscaling:
+    enabled: true
+    maxReplicas: 3
+    metrics:
+      - type: Resource
+        resource:
+          name: cpu-percent
+          target:
+            type: Utilization
+            averageUtilization: 80
