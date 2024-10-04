@@ -1,3 +1,3 @@
-# A Helm Chart for the Iceberg-Catalog
+# A Helm Chart for Lakekeeper
 
 **Homepage:** <https://github.com/hansetag/iceberg-catalog>
