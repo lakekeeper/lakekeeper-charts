@@ -84,3 +84,7 @@ spec:
             - migrate
           resources:
             {{- toYaml .Values.catalog.resources | nindent 12 }}
+      {{- with .Values.catalog.extraVolumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
