@@ -3,6 +3,34 @@ entries:
   lakekeeper:
   - apiVersion: v2
     appVersion: 0.4.1
+    created: "2024-10-23T20:37:40.316215243Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 15.5.38
+    description: Helm Chart of the Lakekeeper for Apache Iceberg
+    digest: 07e58ec9031f12438040fd012df3d2ff377488a7b1544c158fae5d578db90e0a
+    home: https://github.com/hansetag/iceberg-catalog
+    icon: https://hansetag.com/landing/logo-BLQxxCCG.png
+    keywords:
+    - lakekeeper
+    - iceberg
+    - catalog
+    - rest
+    - lakehouse
+    maintainers:
+    - name: Tobias
+      url: https://github.com/twuebi
+    - name: Christian
+      url: https://github.com/c-thiel
+    name: lakekeeper
+    type: application
+    urls:
+    - https://github.com/lakekeeper/lakekeeper-charts/releases/download/lakekeeper-0.1.3/lakekeeper-0.1.3.tgz
+    version: 0.1.3
+  - apiVersion: v2
+    appVersion: 0.4.1
     created: "2024-10-16T09:23:01.154524Z"
     dependencies:
     - condition: postgresql.enabled
@@ -86,4 +114,4 @@ entries:
     urls:
     - https://github.com/lakekeeper/lakekeeper-charts/releases/download/lakekeeper-0.1.0/lakekeeper-0.1.0.tgz
     version: 0.1.0
-generated: "2024-10-16T09:23:01.154537575Z"
+generated: "2024-10-23T20:37:40.316231273Z"
