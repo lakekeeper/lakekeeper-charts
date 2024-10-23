@@ -1,0 +1,9 @@
+helmWait: true
+catalog:
+  extraVolumes:
+    - name: iceberg-catalog
+      emptyDir: {}
+  extraVolumeMounts:
+    - name: iceberg-catalog
+      mountPath: /volume-mount-test
+      readOnly: false
