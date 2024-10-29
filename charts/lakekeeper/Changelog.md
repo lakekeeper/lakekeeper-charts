@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.1.4] - 2024-10-28
+
+### Fixed
+Bump Lakekeeper to Version 0.4.2 - Azure performance improvements & Support for self-signed S3 certificates
+
 ## [0.1.3] - 2024-10-23
 
 ### Fixed
