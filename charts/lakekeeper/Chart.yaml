@@ -1,6 +1,6 @@
 apiVersion: v2
 name: lakekeeper
-description: Helm Chart of the Lakekeeper for Apache Iceberg
+description: Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 version: 0.1.3
 appVersion: 0.4.2
 type: application
