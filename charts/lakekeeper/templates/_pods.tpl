@@ -14,9 +14,6 @@ EXAMPLE USAGE: {{ include "iceberg-catalog.init_container.check_db" (dict "Relea
     {{- end }}
   env:
     {{- include "iceberg-catalog.env" . | indent 4 }}
-    {{- if .Values.catalog.extraEnv -}}
-    {{- toYaml .Values.catalog.extraEnv | nindent 4 }}
-    {{- end }}
   {{- if .Values.catalog.command }}
   command:
     {{- toYaml .Values.catalog.command | nindent 4 }}

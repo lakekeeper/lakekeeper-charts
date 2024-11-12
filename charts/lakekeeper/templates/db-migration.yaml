@@ -68,9 +68,6 @@ spec:
           {{- include "iceberg-catalog.image" . | indent 10 }}
           env:
             {{- include "iceberg-catalog.env" . | indent 12 }}
-            {{- if .Values.catalog.extraEnv -}}
-            {{- toYaml .Values.catalog.extraEnv | nindent 12 }}
-            {{- end }}
           envFrom:
             {{- include "iceberg-catalog.envFrom" . | indent 12 }}
             {{- if .Values.catalog.envFrom -}}
