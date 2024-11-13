@@ -1,6 +1,6 @@
 # lakekeeper
 
-![Version: 0.1.4](https://img.shields.io/badge/Version-0.1.4-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.4.2](https://img.shields.io/badge/AppVersion-0.4.2-informational?style=flat-square)
+![Version: 0.1.6](https://img.shields.io/badge/Version-0.1.6-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.4.3](https://img.shields.io/badge/AppVersion-0.4.3-informational?style=flat-square)
 
 Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
@@ -49,7 +49,7 @@ Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 | catalog.image.gid | int | `65534` | 65534 = nobody of google container distroless |
 | catalog.image.pullPolicy | string | `"IfNotPresent"` | The image pull policy |
 | catalog.image.repository | string | `"quay.io/lakekeeper/catalog"` | The image repository to pull from |
-| catalog.image.tag | string | `"v0.4.2"` | The image tag to pull |
+| catalog.image.tag | string | `"v0.4.3"` | The image tag to pull |
 | catalog.image.uid | int | `65532` | 65532 = nonroot of google container distroless |
 | catalog.ingress.annotations | object | `{}` | annotations for the catalog Ingress |
 | catalog.ingress.enabled | bool | `false` | if we should deploy Ingress resources |
