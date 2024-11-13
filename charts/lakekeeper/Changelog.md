@@ -14,6 +14,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+
+## [0.1.5] - 2024-11-13
+
+### Fixed
+* `extraEnv` are added twice
+* Bump Lakekeeper to Version 0.4.3 - Fixes a bug where remote signing is not working with AWS S3
+
+
 ## [0.1.4] - 2024-10-28
 
 ### Fixed
