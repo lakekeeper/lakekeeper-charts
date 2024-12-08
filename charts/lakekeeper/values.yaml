@@ -21,7 +21,7 @@ catalog:
     # -- The image repository to pull from
     repository: quay.io/lakekeeper/catalog
     # -- The image tag to pull
-    tag: v0.4.3
+    tag: v0.5.0
     # -- The image pull policy
     pullPolicy: IfNotPresent
     # -- 65532 = nonroot of google container distroless
@@ -101,14 +101,14 @@ catalog:
   # -- Configuration options for the catalog.
   # Please check the documentation for the available options.
   # Configuration items are mounted as environment variables.
-  # ICEBERG_REST__BASE_URI is required if ingress is disabled - otherwise
+  # LAKEKEEPER__BASE_URI is required if ingress is disabled - otherwise
   # the catalog will only work inside the cluster.
-  # Specify the external URL of the catalog as ICEBERG_REST__BASE_URI
+  # Specify the external URL of the catalog as LAKEKEEPER__BASE_URI
   config: {}
   # ---- EXAMPLE ----
   # config:
-  #   ICEBERG_REST__OPENID_PROVIDER_URI: "https://my-oidc-provider.com"
-  #   ICEBERG_REST__BASE_URI: "https://data.example.com"
+  #   LAKEKEEPER__OPENID_PROVIDER_URI: "https://my-oidc-provider.com"
+  #   LAKEKEEPER__BASE_URI: "https://data.example.com"
 
   # -- if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true"
   safeToEvict: true
@@ -246,7 +246,7 @@ catalog:
     # -- catalog service type
     type: ClusterIP
     # -- catalog service external port
-    externalPort: 8080
+    externalPort: 8181
     # -- catalog service ip of the load balancer service.
     # Only used when `type: LoadBalancer`
     loadBalancerIP: ""
