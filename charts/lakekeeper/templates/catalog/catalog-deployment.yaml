@@ -80,7 +80,7 @@ spec:
             {{- end }}
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: 8181
               protocol: TCP
           {{- if .Values.catalog.command }}
           command:
@@ -96,7 +96,7 @@ spec:
             timeoutSeconds: {{ .Values.catalog.livenessProbe.timeoutSeconds }}
             httpGet:
               path: /health
-              port: 8080
+              port: 8181
           {{- end }}
           {{- if .Values.catalog.readinessProbe.enabled }}
           readinessProbe:
@@ -106,7 +106,7 @@ spec:
             timeoutSeconds: {{ .Values.catalog.readinessProbe.timeoutSeconds }}
             httpGet:
               path: /health
-              port: 8080
+              port: 8181
           {{- end }}        
           resources:
             {{- toYaml .Values.catalog.resources | nindent 12 }}
