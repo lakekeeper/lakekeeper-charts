@@ -17,7 +17,7 @@ spec:
     {{- toYaml .Values.catalog.service.sessionAffinityConfig | nindent 4 }}
   {{- end }}
   ports:
-    - port: {{ .Values.catalog.service.externalPort | default 8080 }}
+    - port: {{ .Values.catalog.service.externalPort | default 8181 }}
       targetPort: http
       protocol: TCP
       {{- if and (eq .Values.catalog.service.type "NodePort") (.Values.catalog.service.nodePort.http) }}

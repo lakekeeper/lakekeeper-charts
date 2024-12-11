@@ -1,0 +1,1188 @@
+---
+# Source: lakekeeper/charts/postgresql/templates/primary/networkpolicy.yaml
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: release-name-postgresql
+  namespace: "cth-lakekeeper"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 17.2.0
+    helm.sh/chart: postgresql-16.2.5
+    app.kubernetes.io/component: primary
+spec:
+  podSelector:
+    matchLabels:
+      app.kubernetes.io/instance: release-name
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/component: primary
+  policyTypes:
+    - Ingress
+    - Egress
+  egress:
+    - {}
+  ingress:
+    - ports:
+        - port: 5432
+---
+# Source: lakekeeper/charts/postgresql/templates/primary/pdb.yaml
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: release-name-postgresql
+  namespace: "cth-lakekeeper"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 17.2.0
+    helm.sh/chart: postgresql-16.2.5
+    app.kubernetes.io/component: primary
+spec:
+  maxUnavailable: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: release-name
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/component: primary
+---
+# Source: lakekeeper/charts/openfga/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: release-name-openfga
+  labels:
+    helm.sh/chart: openfga-0.2.18
+    app.kubernetes.io/name: openfga
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "v1.8.1"
+    app.kubernetes.io/managed-by: Helm
+---
+# Source: lakekeeper/charts/postgresql/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: release-name-postgresql
+  namespace: "cth-lakekeeper"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 17.2.0
+    helm.sh/chart: postgresql-16.2.5
+automountServiceAccountToken: false
+---
+# Source: lakekeeper/templates/serviceaccount.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: release-name-lakekeeper
+  labels:
+    helm.sh/chart: lakekeeper-0.2.0
+    app.kubernetes.io/name: lakekeeper
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/managed-by: Helm
+automountServiceAccountToken: true
+---
+# Source: lakekeeper/charts/openfga/charts/postgresql/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: lakekeeper-openfga-pg
+  namespace: "cth-lakekeeper"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 15.4.0
+    helm.sh/chart: postgresql-12.12.10
+type: Opaque
+data:
+  postgres-password: "U2tvQ0kydGg1eQ=="
+  # We don't auto-generate LDAP password when it's not provided as we do for other passwords
+---
+# Source: lakekeeper/charts/openfga/charts/postgresql/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: lakekeeper-openfga-pg-svcbind-postgres
+  namespace: "cth-lakekeeper"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 15.4.0
+    helm.sh/chart: postgresql-12.12.10
+type: servicebinding.io/postgresql
+data:
+  provider: "Yml0bmFtaQ=="
+  type: "cG9zdGdyZXNxbA=="
+  host: "bGFrZWtlZXBlci1vcGVuZmdhLXBn"
+  port: "NTQzMg=="
+  username: "cG9zdGdyZXM="
+  database: "cG9zdGdyZXM="
+  password: "U2tvQ0kydGg1eQ=="
+  uri: "cG9zdGdyZXNxbDovL3Bvc3RncmVzOlNrb0NJMnRoNXlAbGFrZWtlZXBlci1vcGVuZmdhLXBnOjU0MzIvcG9zdGdyZXM="
+---
+# Source: lakekeeper/charts/postgresql/templates/secrets.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: release-name-postgresql
+  namespace: "cth-lakekeeper"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 17.2.0
+    helm.sh/chart: postgresql-16.2.5
+type: Opaque
+data:
+  postgres-password: "V1NtdHVhVGhGSQ=="
+  password: "V3VEbmptUVA5Tw=="
+  # We don't auto-generate LDAP password when it's not provided as we do for other passwords
+---
+# Source: lakekeeper/templates/config/db-encryption-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: release-name-lakekeeper-postgres-encryption
+  annotations:
+    helm.sh/resource-policy: "keep"
+type: Opaque
+data:
+  encryptionKey: "b0NvY21wRzZra3lPMHBCajVUb3poZ3BwZFc5TGcyZHBqT240d3pNag=="
+---
+# Source: lakekeeper/templates/config/openfga-apikey-secret.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: release-name-lakekeeper-openfga-apikey
+  labels:
+    helm.sh/chart: lakekeeper-0.2.0
+    app.kubernetes.io/name: lakekeeper
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/managed-by: Helm
+type: Opaque
+data:
+  # retrieve the secret data using lookup function and when not exists, return an empty dictionary / map as result
+  # set $jwtSecret to existing secret data or generate a random one when not exists
+  api-key: "STJLc2RYTXc0MnM3YnRaRk54UXR4QW9HekNMYk9jc04="
+  debug: release-name-lakekeeper-openfga-apikey
+---
+# Source: lakekeeper/templates/config/secret-config-envs.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: release-name-lakekeeper-config-envs
+  labels:
+    helm.sh/chart: lakekeeper-0.2.0
+    app.kubernetes.io/name: lakekeeper
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/managed-by: Helm
+data:
+  # Database Configs
+  ICEBERG_REST__PG_HOST_R: "cmVsZWFzZS1uYW1lLXBvc3RncmVzcWwuY3RoLWxha2VrZWVwZXIuc3ZjLmNsdXN0ZXIubG9jYWw="
+  ICEBERG_REST__PG_HOST_W: "cmVsZWFzZS1uYW1lLXBvc3RncmVzcWwuY3RoLWxha2VrZWVwZXIuc3ZjLmNsdXN0ZXIubG9jYWw="
+  ICEBERG_REST__PG_PORT: "NTQzMg=="
+  ICEBERG_REST__PG_DATABASE: "Y2F0YWxvZw=="
+
+  # OPENID Auth Configs
+
+  # UI Auth configs
+
+  # Kubernetes Auth Configs
+  LAKEKEEPER__ENABLE_KUBERNETES_AUTHENTICATION: "dHJ1ZQ=="
+
+  ICEBERG_REST__BASE_URI: "aHR0cDovL3JlbGVhc2UtbmFtZS1sYWtla2VlcGVyLmN0aC1sYWtla2VlcGVyLnN2Yy5jbHVzdGVyLmxvY2FsOjgxODE="
+
+  # Secret store configs
+  ICEBERG_REST__SECRET_BACKEND: "UG9zdGdyZXM="
+  # ICEBERG_REST__PG_ENCRYPTION_KEY is mounted as secret
+
+  # Authorization configs
+  LAKEKEEPER__AUTHZ_BACKEND: "YWxsb3dhbGw="
+
+  # User Configs
+---
+# Source: lakekeeper/templates/serviceaccount.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cth-lakekeeper:release-name-lakekeeper-token-review
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:auth-delegator
+subjects:
+- kind: ServiceAccount
+  name: release-name-lakekeeper
+  namespace: cth-lakekeeper
+---
+# Source: lakekeeper/charts/openfga/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: release-name-openfga-job-status-reader
+rules:
+- apiGroups:
+  - batch
+  resources:
+  - jobs
+  verbs:
+  - get
+  - list
+---
+# Source: lakekeeper/charts/openfga/templates/rbac.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: release-name-openfga-job-status-reader
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: release-name-openfga-job-status-reader
+subjects:
+- kind: ServiceAccount
+  name: release-name-openfga
+---
+# Source: lakekeeper/charts/openfga/charts/postgresql/templates/primary/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: lakekeeper-openfga-pg-hl
+  namespace: "cth-lakekeeper"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 15.4.0
+    helm.sh/chart: postgresql-12.12.10
+    app.kubernetes.io/component: primary
+  annotations:
+    # Use this annotation in addition to the actual publishNotReadyAddresses
+    # field below because the annotation will stop being respected soon but the
+    # field is broken in some versions of Kubernetes:
+    # https://github.com/kubernetes/kubernetes/issues/58662
+    service.alpha.kubernetes.io/tolerate-unready-endpoints: "true"
+spec:
+  type: ClusterIP
+  clusterIP: None
+  # We want all pods in the StatefulSet to have their addresses published for
+  # the sake of the other Postgresql pods even before they're ready, since they
+  # have to be able to talk to each other in order to become ready.
+  publishNotReadyAddresses: true
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+  selector:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/component: primary
+---
+# Source: lakekeeper/charts/openfga/charts/postgresql/templates/primary/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: lakekeeper-openfga-pg
+  namespace: "cth-lakekeeper"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 15.4.0
+    helm.sh/chart: postgresql-12.12.10
+    app.kubernetes.io/component: primary
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+      nodePort: null
+  selector:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/component: primary
+---
+# Source: lakekeeper/charts/openfga/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: release-name-openfga
+  labels:
+    helm.sh/chart: openfga-0.2.18
+    app.kubernetes.io/name: openfga
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "v1.8.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  type: ClusterIP
+  ports:
+    - name: grpc
+      port: 8081
+      targetPort: grpc
+      protocol: TCP
+    - name: http 
+      port: 8080
+      targetPort: http
+      protocol: TCP
+    - name: playground
+      port: 3000
+      targetPort: playground
+      protocol: TCP
+    - name: metrics
+      port: 2112
+      targetPort: metrics
+      protocol: TCP
+
+  selector:
+    app.kubernetes.io/name: openfga
+    app.kubernetes.io/instance: release-name
+---
+# Source: lakekeeper/charts/postgresql/templates/primary/svc-headless.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: release-name-postgresql-hl
+  namespace: "cth-lakekeeper"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 17.2.0
+    helm.sh/chart: postgresql-16.2.5
+    app.kubernetes.io/component: primary
+  annotations:
+spec:
+  type: ClusterIP
+  clusterIP: None
+  # We want all pods in the StatefulSet to have their addresses published for
+  # the sake of the other Postgresql pods even before they're ready, since they
+  # have to be able to talk to each other in order to become ready.
+  publishNotReadyAddresses: true
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+  selector:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/component: primary
+---
+# Source: lakekeeper/charts/postgresql/templates/primary/svc.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: release-name-postgresql
+  namespace: "cth-lakekeeper"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 17.2.0
+    helm.sh/chart: postgresql-16.2.5
+    app.kubernetes.io/component: primary
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - name: tcp-postgresql
+      port: 5432
+      targetPort: tcp-postgresql
+      nodePort: null
+  selector:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/component: primary
+---
+# Source: lakekeeper/templates/catalog/catalog-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: release-name-lakekeeper
+  labels:
+    helm.sh/chart: lakekeeper-0.2.0
+    app.kubernetes.io/name: lakekeeper
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/managed-by: Helm
+    component: catalog
+spec:
+  type: ClusterIP
+  sessionAffinity: None
+  ports:
+    - port: 8181
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app.kubernetes.io/name: lakekeeper
+    app.kubernetes.io/instance: release-name
+    component: catalog
+---
+# Source: lakekeeper/charts/openfga/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: release-name-openfga
+  labels:
+    helm.sh/chart: openfga-0.2.18
+    app.kubernetes.io/name: openfga
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "v1.8.1"
+    app.kubernetes.io/managed-by: Helm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: openfga
+      app.kubernetes.io/instance: release-name
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: /metrics
+        prometheus.io/port: "2112"
+      labels:
+        app.kubernetes.io/name: openfga
+        app.kubernetes.io/instance: release-name
+    spec:
+      serviceAccountName: release-name-openfga
+      securityContext:
+        {}
+      
+      initContainers:
+        - name: wait-for-migration
+          securityContext:
+            {}
+          image: "groundnuty/k8s-wait-for:v2.0"
+          imagePullPolicy: IfNotPresent
+          args: ["job-wr", 'release-name-openfga-migrate']
+          resources:
+            {}
+      containers:
+        - name: openfga
+          securityContext:
+            {}
+          image: "openfga/openfga:v1.8.1"
+          imagePullPolicy: Always
+          args: ["run"]
+          ports:
+            - name: grpc
+              containerPort: 8081
+
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+
+            - name: profiler
+              containerPort: 3001
+              protocol: TCP
+
+            - name: playground
+              containerPort: 3000
+              protocol: TCP
+            - name: metrics
+              containerPort: 2112
+              protocol: TCP
+
+          env:
+            - name: OPENFGA_DATASTORE_ENGINE
+              value: "postgres"
+            - name: OPENFGA_DATASTORE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: "lakekeeper-openfga-pg-svcbind-postgres"
+                  key: "uri"
+            - name: OPENFGA_GRPC_ADDR
+              value: "0.0.0.0:8081"
+            - name: OPENFGA_HTTP_ENABLED
+              value: "true"
+            - name: OPENFGA_HTTP_ADDR
+              value: "0.0.0.0:8080"
+            - name: OPENFGA_HTTP_CORS_ALLOWED_ORIGINS
+              value: "*"
+            - name: OPENFGA_HTTP_CORS_ALLOWED_HEADERS
+              value: "*"
+
+            - name: OPENFGA_PLAYGROUND_ENABLED
+              value: "true"
+            - name: OPENFGA_PLAYGROUND_PORT
+              value: "3000"
+            - name: OPENFGA_LOG_FORMAT
+              value: json
+            - name: OPENFGA_LOG_LEVEL
+              value: info
+            - name: OPENFGA_LOG_TIMESTAMP_FORMAT
+              value: Unix
+            - name: OPENFGA_REQUEST_DURATION_DATASTORE_QUERY_COUNT_BUCKETS
+              value: "50,200"
+            - name: OPENFGA_METRICS_ENABLED
+              value: "true"
+            - name: OPENFGA_METRICS_ADDR
+              value: "0.0.0.0:2112"
+          readinessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command: ["grpc_health_probe", "-addr=0.0.0.0:8081"]
+          livenessProbe:
+            failureThreshold: 12
+            initialDelaySeconds: 60
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            grpc:
+              port: 8081
+
+          resources:
+            {}
+---
+# Source: lakekeeper/templates/catalog/catalog-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: release-name-lakekeeper
+  labels:
+    helm.sh/chart: lakekeeper-0.2.0
+    app.kubernetes.io/name: lakekeeper
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/managed-by: Helm
+    component: catalog
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: lakekeeper
+      app.kubernetes.io/instance: release-name
+      component: catalog
+  template:
+    metadata:
+      annotations:
+        checksum/secret-config-envs: ba7bc1a51279b7d199519c90ac4430b87b6e8dc56acce2e768ed66bcec05b8d8
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        helm.sh/chart: lakekeeper-0.2.0
+        app.kubernetes.io/name: lakekeeper
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/version: "0.5.0"
+        app.kubernetes.io/managed-by: Helm
+        component: catalog
+    spec:
+      restartPolicy: Always
+      serviceAccountName: release-name-lakekeeper
+      initContainers:        
+        - name: check-db  
+          image: quay.io/lakekeeper/catalog:v0.5.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 65532
+            runAsGroup: 65534
+          resources:
+            {}
+          envFrom:    
+            - secretRef:
+                name: release-name-lakekeeper-config-envs
+          env:    
+            - name: ICEBERG_REST__PG_USER
+              value: "catalog"
+            - name: ICEBERG_REST__PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: release-name-postgresql
+                  key: password
+            - name: ICEBERG_REST__PG_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: release-name-lakekeeper-postgres-encryption
+                  key: encryptionKey
+            
+            - name: ICEBERG_REST__PLACEHOLDER
+              value: "placeholder"
+          args:
+            - wait-for-db
+            - -dm
+            - -r
+            - "100"
+            - -b
+            - "2"
+      containers:
+        - name: lakekeeper          
+          image: quay.io/lakekeeper/catalog:v0.5.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 65532
+            runAsGroup: 65534
+          env:            
+            - name: ICEBERG_REST__PG_USER
+              value: "catalog"
+            - name: ICEBERG_REST__PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: release-name-postgresql
+                  key: password
+            - name: ICEBERG_REST__PG_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: release-name-lakekeeper-postgres-encryption
+                  key: encryptionKey
+            
+            - name: ICEBERG_REST__PLACEHOLDER
+              value: "placeholder"
+          envFrom:            
+            - secretRef:
+                name: release-name-lakekeeper-config-envs
+          ports:
+            - name: http
+              containerPort: 8181
+              protocol: TCP
+          args:
+            - serve
+          livenessProbe:
+            initialDelaySeconds: 1
+            periodSeconds: 5
+            failureThreshold: 5
+            timeoutSeconds: 5
+            httpGet:
+              path: /health
+              port: 8181
+          readinessProbe:
+            initialDelaySeconds: 1
+            periodSeconds: 5
+            failureThreshold: 5
+            timeoutSeconds: 5
+            httpGet:
+              path: /health
+              port: 8181        
+          resources:
+            {}
+---
+# Source: lakekeeper/charts/openfga/charts/postgresql/templates/primary/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: lakekeeper-openfga-pg
+  namespace: "cth-lakekeeper"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 15.4.0
+    helm.sh/chart: postgresql-12.12.10
+    app.kubernetes.io/component: primary
+spec:
+  replicas: 1
+  serviceName: lakekeeper-openfga-pg-hl
+  updateStrategy:
+    rollingUpdate: {}
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: release-name
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/component: primary
+  template:
+    metadata:
+      name: lakekeeper-openfga-pg
+      labels:
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: postgresql
+        app.kubernetes.io/version: 15.4.0
+        helm.sh/chart: postgresql-12.12.10
+        app.kubernetes.io/component: primary
+    spec:
+      serviceAccountName: default
+      
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: release-name
+                    app.kubernetes.io/name: postgresql
+                    app.kubernetes.io/component: primary
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      securityContext:
+        fsGroup: 1001
+      hostNetwork: false
+      hostIPC: false
+      containers:
+        - name: postgresql
+          image: docker.io/bitnami/postgresql:15.4.0-debian-11-r45
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            runAsGroup: 0
+            runAsNonRoot: true
+            runAsUser: 1001
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: POSTGRESQL_PORT_NUMBER
+              value: "5432"
+            - name: POSTGRESQL_VOLUME_DIR
+              value: "/bitnami/postgresql"
+            - name: PGDATA
+              value: "/bitnami/postgresql/data"
+            # Authentication
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lakekeeper-openfga-pg
+                  key: postgres-password
+            # Replication
+            # Initdb
+            # Standby
+            # LDAP
+            - name: POSTGRESQL_ENABLE_LDAP
+              value: "no"
+            # TLS
+            - name: POSTGRESQL_ENABLE_TLS
+              value: "no"
+            # Audit
+            - name: POSTGRESQL_LOG_HOSTNAME
+              value: "false"
+            - name: POSTGRESQL_LOG_CONNECTIONS
+              value: "false"
+            - name: POSTGRESQL_LOG_DISCONNECTIONS
+              value: "false"
+            - name: POSTGRESQL_PGAUDIT_LOG_CATALOG
+              value: "off"
+            # Others
+            - name: POSTGRESQL_CLIENT_MIN_MESSAGES
+              value: "error"
+            - name: POSTGRESQL_SHARED_PRELOAD_LIBRARIES
+              value: "pgaudit"
+          ports:
+            - name: tcp-postgresql
+              containerPort: 5432
+          livenessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
+          readinessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - -e
+                - |
+                  exec pg_isready -U "postgres" -h 127.0.0.1 -p 5432
+                  [ -f /opt/bitnami/postgresql/tmp/.initialized ] || [ -f /bitnami/postgresql/.initialized ]
+          resources:
+            limits: {}
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          volumeMounts:
+            - name: dshm
+              mountPath: /dev/shm
+            - name: data
+              mountPath: /bitnami/postgresql
+      volumes:
+        - name: dshm
+          emptyDir:
+            medium: Memory
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"
+---
+# Source: lakekeeper/charts/postgresql/templates/primary/statefulset.yaml
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: release-name-postgresql
+  namespace: "cth-lakekeeper"
+  labels:
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: postgresql
+    app.kubernetes.io/version: 17.2.0
+    helm.sh/chart: postgresql-16.2.5
+    app.kubernetes.io/component: primary
+spec:
+  replicas: 1
+  serviceName: release-name-postgresql-hl
+  updateStrategy:
+    rollingUpdate: {}
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: release-name
+      app.kubernetes.io/name: postgresql
+      app.kubernetes.io/component: primary
+  template:
+    metadata:
+      name: release-name-postgresql
+      labels:
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: postgresql
+        app.kubernetes.io/version: 17.2.0
+        helm.sh/chart: postgresql-16.2.5
+        app.kubernetes.io/component: primary
+    spec:
+      serviceAccountName: release-name-postgresql
+      
+      automountServiceAccountToken: false
+      affinity:
+        podAffinity:
+          
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - podAffinityTerm:
+                labelSelector:
+                  matchLabels:
+                    app.kubernetes.io/instance: release-name
+                    app.kubernetes.io/name: postgresql
+                    app.kubernetes.io/component: primary
+                topologyKey: kubernetes.io/hostname
+              weight: 1
+        nodeAffinity:
+          
+      securityContext:
+        fsGroup: 1001
+        fsGroupChangePolicy: Always
+        supplementalGroups: []
+        sysctls: []
+      hostNetwork: false
+      hostIPC: false
+      containers:
+        - name: postgresql
+          image: docker.io/bitnami/postgresql:17.2.0-debian-12-r2
+          imagePullPolicy: "IfNotPresent"
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+              - ALL
+            privileged: false
+            readOnlyRootFilesystem: true
+            runAsGroup: 1001
+            runAsNonRoot: true
+            runAsUser: 1001
+            seLinuxOptions: {}
+            seccompProfile:
+              type: RuntimeDefault
+          env:
+            - name: BITNAMI_DEBUG
+              value: "false"
+            - name: POSTGRESQL_PORT_NUMBER
+              value: "5432"
+            - name: POSTGRESQL_VOLUME_DIR
+              value: "/bitnami/postgresql"
+            - name: PGDATA
+              value: "/bitnami/postgresql/data"
+            # Authentication
+            - name: POSTGRES_USER
+              value: "catalog"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: release-name-postgresql
+                  key: password
+            - name: POSTGRES_POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: release-name-postgresql
+                  key: postgres-password
+            - name: POSTGRES_DATABASE
+              value: "catalog"
+            # LDAP
+            - name: POSTGRESQL_ENABLE_LDAP
+              value: "no"
+            # TLS
+            - name: POSTGRESQL_ENABLE_TLS
+              value: "no"
+            # Audit
+            - name: POSTGRESQL_LOG_HOSTNAME
+              value: "false"
+            - name: POSTGRESQL_LOG_CONNECTIONS
+              value: "false"
+            - name: POSTGRESQL_LOG_DISCONNECTIONS
+              value: "false"
+            - name: POSTGRESQL_PGAUDIT_LOG_CATALOG
+              value: "off"
+            # Others
+            - name: POSTGRESQL_CLIENT_MIN_MESSAGES
+              value: "error"
+            - name: POSTGRESQL_SHARED_PRELOAD_LIBRARIES
+              value: "pgaudit"
+          ports:
+            - name: tcp-postgresql
+              containerPort: 5432
+          livenessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - exec pg_isready -U "catalog" -d "dbname=catalog" -h 127.0.0.1 -p 5432
+          readinessProbe:
+            failureThreshold: 6
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 5
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - -e
+                - |
+                  exec pg_isready -U "catalog" -d "dbname=catalog" -h 127.0.0.1 -p 5432
+                  [ -f /opt/bitnami/postgresql/tmp/.initialized ] || [ -f /bitnami/postgresql/.initialized ]
+          resources:
+            limits:
+              cpu: 150m
+              ephemeral-storage: 2Gi
+              memory: 192Mi
+            requests:
+              cpu: 100m
+              ephemeral-storage: 50Mi
+              memory: 128Mi
+          volumeMounts:
+            - name: empty-dir
+              mountPath: /tmp
+              subPath: tmp-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/postgresql/conf
+              subPath: app-conf-dir
+            - name: empty-dir
+              mountPath: /opt/bitnami/postgresql/tmp
+              subPath: app-tmp-dir
+            - name: dshm
+              mountPath: /dev/shm
+            - name: data
+              mountPath: /bitnami/postgresql
+      volumes:
+        - name: empty-dir
+          emptyDir: {}
+        - name: dshm
+          emptyDir:
+            medium: Memory
+  volumeClaimTemplates:
+    - apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        name: data
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "8Gi"
+---
+# Source: lakekeeper/templates/db-migration.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: release-name-lakekeeper-db-migration-1
+  labels:
+    helm.sh/chart: lakekeeper-0.2.0
+    app.kubernetes.io/name: lakekeeper
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "0.5.0"
+    app.kubernetes.io/managed-by: Helm
+    component: db-migration
+  annotations:
+    helm-hook-enabled: "false"
+spec:
+  template:
+    metadata:
+      name: "release-name-lakekeeper-migration"
+      annotations:
+        checksum/secret-config-envs: ba7bc1a51279b7d199519c90ac4430b87b6e8dc56acce2e768ed66bcec05b8d8
+      labels:
+        helm.sh/chart: lakekeeper-0.2.0
+        app.kubernetes.io/name: lakekeeper
+        app.kubernetes.io/instance: release-name
+        app.kubernetes.io/version: "0.5.0"
+        app.kubernetes.io/managed-by: Helm
+        component: db-migration
+    spec:
+      restartPolicy: OnFailure
+      serviceAccountName: release-name-lakekeeper
+      initContainers:        
+        - name: check-db  
+          image: quay.io/lakekeeper/catalog:v0.5.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 65532
+            runAsGroup: 65534
+          resources:
+            {}
+          envFrom:    
+            - secretRef:
+                name: release-name-lakekeeper-config-envs
+          env:    
+            - name: ICEBERG_REST__PG_USER
+              value: "catalog"
+            - name: ICEBERG_REST__PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: release-name-postgresql
+                  key: password
+            - name: ICEBERG_REST__PG_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: release-name-lakekeeper-postgres-encryption
+                  key: encryptionKey
+            
+            - name: ICEBERG_REST__PLACEHOLDER
+              value: "placeholder"
+          args:
+            - wait-for-db
+            - -d
+            - -r
+            - "100"
+            - -b
+            - "2"
+      containers:
+        - name: migration          
+          image: quay.io/lakekeeper/catalog:v0.5.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 65532
+            runAsGroup: 65534
+          env:            
+            - name: ICEBERG_REST__PG_USER
+              value: "catalog"
+            - name: ICEBERG_REST__PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: release-name-postgresql
+                  key: password
+            - name: ICEBERG_REST__PG_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: release-name-lakekeeper-postgres-encryption
+                  key: encryptionKey
+            
+            - name: ICEBERG_REST__PLACEHOLDER
+              value: "placeholder"
+          envFrom:            
+            - secretRef:
+                name: release-name-lakekeeper-config-envs
+          args:
+            - migrate
+          resources:
+            {}
+---
+# Source: lakekeeper/charts/openfga/templates/tests/test-connection.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "release-name-openfga-test-connection"
+  labels:
+    helm.sh/chart: openfga-0.2.18
+    app.kubernetes.io/name: openfga
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "v1.8.1"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: grpc-health-probe
+      image: "openfga/openfga:v1.8.1"
+      imagePullPolicy: Always
+      command: ["grpc_health_probe", '-addr=release-name-openfga:8081']
+  restartPolicy: Never
+---
+# Source: lakekeeper/charts/openfga/templates/job.yaml
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: release-name-openfga-migrate
+  labels:
+    helm.sh/chart: openfga-0.2.18
+    app.kubernetes.io/name: openfga
+    app.kubernetes.io/instance: release-name
+    app.kubernetes.io/version: "v1.8.1"
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    helm.sh/hook: post-install, post-upgrade, post-rollback, post-delete
+    helm.sh/hook-delete-policy: before-hook-creation
+    helm.sh/hook-weight: "-5"
+spec:
+  template:
+    metadata:
+      annotations:
+        helm.sh/hook: post-install, post-upgrade, post-rollback, post-delete
+        helm.sh/hook-delete-policy: before-hook-creation
+        helm.sh/hook-weight: "-5"
+    spec:
+      serviceAccountName: release-name-openfga
+      containers:
+        - name: migrate-database
+          securityContext:
+            {}
+          image: "openfga/openfga:v1.8.1"
+          args: ["migrate"]
+          env:
+            - name: OPENFGA_DATASTORE_ENGINE
+              value: "postgres"
+            - name: OPENFGA_DATASTORE_URI
+              valueFrom:
+                secretKeyRef:
+                  name: "lakekeeper-openfga-pg-svcbind-postgres"
+                  key: "uri"
+
+          resources:
+            {}
+      restartPolicy: Never
+  backoffLimit: 1

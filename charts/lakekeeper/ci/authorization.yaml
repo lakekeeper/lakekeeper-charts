@@ -1,0 +1,7 @@
+helmWait: true
+internalOpenFGA: true
+authn:
+  k8s:
+    enabled: true
+authz:
+  backend: "openfga"
