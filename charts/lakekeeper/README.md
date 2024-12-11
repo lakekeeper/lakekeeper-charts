@@ -1,10 +1,10 @@
 # lakekeeper
 
-![Version: 0.1.5](https://img.shields.io/badge/Version-0.1.5-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.4.3](https://img.shields.io/badge/AppVersion-0.4.3-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.5.0](https://img.shields.io/badge/AppVersion-0.5.0-informational?style=flat-square)
 
 Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
-**Homepage:** <https://github.com/hansetag/iceberg-catalog>
+**Homepage:** <https://github.com/lakekeeper/lakekeeper>
 
 ## Maintainers
 
@@ -17,21 +17,36 @@ Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
 | Repository | Name | Version |
 |------------|------|---------|
-| oci://registry-1.docker.io/bitnamicharts | postgresql | 15.5.38 |
+| https://openfga.github.io/helm-charts | openfga(openfga) | 0.2.18 |
+| oci://registry-1.docker.io/bitnamicharts | postgresql | 16.3.0 |
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| auth.oauth2.client_id | string | `""` | The client id of the OIDC App of the catalog. The aud (audience) claim of the JWT token must match this id. |
-| auth.oauth2.provider_uri | string | `""` | If set, access to rest endpoints is secured via an external OIDC-capable IdP. The IdP must expose `{provider_url}/.well-known/openid-configuration` and the openid-configuration needs to have the jwks_uri and issuer defined. For keycloak set: https://keycloak.local/realms/test For Entra-ID set: https://login.microsoftonline.com/{your-tenant-id}/v2.0 |
+| auth.k8s.createClusterRoleBinding | bool | `true` | If true and `auth.k8s.enabled` is true, a ClusterRoleBinding is created that allows lakekeeper to introspect tokens. |
+| auth.k8s.enabled | bool | `true` | If true, kubernetes service accounts can authenticate to Lakekeeper. This option is compatible with `auth.oauth2` - multiple IdPs (OIDC and Kubernetes) can be enabled simultaneously. |
+| auth.oauth2 | object | `{"additionalIssuers":[],"audience":"","providerUri":"","ui":{"clientID":"","resource":"","scopes":""}}` | Configuration for the authentication of the catalog. If `auth.oauth2.providerUri` is not set and `auth.kubernetes.enabled` is false, authentication is disabled. |
+| auth.oauth2.additionalIssuers | list | `[]` | Additional allow OIDC issuers. The issuer defined in the issuer field of the ``.well-known/openid-configuration`` is always trusted. `additionalIssuers` has no effect if `providerUri` is not set. |
+| auth.oauth2.audience | string | `""` | The expected Audience of the OIDC App of lakekeeper. The aud (audience) claim of the JWT token must match this value. Typically this is the Client ID. |
+| auth.oauth2.providerUri | string | `""` | If set, access to rest endpoints is secured via an external OIDC-capable IdP. The IdP must expose `{provider_url}/.well-known/openid-configuration` and the openid-configuration needs to have the jwks_uri and issuer defined. For keycloak set: https://keycloak.local/realms/test For Entra-ID set: https://login.microsoftonline.com/{your-tenant-id}/v2.0 |
+| auth.oauth2.ui.clientID | string | `""` | Client ID used for the Authorization Code Flow of the UI. Required if Authentication is enabled. |
+| auth.oauth2.ui.resource | string | `""` | Resource to request |
+| auth.oauth2.ui.scopes | string | `""` | Space separated scopes to request |
+| authz.backend | string | `"allowall"` | type of the authorization backend. Available values: "openfga", "allowall" Authorization must not change after bootstrapping! If type "openfga" is chose, consider setting `internalOpenFGA` to true to deploy an OpenFGA instance as a subchart. |
+| authz.openfga.apiKey | string | `""` | API Key used to authenticate with OpenFGA. This is used for pre-shared key authentication. If `clientId` is set, the `apiKey` is ignored. |
+| authz.openfga.clientId | string | `""` | Client ID used to authenticate with OpenFGA. This is used for OIDC authentication. |
+| authz.openfga.clientSecret | string | `""` | Client Secret used to authenticate with OpenFGA. This is used for OIDC authentication. |
+| authz.openfga.endpoint | string | `""` | OpenFGA Endpoint (gRPC) Set automatically if `internalOpenFGA` is true. |
+| authz.openfga.store | string | `""` | Name of the Store to use in OpenFGA Defaults to "lakekeeper" |
+| authz.openfga.tokenEndpoint | string | `""` | OIDC token endpoint used to authenticate with OpenFGA. Used when exchanging client credentials for an access token for OpenFGA. Required if Client ID is set. |
 | catalog.affinity | object | `{}` | affinity for the catalog Pods |
 | catalog.annotations | object | `{}` | Annotations for the catalog Deployment |
 | catalog.autoscaling.enabled | bool | `false` | if the HorizontalPodAutoscaler is enabled for the catalog Pods |
 | catalog.autoscaling.maxReplicas | int | `2` | maximum number of replicas for the catalog Pods |
 | catalog.autoscaling.metrics | list | `[]` | metrics for the HorizontalPodAutoscaler |
 | catalog.command | list | `[]` | Overwrite the command of the catalog container. If not set, the default entrypoint of the image is used |
-| catalog.config | object | `{}` | Configuration options for the catalog. Please check the documentation for the available options. Configuration items are mounted as environment variables. ICEBERG_REST__BASE_URI is required if ingress is disabled - otherwise the catalog will only work inside the cluster. Specify the external URL of the catalog as ICEBERG_REST__BASE_URI |
+| catalog.config | object | `{}` | Configuration options for the catalog. Please check the documentation for the available options. https://docs.lakekeeper.io/docs/nightly/configuration/ Configuration items are mounted as environment variables. ICEBERG_REST__BASE_URI is required if ingress is disabled - otherwise the catalog will only work inside the cluster. |
 | catalog.containerSecurityContext | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core">podsecuritycontext-v1-core</a></html> | `{}` |  security context for the catalog container. `runAsUser` is ignored, please set with `catalog.image.uid`, `runAsGroup` is ignored, please set with `catalog.image.gid` |
 | catalog.dbMigrations.annotations | object | `{}` | Annotations for the migration job |
 | catalog.dbMigrations.enabled | bool | `true` | if the db-migrations Job is created. if `false`, you have to MANUALLY run `airflow db upgrade` when required |
@@ -49,7 +64,7 @@ Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 | catalog.image.gid | int | `65534` | 65534 = nobody of google container distroless |
 | catalog.image.pullPolicy | string | `"IfNotPresent"` | The image pull policy |
 | catalog.image.repository | string | `"quay.io/lakekeeper/catalog"` | The image repository to pull from |
-| catalog.image.tag | string | `"v0.4.3"` | The image tag to pull |
+| catalog.image.tag | string | `"v0.5.0"` | The image tag to pull |
 | catalog.image.uid | int | `65532` | 65532 = nonroot of google container distroless |
 | catalog.ingress.annotations | object | `{}` | annotations for the catalog Ingress |
 | catalog.ingress.enabled | bool | `false` | if we should deploy Ingress resources |
@@ -82,7 +97,7 @@ Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 | catalog.resources | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html> | `{}` |  resources for the catalog container of the catalog pod |
 | catalog.safeToEvict | bool | `true` | if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true" |
 | catalog.service.annotations | object | `{}` | catalog service annotations |
-| catalog.service.externalPort | int | `8080` | catalog service external port |
+| catalog.service.externalPort | int | `8181` | catalog service external port |
 | catalog.service.loadBalancerIP | string | `""` | catalog service ip of the load balancer service. Only used when `type: LoadBalancer` |
 | catalog.service.loadBalancerSourceRanges | list | `[]` | Source ip ranges for the catalog services. Only used when `type: LoadBalancer` |
 | catalog.service.nodePort | object | `{"http":""}` | catalog service node port Only used when `type: NodePort` |
@@ -107,14 +122,23 @@ Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 | fullnameOverride | string | `<release-name>-<chart-name>` | Override the fully qualified chart name. |
 | helmWait | bool | `true` | If true, remove the helm.sh/hook for jobs that need to run before the catalog is started. If this is false, helm install --wait will not work. |
 | imagePullSecrets | list of <html><a href="https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/">image pull secrets</a></html> | `[]` |  pull secrets for private repositories |
+| internalOpenFGA | bool | `false` | if an OpenFGA instance is deployed as a subchart. When setting `internalOpenFGA` to true, the `openfga` subchart is deployed. |
 | nameOverride | string | `<chart-name>` | Override the name of the chart. |
+| openfga.datastore.engine | string | `"postgres"` |  |
+| openfga.datastore.migrationType | string | `"job"` |  |
+| openfga.datastore.uriSecret | string | `"lakekeeper-openfga-pg-svcbind-postgres"` |  |
+| openfga.fullnameOverride | string | `"lakekeeper-openfga"` |  |
+| openfga.postgresql.enabled | bool | `true` |  |
+| openfga.postgresql.fullnameOverride | string | `"lakekeeper-openfga-pg"` |  |
+| openfga.postgresql.serviceBindings.enabled | bool | `true` |  |
+| openfga.replicaCount | int | `1` |  |
 | postgresql.auth.database | string | `"catalog"` | the postgres database to create |
 | postgresql.auth.existingSecret | string | `""` | the name of a pre-created secret containing the postgres password |
 | postgresql.auth.password | string | `""` | the postgres user's password. if not specified, a random password is generated and stored in a secret |
 | postgresql.auth.secretKeys.adminPasswordKey | string | `"postgres-password"` | the key within `postgresql.existingSecret` containing the admin (postgres) password string |
 | postgresql.auth.secretKeys.userPasswordKey | string | `"password"` | the key within `postgresql.existingSecret` containing the user password string |
 | postgresql.auth.username | string | `"catalog"` | the postgres user to create |
-| postgresql.enabled | bool | `true` | if the `stable/postgresql` chart is used. [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead. set to `false` if using `externalDatabase.*` |
+| postgresql.enabled | bool | `true` | if the `bitnami/postgresql` chart is used. [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead. set to `false` if using `externalDatabase.*` |
 | postgresql.persistence.accessModes | list | `["ReadWriteOnce"]` | the access modes of the PVC |
 | postgresql.persistence.enabled | bool | `true` | if postgres will use Persistent Volume Claims to store data. if false, data will be LOST as postgres Pods restart |
 | postgresql.persistence.size | string | `"5Gi"` | the size of PVC to request |
