@@ -1,6 +1,6 @@
 # lakekeeper
 
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.5.0](https://img.shields.io/badge/AppVersion-0.5.0-informational?style=flat-square)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.5.1](https://img.shields.io/badge/AppVersion-0.5.1-informational?style=flat-square)
 
 Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
@@ -25,7 +25,7 @@ Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | auth.k8s.createClusterRoleBinding | bool | `true` | If true and `auth.k8s.enabled` is true, a ClusterRoleBinding is created that allows lakekeeper to introspect tokens. |
-| auth.k8s.enabled | bool | `true` | If true, kubernetes service accounts can authenticate to Lakekeeper. This option is compatible with `auth.oauth2` - multiple IdPs (OIDC and Kubernetes) can be enabled simultaneously. |
+| auth.k8s.enabled | bool | `false` | If true, kubernetes service accounts can authenticate to Lakekeeper. This option is compatible with `auth.oauth2` - multiple IdPs (OIDC and Kubernetes) can be enabled simultaneously. |
 | auth.oauth2 | object | `{"additionalIssuers":[],"audience":"","providerUri":"","ui":{"clientID":"","resource":"","scopes":""}}` | Configuration for the authentication of the catalog. If `auth.oauth2.providerUri` is not set and `auth.kubernetes.enabled` is false, authentication is disabled. |
 | auth.oauth2.additionalIssuers | list | `[]` | Additional allow OIDC issuers. The issuer defined in the issuer field of the ``.well-known/openid-configuration`` is always trusted. `additionalIssuers` has no effect if `providerUri` is not set. |
 | auth.oauth2.audience | string | `""` | The expected Audience of the OIDC App of lakekeeper. The aud (audience) claim of the JWT token must match this value. Typically this is the Client ID. |
@@ -64,7 +64,7 @@ Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 | catalog.image.gid | int | `65534` | 65534 = nobody of google container distroless |
 | catalog.image.pullPolicy | string | `"IfNotPresent"` | The image pull policy |
 | catalog.image.repository | string | `"quay.io/lakekeeper/catalog"` | The image repository to pull from |
-| catalog.image.tag | string | `"v0.5.0"` | The image tag to pull |
+| catalog.image.tag | string | `"v0.5.1"` | The image tag to pull |
 | catalog.image.uid | int | `65532` | 65532 = nonroot of google container distroless |
 | catalog.ingress.annotations | object | `{}` | annotations for the catalog Ingress |
 | catalog.ingress.enabled | bool | `false` | if we should deploy Ingress resources |
@@ -127,7 +127,7 @@ Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 | openfga.datastore.engine | string | `"postgres"` |  |
 | openfga.datastore.migrationType | string | `"job"` |  |
 | openfga.datastore.uriSecret | string | `"lakekeeper-openfga-pg-svcbind-postgres"` |  |
-| openfga.fullnameOverride | string | `"lakekeeper-openfga"` |  |
+| openfga.migrate.annotations."helm.sh/hook" | string | `"post-install, post-upgrade, post-rollback"` |  |
 | openfga.postgresql.enabled | bool | `true` |  |
 | openfga.postgresql.fullnameOverride | string | `"lakekeeper-openfga-pg"` |  |
 | openfga.postgresql.serviceBindings.enabled | bool | `true` |  |
@@ -139,10 +139,12 @@ Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 | postgresql.auth.secretKeys.userPasswordKey | string | `"password"` | the key within `postgresql.existingSecret` containing the user password string |
 | postgresql.auth.username | string | `"catalog"` | the postgres user to create |
 | postgresql.enabled | bool | `true` | if the `bitnami/postgresql` chart is used. [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead. set to `false` if using `externalDatabase.*` |
+| postgresql.nameOverride | string | `"lakekeeper-pg"` |  |
 | postgresql.persistence.accessModes | list | `["ReadWriteOnce"]` | the access modes of the PVC |
 | postgresql.persistence.enabled | bool | `true` | if postgres will use Persistent Volume Claims to store data. if false, data will be LOST as postgres Pods restart |
 | postgresql.persistence.size | string | `"5Gi"` | the size of PVC to request |
 | postgresql.persistence.storageClass | string | `""` | the StorageClass used by the PVC |
+| postgresql.serviceBindings.enabled | bool | `true` |  |
 | secretBackend.kv2.password | string | `""` | password for authentication consider using a secret for the password |
 | secretBackend.kv2.passwordSecret | string | `""` | the name of a pre-created secret containing the KV2 password |
 | secretBackend.kv2.passwordSecretKey | string | `"password"` | the key within `kv2.passwordSecret` containing the password string |
