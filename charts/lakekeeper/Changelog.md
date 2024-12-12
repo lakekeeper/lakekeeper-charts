@@ -10,9 +10,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Fixed
-`extraEnv` are added twice
+
 
 ### Changed
+
+
+## [0.2.0] - 2024-12-09
+
+### Added
+* `audience`, `additionalIssuers` and `ui` for `auth.oauth2`
+* Kubernetes Authentication (`auth.k8s`) including a ClusterRoleBinding to validate tokens
+* Authorization configuration `authz`
+* Dependency on OpenFGA HelmChart if `internalOpenFGA` is true
+* Bootstrapping Test
+
+### Fixed
+
+### Changed
+* Upgrade Lakekeeper to Version `0.5.1`
+* Upgrade Postgres dependency to `16.2.5`
+* Renamed `auth.oauth2.client_id` to `auth.oauth2.audience`
+* Renamed `auth.oauth2.provider_uri` to `auth.oauth2.providerUri`
 
 
 ## [0.1.5] - 2024-11-13

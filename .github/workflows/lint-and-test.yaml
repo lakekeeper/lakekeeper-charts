@@ -26,6 +26,9 @@ jobs:
         with:
             version: v3.10.1
 
+      - name: Add helm repos
+        run: helm repo add openfga https://openfga.github.io/helm-charts
+  
       - name: Run chart-testing (list-changed)
         id: list-changed
         run: |
