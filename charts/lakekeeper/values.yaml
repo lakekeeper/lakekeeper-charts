@@ -351,6 +351,11 @@ postgresql:
   # set to `false` if using `externalDatabase.*`
   enabled: true
 
+  nameOverride: "lakekeeper-pg"
+
+  serviceBindings:
+    enabled: true
+
   auth:
     # -- the postgres user to create
     username: catalog
@@ -512,8 +517,9 @@ openfga:
   # By default, we use the same number of replicas as the catalog
   replicaCount: *catalog_replicas
 
-  # fullname is used to configure `authz.openfga.endpoint` automatically.
-  fullnameOverride: "lakekeeper-openfga"
+  migrate:
+    annotations:
+      helm.sh/hook: "post-install, post-upgrade, post-rollback"
 
   datastore:
     engine: postgres
@@ -522,7 +528,7 @@ openfga:
 
   postgresql:
     # If not set, postgresql of openfga collides with names of
-    # lakekeeper postgres.
+    # lakekeeper postgres. If changed, also change the `uriSecret` in `datastore`.
     fullnameOverride: lakekeeper-openfga-pg
     enabled: true
 
