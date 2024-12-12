@@ -30,7 +30,7 @@ spec:
               --header 'Content-Type: application/json' \
               --header "Authorization: Bearer $TOKEN" \
               --data '{"accept-terms-of-use": true}' \
-              --write-out "HTTP_CODE:%{http_code}\nRESPONSE_BODY:%{response_body}" --silent --output /dev/null)
+              --write-out "HTTP_CODE:%{http_code}" --silent --output /dev/null)
 
             if [[ "$RESPONSE" == *"HTTP_CODE:204"* ]]; then
               echo "Bootstrapping successful"
