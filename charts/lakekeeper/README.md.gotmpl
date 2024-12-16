@@ -1,0 +1,24 @@
+# Official Lakekeeper Helm-Chart
+{{ template "chart.description" . }}
+
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lakekeeper&color=3f6ec6&labelColor=&logoColor=white)](https://artifacthub.io/packages/helm/lakekeeper/lakekeeper)
+{{ template "chart.versionBadge" . }}{{ template "chart.typeBadge" . }}{{ template "chart.appVersionBadge" . }}
+
+Please check our [Documentation](http://docs.lakekeeper.io) and the [Lakekeeper Repository](https://github.com/lakekeeper/lakekeeper) for more information.
+
+## Installing the Chart
+
+To install the chart with the release name `my-release`:
+
+```bash
+helm repo add lakekeeper https://lakekeeper.github.io/lakekeeper-charts/
+helm install my-lakekeeper lakekeeper/lakekeeper
+```
+
+This chart by default deploys the "postgresql" subchart. This setup is not production ready. Please use an external database for production usecases.
+
+{{ template "chart.requirementsSection" . }}
+
+{{ template "chart.valuesSection" . }}
+
+{{ template "helm-docs.versionFooter" . }}

@@ -121,13 +121,22 @@ Used to discover the Service and Secret name created by the sub-chart.
 The list of `env` catalog Pods
 */}}
 {{- define "iceberg-catalog.env" }}
-{{- /* set ICEBERG_REST__PG_USER */ -}}
 {{- if .Values.postgresql.enabled }}
 - name: ICEBERG_REST__PG_DATABASE_URL_WRITE
   valueFrom:
     secretKeyRef:
       name: {{ include "iceberg-catalog.postgresql.fullname" . }}-svcbind-custom-user
       key: "uri"
+{{- end }}
+{{- /* set ICEBERG_REST__PG_USER */ -}}
+{{- if .Values.externalDatabase.userSecret }}
+- name: ICEBERG_REST__PG_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.externalDatabase.userSecret }}
+      key: {{ .Values.externalDatabase.userSecretKey }}
+{{- else }}
+{{- /* in this case, ICEBERG_REST__PG_USER is set in the `-config-envs` Secret */ -}}
 {{- end }}
 
 {{- /* set ICEBERG_REST__PG_PASSWORD */ -}}

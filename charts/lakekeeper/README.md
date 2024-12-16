@@ -1,17 +1,21 @@
-# lakekeeper
-
-![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.5.1](https://img.shields.io/badge/AppVersion-0.5.1-informational?style=flat-square)
-
+# Official Lakekeeper Helm-Chart
 Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
-**Homepage:** <https://github.com/lakekeeper/lakekeeper>
+[![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lakekeeper&color=3f6ec6&labelColor=&logoColor=white)](https://artifacthub.io/packages/helm/lakekeeper/lakekeeper)
+![Version: 0.2.0](https://img.shields.io/badge/Version-0.2.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.5.1](https://img.shields.io/badge/AppVersion-0.5.1-informational?style=flat-square)
 
-## Maintainers
+Please check our [Documentation](http://docs.lakekeeper.io) and the [Lakekeeper Repository](https://github.com/lakekeeper/lakekeeper) for more information.
 
-| Name | Email | Url |
-| ---- | ------ | --- |
-| Tobias |  | <https://github.com/twuebi> |
-| Christian |  | <https://github.com/c-thiel> |
+## Installing the Chart
+
+To install the chart with the release name `my-release`:
+
+```bash
+helm repo add lakekeeper https://lakekeeper.github.io/lakekeeper-charts/
+helm install my-lakekeeper lakekeeper/lakekeeper
+```
+
+This chart by default deploys the "postgresql" subchart. This setup is not production ready. Please use an external database for production usecases.
 
 ## Requirements
 
