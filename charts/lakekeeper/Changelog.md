@@ -10,6 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Fixed
+
+### Changed
+
+## [0.2.1] - 2024-12-17
+
+### Added
+* Update Lakekeeper to Version `0.5.2`
+
+### Fixed
 * Deployment under root-path "/" with built-in ingress
 * `externalDatabase.userSecret` was not beeing used
 * `auth.oauth2.ui.scopes` had no effect
