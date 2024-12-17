@@ -480,7 +480,7 @@ authz:
   # The following values are only required if an external
   # openfga instance is used as the authorization backend.
   # An external instance is used if `authz.backend` is set to "openfga"
-  # and `openfga.enable` is set to false.
+  # and `internalOpenFGA` is set to false.
   openfga:
     # -- OpenFGA Endpoint (gRPC)
     # Set automatically if `internalOpenFGA` is true.

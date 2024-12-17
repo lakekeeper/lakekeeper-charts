@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * Deployment under root-path "/" with built-in ingress
+* `externalDatabase.userSecret` was not beeing used
+* `auth.oauth2.ui.scopes` had no effect
 
 ### Changed
 
