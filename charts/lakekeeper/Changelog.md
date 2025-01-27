@@ -13,6 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.3.1] - 2025-01-27
+
+### Changed
+* Update Lakekeeper to Version `0.6.1`
+* Update PostgreSQL to `16.4.5`
+* Update OpenFGA to `0.2.21`
+
 ## [0.3.0] - 2025-01-17
 
 ### Changed
