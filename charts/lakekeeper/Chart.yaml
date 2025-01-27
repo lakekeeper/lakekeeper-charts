@@ -19,11 +19,11 @@ keywords:
   - lakehouse
 dependencies:
   - name: postgresql
-    version: 16.4.3
+    version: 16.4.5
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: postgresql.enabled
   - name: openfga
-    version: 0.2.18
+    version: 0.2.21
     repository: https://openfga.github.io/helm-charts
     condition: internalOpenFGA
     alias: openfga
