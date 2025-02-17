@@ -8,7 +8,7 @@ metadata:
   {{- end }}
   labels:
     {{- include "iceberg-catalog.labels" . | nindent 4 }}
-    component: catalog
+    app.kubernetes.io/component: catalog
 spec:
   type: {{ .Values.catalog.service.type }}
   sessionAffinity: {{ .Values.catalog.service.sessionAffinity }}
@@ -26,7 +26,7 @@ spec:
       name: http
   selector:
     {{- include "iceberg-catalog.selectorLabels" . | nindent 4 }}
-    component: catalog
+    app.kubernetes.io/component: catalog
   {{- if eq .Values.catalog.service.type "LoadBalancer" }}
   {{- if .Values.catalog.service.loadBalancerIP }}
   loadBalancerIP: {{ .Values.catalog.service.loadBalancerIP | quote }}

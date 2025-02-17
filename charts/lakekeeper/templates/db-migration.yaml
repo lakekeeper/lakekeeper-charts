@@ -4,7 +4,7 @@ metadata:
   name: {{ include "iceberg-catalog.fullname" . }}-db-migration-{{ .Release.Revision }}
   labels:
     {{- include "iceberg-catalog.labels" . | nindent 4 }}
-    component: db-migration
+    app.kubernetes.io/component: db-migration
     {{- if .Values.catalog.dbMigrations.labels }}
     {{- toYaml .Values.catalog.dbMigrations.labels | nindent 4 }}
     {{- end }}
@@ -31,7 +31,7 @@ spec:
         {{- end }}
       labels:
         {{- include "iceberg-catalog.labels" . | nindent 8 }}
-        component: db-migration
+        app.kubernetes.io/component: db-migration
         {{- if .Values.catalog.dbMigrations.podLabels }}
         {{- toYaml .Values.catalog.dbMigrations.podLabels | nindent 8 }}
         {{- end }}
