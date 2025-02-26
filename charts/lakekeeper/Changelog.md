@@ -21,7 +21,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Improve values.yaml descriptions regarding PG encryption key
 * Prevent postgres encryption secret being created if a secret is specified
 * Better ArgoCD compatibility via Annotations for OpenFGA & DB migrate job to avoid deadlocks.
-* Remove `helmWait` configuration option - the migration hook can still be easily disabled via annotation.
+* Disable `helmWait` configuration by default.
+* Add hook annotations to DB migration independent of `helmWait` value. (except `helm-hook-enabled: false`)
+
 
 ### Fixed
 
