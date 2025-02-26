@@ -13,6 +13,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+
+## [0.4.0] - 2025-02-26
+
+### Added
+* Update Lakeeper to Version `0.7.1`
+* Improve values.yaml descriptions regarding PG encryption key
+* Prevent postgres encryption secret being created if a secret is specified
+* Set ArgoCD Annotations for OpenFGA migrate job to avoid deadlock
+* Always add delete policy to migration hook - even if `helmWait` is disabled
+
+### Fixed
+
+### Changed
+
 ## [0.3.2] - 2025-01-27
 
 ### Changed
