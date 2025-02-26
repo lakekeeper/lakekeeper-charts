@@ -9,7 +9,7 @@ metadata:
   {{- end }}
   labels:
     {{- include "iceberg-catalog.labels" . | nindent 4 }}
-    component: catalog
+    app.kubernetes.io/component: catalog
     {{- if .Values.catalog.ingress.labels }}
     {{- toYaml .Values.catalog.ingress.labels | nindent 4 }}
     {{- end }}

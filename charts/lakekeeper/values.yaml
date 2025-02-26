@@ -12,6 +12,10 @@ fullnameOverride: ""
 # Used for service discovery in the catalog.
 clusterDomain: "cluster.local"
 
+# -- Additional labels to add to all resources
+additionalLabels: {}
+  # app: lakekeeper
+
 # -- If true, set the annotation helm-hook-enabled: "false" for jobs that need to run before the catalog is started.
 # If this is false, helm install --wait will not work.
 helmWait: false
