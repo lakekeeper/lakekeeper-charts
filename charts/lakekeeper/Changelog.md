@@ -13,6 +13,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+
+## [0.4.0] - 2025-02-26
+
+### Added
+* Update Lakekeeper to Version `0.7.1`
+* Improve values.yaml descriptions regarding PG encryption key
+* Prevent postgres encryption secret being created if a secret is specified
+* Better ArgoCD compatibility via Annotations for OpenFGA & DB migrate job to avoid deadlocks.
+* Disable `helmWait` by default.
+* Add hook annotations to DB migration independent of `helmWait` value. (except `helm-hook-enabled: false`)
+* Update openfga sub-chart to `0.2.23`
+* Update postgres sub-chart to `16.4.14`
+* Support all Kubernetes recommended labels
+
+
+### Fixed
+
+### Changed
+
 ## [0.3.2] - 2025-01-27
 
 ### Changed

@@ -9,11 +9,12 @@ metadata:
     {{- toYaml .Values.catalog.dbMigrations.labels | nindent 4 }}
     {{- end }}
   annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/sync-wave: "0"
     {{- if not .Values.helmWait }}
     helm.sh/hook: post-install,post-upgrade
     helm.sh/hook-weight: "-100"
     helm.sh/hook-delete-policy: before-hook-creation
-    helm-hook-enabled: "true"
     {{- else }}
     helm-hook-enabled: "false"
     {{- end }}

@@ -16,9 +16,9 @@ clusterDomain: "cluster.local"
 additionalLabels: {}
   # app: lakekeeper
 
-# -- If true, remove the helm.sh/hook for jobs that need to run before the catalog is started.
+# -- If true, set the annotation helm-hook-enabled: "false" for jobs that need to run before the catalog is started.
 # If this is false, helm install --wait will not work.
-helmWait: true
+helmWait: false
 
 catalog:
   image:
@@ -325,6 +325,9 @@ secretBackend:
     # If not set, a random key is generated and stored in a secret.
     # We recommend setting this to a pre-existing secret. If you loose the key, you loose
     # access to all secrets.
+    # If this secret is not set here, we use helm's lookup function to not change the key on every upgrade.
+    # This is incompatible with some kubernetes tools such as ArgoCD: https://github.com/argoproj/argo-cd/issues/5202
+    # Please ensure that you have the `encryptionKeySecret` field set if helm's lookup is not supported in your tool.
     encryptionKeySecret: ""
     # -- Name of the key within `encryptionKeySecret` containing the encryption key string
     encryptionKeySecretKey: "encryptionKey"
@@ -524,6 +527,8 @@ openfga:
   migrate:
     annotations:
       helm.sh/hook: "post-install, post-upgrade, post-rollback"
+      argocd.argoproj.io/hook: Sync
+      argocd.argoproj.io/sync-wave: "0"
 
   datastore:
     engine: postgres
