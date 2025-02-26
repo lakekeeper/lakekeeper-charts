@@ -14,9 +14,9 @@ metadata:
     helm.sh/hook-delete-policy: before-hook-creation
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/sync-wave: "0"
-    {{- if not .Values.helmWait }}
+    {{- if .Values.helmWait }}
     helm-hook-enabled: "false"
-    {{- end}}
+    {{- end }}
     {{- if .Values.catalog.dbMigrations.annotations }}
     {{- toYaml .Values.catalog.dbMigrations.annotations | nindent 4 }}
     {{- end }}
