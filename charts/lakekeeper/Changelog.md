@@ -13,10 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.4.1] - 2025-02-26
 
-## [0.4.0] - 2025-02-26
+### Migrating from 0.3.0: 
 
-### Added
+As we changed the pod-selectors of Lakekeeper's deployment according to Kubernetes [Recommended Labels](https://kubernetes.io/docs/concepts/overview/working-with-objects/common-labels/) (thanks @nlamirault), the deployment needs to be synced using the `--force` option.
+
+### Changed
 * Update Lakekeeper to Version `0.7.1`
 * Improve values.yaml descriptions regarding PG encryption key
 * Prevent postgres encryption secret being created if a secret is specified
@@ -27,10 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Update postgres sub-chart to `16.4.14`
 * Support all Kubernetes recommended labels
 
-
-### Fixed
-
-### Changed
+## [0.4.0] - 2025-02-26
+Non existant
 
 ## [0.3.2] - 2025-01-27
 

@@ -15,7 +15,9 @@ helm repo add lakekeeper https://lakekeeper.github.io/lakekeeper-charts/
 helm install my-lakekeeper lakekeeper/lakekeeper
 ```
 
-This chart by default deploys the "postgresql" subchart. This setup is not production ready. Please use an external database for production usecases.
+This chart by default deploys the "postgresql" subchart. This setup is not production ready. Please use an external database for production.
+
+For potential additional steps that are required for upgrades, please check the [Changelog](./Changelog)
 
 {{ template "chart.requirementsSection" . }}
 
