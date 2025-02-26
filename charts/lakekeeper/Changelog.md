@@ -20,8 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Update Lakeeper to Version `0.7.1`
 * Improve values.yaml descriptions regarding PG encryption key
 * Prevent postgres encryption secret being created if a secret is specified
-* Set ArgoCD Annotations for OpenFGA migrate job to avoid deadlock
-* Always add delete policy to migration hook - even if `helmWait` is disabled
+* Better ArgoCD compatibility via Annotations for OpenFGA & DB migrate job to avoid deadlocks.
+* Remove `helmWait` configuration option - the migration hook can still be easily disabled via annotation.
 
 ### Fixed
 
