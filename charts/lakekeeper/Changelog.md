@@ -19,6 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 Please check notes for 0.4.1
 
 ### Changed
+* Update Lakekeeper to Version `0.7.4`
+
+## [0.4.3] - 2025-03-04
+
+### Migrating from 0.3.0: 
+Please check notes for 0.4.1
+
+### Changed
 * Update Lakekeeper to Version `0.7.3`
 
 ## [0.4.2] - 2025-02-28
