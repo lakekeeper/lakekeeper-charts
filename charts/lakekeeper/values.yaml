@@ -533,7 +533,7 @@ openfga:
 
   datastore:
     engine: postgres
-    migrationType: job
+    migrationType: initContainer
     uriSecret: lakekeeper-openfga-pg-svcbind-postgres
 
   postgresql:

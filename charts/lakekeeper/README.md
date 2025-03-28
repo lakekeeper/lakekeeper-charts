@@ -129,7 +129,7 @@ This chart by default deploys the "postgresql" subchart. This setup is not produ
 | internalOpenFGA | bool | `false` | if an OpenFGA instance is deployed as a subchart. When setting `internalOpenFGA` to true, the `openfga` subchart is deployed. |
 | nameOverride | string | `<chart-name>` | Override the name of the chart. |
 | openfga.datastore.engine | string | `"postgres"` |  |
-| openfga.datastore.migrationType | string | `"job"` |  |
+| openfga.datastore.migrationType | string | `"initContainer"` |  |
 | openfga.datastore.uriSecret | string | `"lakekeeper-openfga-pg-svcbind-postgres"` |  |
 | openfga.migrate.annotations."helm.sh/hook" | string | `"post-install, post-upgrade, post-rollback"` |  |
 | openfga.postgresql.enabled | bool | `true` |  |
