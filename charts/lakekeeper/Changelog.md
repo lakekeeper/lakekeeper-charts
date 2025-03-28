@@ -8,7 +8,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-* Change default of `openfga.datastore.migrationType` to `initContainer` so openfga migrations are run in an init container when `internalOpenFGA` is `true`. [Relevant openfga PR/Issue](https://github.com/openfga/helm-charts/pull/157)
 
 ### Fixed
 
