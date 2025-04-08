@@ -12,7 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ### Changed
-* Change default of `openfga.datastore.migrationType` to `initContainer` so openfga migrations are run in an init container when `internalOpenFGA` is `true`. [Relevant openfga PR/Issue](https://github.com/openfga/helm-charts/pull/157)
+
+## [0.5.0] - 2025-04-08
+
+### Changed
+* Change default of `openfga.datastore.migrationType` to `initContainer` so openfga migrations are run in an init container when `internalOpenFGA` is `true`. [Relevant openfga PR/Issue](https://github.com/openfga/helm-charts/pull/157). Thanks @eklesel!
+* Update Lakekeeper to Version 0.8.0
+* Update OpenFGA to Chart 0.2.26, Version v1.8.9
+* Upgrade PostgreSQL Chart to 16.6.2
 
 ## [0.4.3] - 2025-03-04
 
