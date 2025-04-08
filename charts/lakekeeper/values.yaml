@@ -473,6 +473,9 @@ auth:
     # This option is compatible with `auth.oauth2` - multiple IdPs (OIDC and Kubernetes)
     # can be enabled simultaneously.
     enabled: false
+    # -- If true, will set LAKEKEEPER__KUBERNETES_AUTHENTICATION_ACCEPT_LEGACY_SERVICEACCOUNT to true
+    # This option will allow accepting tokens with `iss` claim set to kubernetes/serviceaccount
+    legacyEnabled: false
     # -- If true and `auth.k8s.enabled` is true, a ClusterRoleBinding is created
     # that allows lakekeeper to introspect tokens.
     createClusterRoleBinding: true
