@@ -1,8 +1,8 @@
 apiVersion: v2
 name: lakekeeper
 description: Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
-version: 0.4.4
-appVersion: 0.7.4
+version: 0.5.0
+appVersion: 0.8.0
 type: application
 home: https://github.com/lakekeeper/lakekeeper
 icon: https://raw.githubusercontent.com/lakekeeper/lakekeeper/refs/heads/main/site/docs/assets/bear.svg
@@ -19,11 +19,11 @@ keywords:
   - lakehouse
 dependencies:
   - name: postgresql
-    version: 16.4.14
+    version: 16.6.2
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: postgresql.enabled
   - name: openfga
-    version: 0.2.23
+    version: 0.2.26
     repository: https://openfga.github.io/helm-charts
     condition: internalOpenFGA
     alias: openfga
