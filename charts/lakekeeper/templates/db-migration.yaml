@@ -80,10 +80,8 @@ spec:
           {{- end }}
           args:
             - migrate
-            {{- with .Values.catalog.dbMigrations.resources }}
           resources:
-            {{- toYaml . | nindent 12 }}
-            {{- end }}
+            {{- toYaml .Values.catalog.dbMigrations.resources | nindent 12 }}
       {{- with .Values.catalog.extraVolumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
