@@ -27,8 +27,8 @@ spec:
       name: "{{ include "iceberg-catalog.fullname" . }}-migration"
       annotations:
         checksum/secret-config-envs: {{ include (print $.Template.BasePath "/config/secret-config-envs.yaml") . | sha256sum }}
-        {{- if .Values.catalog.podAnnotations -}}
-        {{- toYaml .Values.catalog.podAnnotations | nindent 8 }}
+        {{- if .Values.catalog.dbMigrations.podAnnotations -}}
+        {{- toYaml .Values.catalog.dbMigrations.podAnnotations | nindent 8 }}
         {{- end }}
       labels:
         {{- include "iceberg-catalog.labels" . | nindent 8 }}
@@ -80,8 +80,10 @@ spec:
           {{- end }}
           args:
             - migrate
+            {{- with .Values.catalog.dbMigrations.resources }}
           resources:
-            {{- toYaml .Values.catalog.resources | nindent 12 }}
+            {{- toYaml . | nindent 12 }}
+            {{- end }}
       {{- with .Values.catalog.extraVolumes }}
       volumes:
         {{- toYaml . | nindent 8 }}
