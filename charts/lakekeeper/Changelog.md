@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Fixed
+* Changes to db-migration.yaml Job spec:
+  * Reference `.Values.catalog.dbMigrations.resources` instead of `.Values.catalog.resources`
+  * Reference `.Values.catalog.dbMigrations.podAnnotations` instead of `.Values.catalog.podAnnotations`
 
 ### Changed
 
