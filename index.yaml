@@ -2,6 +2,39 @@ apiVersion: v1
 entries:
   lakekeeper:
   - apiVersion: v2
+    appVersion: 0.8.2
+    created: "2025-04-17T16:22:24.444459027Z"
+    dependencies:
+    - condition: postgresql.enabled
+      name: postgresql
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 16.6.2
+    - alias: openfga
+      condition: internalOpenFGA
+      name: openfga
+      repository: https://openfga.github.io/helm-charts
+      version: 0.2.26
+    description: Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
+    digest: 5c817c632a4d747a4384d8d82ca77f88ab240f178d16a053dd65bed6e4480028
+    home: https://github.com/lakekeeper/lakekeeper
+    icon: https://raw.githubusercontent.com/lakekeeper/lakekeeper/refs/heads/main/site/docs/assets/bear.svg
+    keywords:
+    - lakekeeper
+    - iceberg
+    - catalog
+    - rest
+    - lakehouse
+    maintainers:
+    - name: Tobias
+      url: https://github.com/twuebi
+    - name: Christian
+      url: https://github.com/c-thiel
+    name: lakekeeper
+    type: application
+    urls:
+    - https://github.com/lakekeeper/lakekeeper-charts/releases/download/lakekeeper-0.5.1/lakekeeper-0.5.1.tgz
+    version: 0.5.1
+  - apiVersion: v2
     appVersion: 0.8.0
     created: "2025-04-08T13:24:51.751871347Z"
     dependencies:
@@ -533,4 +566,4 @@ entries:
     urls:
     - https://github.com/lakekeeper/lakekeeper-charts/releases/download/lakekeeper-0.1.0/lakekeeper-0.1.0.tgz
     version: 0.1.0
-generated: "2025-04-08T13:24:51.751976003Z"
+generated: "2025-04-17T16:22:24.444590933Z"
