@@ -10,11 +10,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Fixed
+
+### Changed
+
+## [0.5.1] - 2025-04-17
+
+### Changed
+* Update Lakekeeper to Version 0.8.2
+* Add `auth.k8s.legacyEnabled` configuration value
+
+### Fixed
 * Changes to db-migration.yaml Job spec:
   * Reference `.Values.catalog.dbMigrations.resources` instead of `.Values.catalog.resources`
   * Reference `.Values.catalog.dbMigrations.podAnnotations` instead of `.Values.catalog.podAnnotations`
-
-### Changed
+* Use `LAKEKEEPER` prefix for openid configuration options
 
 ## [0.5.0] - 2025-04-08
 
