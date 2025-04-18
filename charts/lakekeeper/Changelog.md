@@ -13,6 +13,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.5.2] - 2025-04-18
+
+### Changed
+* Update Lakekeeper to Version 0.8.3 (fixes UI issue where setting permissions doesn't work)
+
 ## [0.5.1] - 2025-04-17
 
 ### Changed
