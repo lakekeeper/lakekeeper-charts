@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 ### Fixed
+* Corrected Helm templates to use `.Values.catalog.extraEnvFrom` instead of the incorrect `.Values.catalog.envFrom`.
 
 ### Changed
 
