@@ -22,8 +22,8 @@ Wait for OpenFGA - source: https://github.com/openfga/helm-charts/blob/main/char
     {{- toYaml .Values.catalog.initContainers.checkDb.resources | nindent 4 }}
   envFrom:
     {{- include "iceberg-catalog.envFrom" . | indent 4 }}
-    {{- if .Values.catalog.envFrom -}}
-    {{- toYaml .Values.catalog.envFrom | nindent 4 }}
+    {{- if .Values.catalog.extraEnvFrom -}}
+    {{- toYaml .Values.catalog.extraEnvFrom | nindent 4 }}
     {{- end }}
   env:
     {{- include "iceberg-catalog.env" . | indent 4 }}

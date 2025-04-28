@@ -75,8 +75,8 @@ spec:
             {{- include "iceberg-catalog.env" . | indent 12 }}
           envFrom:
             {{- include "iceberg-catalog.envFrom" . | indent 12 }}
-            {{- if .Values.catalog.envFrom -}}
-            {{- toYaml .Values.catalog.envFrom | nindent 12 }}
+            {{- if .Values.catalog.extraEnvFrom -}}
+            {{- toYaml .Values.catalog.extraEnvFrom | nindent 12 }}
             {{- end }}
           ports:
             - name: http
