@@ -23,7 +23,7 @@ dependencies:
     repository: oci://registry-1.docker.io/bitnamicharts
     condition: postgresql.enabled
   - name: openfga
-    version: 0.2.26
+    version: 0.2.29
     repository: https://openfga.github.io/helm-charts
     condition: internalOpenFGA
     alias: openfga
