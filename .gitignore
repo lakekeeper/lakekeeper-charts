@@ -8,3 +8,5 @@ local
 Chart.lock
 
 .DS_store
+
+mcp.json

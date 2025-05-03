@@ -14,6 +14,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+## [0.5.3] - 2025-05-03
+
+### Fixed
+* Corrected Helm templates to use `.Values.catalog.extraEnvFrom` instead of the incorrect `.Values.catalog.envFrom` to match the `values.yaml`
+
+### Changed
+* Update Lakekeeper to Version 0.8.4
+* Update OpenFGA dependency to Chart Version 0.2.29, OpenFGA v1.8.11
+* Update Postgres dependency to Chart Version 16.6.6
+
 ## [0.5.2] - 2025-04-18
 
 ### Changed
