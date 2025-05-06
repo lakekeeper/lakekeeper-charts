@@ -473,6 +473,11 @@ auth:
     # This option is compatible with `auth.oauth2` - multiple IdPs (OIDC and Kubernetes)
     # can be enabled simultaneously.
     enabled: false
+    # -- The expected Audience of the Kubernetes Service Account.
+    # The aud (audience) claim of the JWT token must match this value.
+    # If oauth2 and kubernetes authentication are enabled, this value must be specified.
+    # Most clusters can use the default value of `https://kubernetes.default.svc`.
+    audience: ""
     # -- If true, will set LAKEKEEPER__KUBERNETES_AUTHENTICATION_ACCEPT_LEGACY_SERVICEACCOUNT to true
     # This option will allow accepting tokens with `iss` claim set to kubernetes/serviceaccount
     legacyEnabled: false
