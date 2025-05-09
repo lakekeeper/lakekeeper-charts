@@ -26,7 +26,7 @@ catalog:
     # -- The image repository to pull from
     repository: quay.io/lakekeeper/catalog
     # -- The image tag to pull
-    tag: v0.8.4
+    tag: v0.8.5
     # -- The image pull policy
     pullPolicy: IfNotPresent
     # -- 65532 = nonroot of google container distroless
@@ -529,6 +529,9 @@ internalOpenFGA: false
 openfga:
   # By default, we use the same number of replicas as the catalog
   replicaCount: *catalog_replicas
+
+  image:
+    tag: v1.8.6
 
   migrate:
     annotations:
