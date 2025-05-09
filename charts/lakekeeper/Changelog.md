@@ -13,7 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Volume mounting in the database migration job pod
 
 ### Changed
-* ICEBERG__BASE_URI is no longer added to a default configuration. This allows to utilize `x-forwarded-for/x-forwarded-host` headers to ensure clients retain the base url when interacting with the catalog. 
+
+## [0.6.0] - 2025-05-09
+
+### Fixed
+* Volume mounting in the database migration job pod
+* Downgrade OpenFGA to 0.8.6 due to a [knwon bug](https://github.com/lakekeeper/lakekeeper/issues/1068) in Version 0.8.11
+
+### Changed
+* Upgrade Lakekeeper to Version 0.8.5, better support for Postgres 17, fix `x-forwarded-host` header usage
+* `BASE_URI` is no longer added per default. Lakekeeper now uses the HOST header as well as `x-forwarded-xxx` headers
 
 ## [0.5.3] - 2025-05-03
 
