@@ -111,9 +111,9 @@ catalog:
   # ---- EXAMPLE ----
   # config:
   #   ICEBERG_REST__BASE_URI: "https://data.example.com"
-  #   You need to set ICEBERG_REST__BASE_URI if Lakekeeper is running behind a proxy that does not set x-forwarded-for / x-forwarded-host headers
+  #   You only need to set ICEBERG_REST__BASE_URI if Lakekeeper is running behind a proxy that does not set x-forwarded-for / x-forwarded-host headers
   #   or if you want to force the same base url for all Iceberg clients interacting with a catalog
-  #   For more information regarding request routing can be found here: https://docs.lakekeeper.io/docs/latest/configuration/?h=x+forwar
+  #   More information regarding request routing can be found here: https://docs.lakekeeper.io/docs/latest/configuration/?h=x+forwar
 
   # -- if we add the annotation: "cluster-autoscaler.kubernetes.io/safe-to-evict" = "true"
   safeToEvict: true
