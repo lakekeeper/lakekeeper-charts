@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Volume mounting in the database migration job pod
 
 ### Changed
+* ICEBERG__BASE_URI is no longer added to default configuration. This allows to utilize `x-forwarded-for/x-forwarded-host` headers to ensure clients retain the base url when interacting with the catalog. 
 
 ## [0.5.3] - 2025-05-03
 
