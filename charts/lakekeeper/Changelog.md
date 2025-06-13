@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * Volume mounting in the database migration job pod
+* Catalog extraContainers setting is taken into account
 
 ### Changed
 
