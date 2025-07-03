@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 * Update Lakekeeper to v0.9.2
+* Change order of initContainers: `extraInitContainers` now precede the DB-Check
 * Update OpenFGA Chart to v0.2.35 / Application to v1.8.16
 * Update Postgres to 16.7.15
 
@@ -26,7 +27,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 * Correctly mount "extraContainers" in the 
-
 
 ## [0.6.0] - 2025-05-09
 
