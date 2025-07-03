@@ -2,7 +2,7 @@
 Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lakekeeper&color=3f6ec6&labelColor=&logoColor=white)](https://artifacthub.io/packages/helm/lakekeeper/lakekeeper)
-![Version: 0.2.1](https://img.shields.io/badge/Version-0.2.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.5.2](https://img.shields.io/badge/AppVersion-0.5.2-informational?style=flat-square)
+![Version: 0.5.3](https://img.shields.io/badge/Version-0.5.3-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.8.4](https://img.shields.io/badge/AppVersion-0.8.4-informational?style=flat-square)
 
 Please check our [Documentation](http://docs.lakekeeper.io), the [Lakekeeper Repository](https://github.com/lakekeeper/lakekeeper) and the [`values.yaml`](https://github.com/lakekeeper/lakekeeper-charts/blob/main/charts/lakekeeper/values.yaml) for more information.
 
@@ -15,21 +15,26 @@ helm repo add lakekeeper https://lakekeeper.github.io/lakekeeper-charts/
 helm install my-lakekeeper lakekeeper/lakekeeper
 ```
 
-This chart by default deploys the "postgresql" subchart. This setup is not production ready. Please use an external database for production usecases.
+This chart by default deploys the "postgresql" subchart. This setup is not production ready. Please use an external database for production.
+
+For potential additional steps that are required for upgrades, please check the [Changelog](./Changelog)
 
 ## Requirements
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://openfga.github.io/helm-charts | openfga(openfga) | 0.2.18 |
-| oci://registry-1.docker.io/bitnamicharts | postgresql | 16.3.0 |
+| https://openfga.github.io/helm-charts | openfga(openfga) | 0.2.29 |
+| oci://registry-1.docker.io/bitnamicharts | postgresql | 16.6.6 |
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| additionalLabels | object | `{}` | Additional labels to add to all resources |
+| auth.k8s.audience | string | `""` | The expected Audience of the Kubernetes Service Account. The aud (audience) claim of the JWT token must match this value. If oauth2 and kubernetes authentication are enabled, this value must be specified. Most clusters can use the default value of `https://kubernetes.default.svc`. |
 | auth.k8s.createClusterRoleBinding | bool | `true` | If true and `auth.k8s.enabled` is true, a ClusterRoleBinding is created that allows lakekeeper to introspect tokens. |
 | auth.k8s.enabled | bool | `false` | If true, kubernetes service accounts can authenticate to Lakekeeper. This option is compatible with `auth.oauth2` - multiple IdPs (OIDC and Kubernetes) can be enabled simultaneously. |
+| auth.k8s.legacyEnabled | bool | `false` | If true, will set LAKEKEEPER__KUBERNETES_AUTHENTICATION_ACCEPT_LEGACY_SERVICEACCOUNT to true This option will allow accepting tokens with `iss` claim set to kubernetes/serviceaccount |
 | auth.oauth2 | object | `{"additionalIssuers":[],"audience":"","providerUri":"","ui":{"clientID":"","resource":"","scopes":""}}` | Configuration for the authentication of the catalog. If `auth.oauth2.providerUri` is not set and `auth.kubernetes.enabled` is false, authentication is disabled. |
 | auth.oauth2.additionalIssuers | list | `[]` | Additional allow OIDC issuers. The issuer defined in the issuer field of the ``.well-known/openid-configuration`` is always trusted. `additionalIssuers` has no effect if `providerUri` is not set. |
 | auth.oauth2.audience | string | `""` | The expected Audience of the OIDC App of lakekeeper. The aud (audience) claim of the JWT token must match this value. Typically this is the Client ID. |
@@ -68,7 +73,7 @@ This chart by default deploys the "postgresql" subchart. This setup is not produ
 | catalog.image.gid | int | `65534` | 65534 = nobody of google container distroless |
 | catalog.image.pullPolicy | string | `"IfNotPresent"` | The image pull policy |
 | catalog.image.repository | string | `"quay.io/lakekeeper/catalog"` | The image repository to pull from |
-| catalog.image.tag | string | `"v0.5.2"` | The image tag to pull |
+| catalog.image.tag | string | `"v0.8.4"` | The image tag to pull |
 | catalog.image.uid | int | `65532` | 65532 = nonroot of google container distroless |
 | catalog.ingress.annotations | object | `{}` | annotations for the catalog Ingress |
 | catalog.ingress.enabled | bool | `false` | if we should deploy Ingress resources |
@@ -124,13 +129,15 @@ This chart by default deploys the "postgresql" subchart. This setup is not produ
 | externalDatabase.userSecret | string | `""` |  |
 | externalDatabase.userSecretKey | string | `"postgresql-user"` |  |
 | fullnameOverride | string | `<release-name>-<chart-name>` | Override the fully qualified chart name. |
-| helmWait | bool | `true` | If true, remove the helm.sh/hook for jobs that need to run before the catalog is started. If this is false, helm install --wait will not work. |
+| helmWait | bool | `false` | If true, set the annotation helm-hook-enabled: "false" for jobs that need to run before the catalog is started. If this is false, helm install --wait will not work. |
 | imagePullSecrets | list of <html><a href="https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/">image pull secrets</a></html> | `[]` |  pull secrets for private repositories |
 | internalOpenFGA | bool | `false` | if an OpenFGA instance is deployed as a subchart. When setting `internalOpenFGA` to true, the `openfga` subchart is deployed. |
 | nameOverride | string | `<chart-name>` | Override the name of the chart. |
 | openfga.datastore.engine | string | `"postgres"` |  |
 | openfga.datastore.migrationType | string | `"initContainer"` |  |
 | openfga.datastore.uriSecret | string | `"lakekeeper-openfga-pg-svcbind-postgres"` |  |
+| openfga.migrate.annotations."argocd.argoproj.io/hook" | string | `"Sync"` |  |
+| openfga.migrate.annotations."argocd.argoproj.io/sync-wave" | string | `"0"` |  |
 | openfga.migrate.annotations."helm.sh/hook" | string | `"post-install, post-upgrade, post-rollback"` |  |
 | openfga.postgresql.enabled | bool | `true` |  |
 | openfga.postgresql.fullnameOverride | string | `"lakekeeper-openfga-pg"` |  |
@@ -157,7 +164,7 @@ This chart by default deploys the "postgresql" subchart. This setup is not produ
 | secretBackend.kv2.user | string | `""` | user name for authentication |
 | secretBackend.kv2.userSecret | string | `""` | the name of a pre-created secret containing the KV2 user |
 | secretBackend.kv2.userSecretKey | string | `"username"` | the key within `kv2.userSecret` containing the user string |
-| secretBackend.postgres.encryptionKeySecret | string | `""` | Name of the secret containing the encryption key. If not set, a random key is generated and stored in a secret. We recommend setting this to a pre-existing secret. If you loose the key, you loose access to all secrets. |
+| secretBackend.postgres.encryptionKeySecret | string | `""` | Name of the secret containing the encryption key. If not set, a random key is generated and stored in a secret. We recommend setting this to a pre-existing secret. If you loose the key, you loose access to all secrets. If this secret is not set here, we use helm's lookup function to not change the key on every upgrade. This is incompatible with some kubernetes tools such as ArgoCD: https://github.com/argoproj/argo-cd/issues/5202 Please ensure that you have the `encryptionKeySecret` field set if helm's lookup is not supported in your tool. |
 | secretBackend.postgres.encryptionKeySecretKey | string | `"encryptionKey"` | Name of the key within `encryptionKeySecret` containing the encryption key string |
 | secretBackend.type | string | `"Postgres"` | the type of secret store to use. Available values: "Postgres", "KV2" |
 | serviceAccount.annotations | object | `{}` | Annotations to add to the service account |
