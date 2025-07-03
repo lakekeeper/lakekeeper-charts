@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add option to set Kubernetes Authentication Audience
 
 ### Fixed
+* Volume mounting in the database migration job pod
+* Catalog extraContainers setting is taken into account
 
 ## [0.5.4] - 2025-05-05
 
