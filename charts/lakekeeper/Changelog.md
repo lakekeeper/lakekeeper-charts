@@ -10,18 +10,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Added
+
+### Fixed
+
+
+## [0.7.0] - 2025-07-03
+
+### Changed
+* Update Lakekeeper to v0.9.2
+* Update OpenFGA Chart to v0.2.35 / Application to v1.8.16
+* Update Postgres to 16.7.15
+
+### Added
 * Add option to set Kubernetes Authentication Audience
 
 ### Fixed
-* Volume mounting in the database migration job pod
-* Catalog extraContainers setting is taken into account
+* Correctly mount "extraContainers" in the 
 
-## [0.5.4] - 2025-05-05
-
-### Fixed
-* Missing Volume mount in the database migration job pod
-
-### Changed
 
 ## [0.6.0] - 2025-05-09
 
@@ -32,6 +37,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 * Upgrade Lakekeeper to Version 0.8.5, better support for Postgres 17, fix `x-forwarded-host` header usage
 * `BASE_URI` is no longer added per default. Lakekeeper now uses the HOST header as well as `x-forwarded-xxx` headers
+
+
+## [0.5.4] - 2025-05-05
+
+### Fixed
+* Missing Volume mount in the database migration job pod
+
+### Changed
 
 ## [0.5.3] - 2025-05-03
 
