@@ -66,10 +66,10 @@ spec:
         {{- toYaml .Values.catalog.podSecurityContext | nindent 8 }}
       {{- end }}
       initContainers:
-        {{- include "iceberg-catalog.init_container.check_db" (dict "Release" .Release "Values" .Values "Chart" .Chart "awaitMigration" true) | indent 8 }}
         {{- if .Values.catalog.extraInitContainers }}
         {{- toYaml .Values.catalog.extraInitContainers | nindent 8 }}
         {{- end }}
+        {{- include "iceberg-catalog.init_container.check_db" (dict "Release" .Release "Values" .Values "Chart" .Chart "awaitMigration" true) | indent 8 }}
       containers:
         - name: {{ .Chart.Name }}
           {{- include "iceberg-catalog.image" . | indent 10 }}
@@ -77,8 +77,8 @@ spec:
             {{- include "iceberg-catalog.env" . | indent 12 }}
           envFrom:
             {{- include "iceberg-catalog.envFrom" . | indent 12 }}
-            {{- if .Values.catalog.envFrom -}}
-            {{- toYaml .Values.catalog.envFrom | nindent 12 }}
+            {{- if .Values.catalog.extraEnvFrom -}}
+            {{- toYaml .Values.catalog.extraEnvFrom | nindent 12 }}
             {{- end }}
           ports:
             - name: http
@@ -119,6 +119,9 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
+        {{- if .Values.catalog.extraContainers }}
+        {{- toYaml .Values.catalog.extraContainers | nindent 8 }}
+        {{- end }}
       {{- with .Values.catalog.extraVolumes }}
       volumes:
         {{- toYaml . | nindent 8 }}

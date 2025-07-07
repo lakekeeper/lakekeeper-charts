@@ -7,12 +7,72 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
 ### Added
 * Added Port 9000 to Catalog deployment manifest to allow Prometheus metrics to be scraped
 
 ### Fixed
 
+
+## [0.7.0] - 2025-07-03
+
 ### Changed
+* Update Lakekeeper to v0.9.2
+* Change order of initContainers: `extraInitContainers` now precede the DB-Check
+* Update OpenFGA Chart to v0.2.35 / Application to v1.8.16
+* Update Postgres to 16.7.15
+
+### Added
+* Add option to set Kubernetes Authentication Audience
+
+### Fixed
+* Correctly mount "extraContainers" in the 
+
+## [0.6.0] - 2025-05-09
+
+### Fixed
+* Volume mounting in the database migration job pod
+* Downgrade OpenFGA to 0.8.6 due to a [knwon bug](https://github.com/lakekeeper/lakekeeper/issues/1068) in Version 0.8.11
+
+### Changed
+* Upgrade Lakekeeper to Version 0.8.5, better support for Postgres 17, fix `x-forwarded-host` header usage
+* `BASE_URI` is no longer added per default. Lakekeeper now uses the HOST header as well as `x-forwarded-xxx` headers
+
+
+## [0.5.4] - 2025-05-05
+
+### Fixed
+* Missing Volume mount in the database migration job pod
+
+### Changed
+
+## [0.5.3] - 2025-05-03
+
+### Fixed
+* Corrected Helm templates to use `.Values.catalog.extraEnvFrom` instead of the incorrect `.Values.catalog.envFrom` to match the `values.yaml`
+
+### Changed
+* Update Lakekeeper to Version 0.8.4
+* Update OpenFGA dependency to Chart Version 0.2.29, OpenFGA v1.8.11
+* Update Postgres dependency to Chart Version 16.6.6
+
+## [0.5.2] - 2025-04-18
+
+### Changed
+* Update Lakekeeper to Version 0.8.3 (fixes UI issue where setting permissions doesn't work)
+
+## [0.5.1] - 2025-04-17
+
+### Changed
+* Update Lakekeeper to Version 0.8.2
+* Add `auth.k8s.legacyEnabled` configuration value
+
+### Fixed
+* Changes to db-migration.yaml Job spec:
+  * Reference `.Values.catalog.dbMigrations.resources` instead of `.Values.catalog.resources`
+  * Reference `.Values.catalog.dbMigrations.podAnnotations` instead of `.Values.catalog.podAnnotations`
+* Use `LAKEKEEPER` prefix for openid configuration options
 
 ## [0.5.0] - 2025-04-08
 
