@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+* Added Port 9000 to Catalog deployment manifest to allow Prometheus metrics to be scraped
 
 ### Fixed
 
