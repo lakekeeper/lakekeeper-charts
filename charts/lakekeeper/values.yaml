@@ -297,6 +297,10 @@ catalog:
       # -- the name of a pre-created Secret containing a TLS private key and certificate
       secretName: ""
 
+  prometheusMetrics:
+    # -- Enables the Metrics port and adds the relevant Prometheus labels
+    enabled: true
+
 serviceAccount:
   # -- Specifies whether a service account should be created.
   # If `false`, you must create the you must create the service account outside this chart with name: `serviceAccount.name`

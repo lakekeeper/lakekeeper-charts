@@ -9,8 +9,10 @@ metadata:
   labels:
     {{- include "iceberg-catalog.labels" . | nindent 4 }}
     app.kubernetes.io/component: catalog
+    {{- if .Values.catalog.prometheusMetrics.enabled }}
     prometheus.io/port: "9000"
     prometheus.io/scrape: "true"
+    {{- end }}
 spec:
   replicas: {{ .Values.catalog.replicas }}
   strategy:
@@ -84,9 +86,11 @@ spec:
             - name: http
               containerPort: 8181
               protocol: TCP
+          {{- if .Values.catalog.prometheusMetrics.enabled }}
             - name: metrics
               containerPort: 9000
               protocol: TCP
+          {{- end }}
           {{- if .Values.catalog.command }}
           command:
             {{- toYaml .Values.catalog.command | nindent 12 }}

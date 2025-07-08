@@ -97,6 +97,7 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.podDisruptionBudget.minAvailable | string | `""` | the minimum available pods/percentage for the catalog |
 | catalog.podLabels | object | `{}` | Pod labels for the catalog Deployment |
 | catalog.podSecurityContext | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core">podsecuritycontext-v1-core</a></html> | `{}` |  security context for the catalog Pods. `runAsUser` and `runAsGroup` are ignored for the catalog container, please set with `catalog.image.uid` and `catalog.image.gid` |
+| catalog.prometheusMetrics.enabled | bool | `true` | Enables the Metrics port and adds the relevant Prometheus labels |
 | catalog.readinessProbe.enabled | bool | `true` | if the readiness probes of the catalog Pods are enabled |
 | catalog.readinessProbe.failureThreshold | int | `5` |  |
 | catalog.readinessProbe.initialDelaySeconds | int | `1` |  |
