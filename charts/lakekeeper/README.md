@@ -97,7 +97,6 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.podDisruptionBudget.minAvailable | string | `""` | the minimum available pods/percentage for the catalog |
 | catalog.podLabels | object | `{}` | Pod labels for the catalog Deployment |
 | catalog.podSecurityContext | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core">podsecuritycontext-v1-core</a></html> | `{}` |  security context for the catalog Pods. `runAsUser` and `runAsGroup` are ignored for the catalog container, please set with `catalog.image.uid` and `catalog.image.gid` |
-| catalog.prometheusMetrics.enabled | bool | `true` | Enables the Metrics port and adds the relevant Prometheus labels |
 | catalog.readinessProbe.enabled | bool | `true` | if the readiness probes of the catalog Pods are enabled |
 | catalog.readinessProbe.failureThreshold | int | `5` |  |
 | catalog.readinessProbe.initialDelaySeconds | int | `1` |  |
@@ -114,6 +113,7 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.service.sessionAffinity | string | `"None"` | catalog service session affinity |
 | catalog.service.sessionAffinityConfig | object | `{}` | catalog service session affinity config |
 | catalog.service.type | string | `"ClusterIP"` | catalog service type |
+| catalog.setScrapeAnnotations | bool | `false` | Adds the relevant Prometheus labels for automatic scraping |
 | catalog.terminationPeriod | int | `60` | how many seconds to wait after SIGTERM before SIGKILL of the catalog. Default is 60 seconds. |
 | catalog.tolerations | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#toleration-v1-core">toleration</a></html> | `[]` |  tolerations for the catalog Pods |
 | catalog.topologySpreadConstraints | <html><a href="https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/">topologySpreadConstraints</a></html> | `[]` |  topology spread constraints the catalog Pods |

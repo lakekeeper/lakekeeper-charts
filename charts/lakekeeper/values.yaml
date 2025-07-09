@@ -297,9 +297,8 @@ catalog:
       # -- the name of a pre-created Secret containing a TLS private key and certificate
       secretName: ""
 
-  prometheusMetrics:
-    # -- Enables the Metrics port and adds the relevant Prometheus labels
-    enabled: true
+  # -- Adds the relevant Prometheus labels for automatic scraping
+  setScrapeAnnotations: false
 
 serviceAccount:
   # -- Specifies whether a service account should be created.
