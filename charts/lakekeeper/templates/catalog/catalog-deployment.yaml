@@ -30,7 +30,7 @@ spec:
         {{- if .Values.catalog.safeToEvict }}
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
         {{- end }}
-        {{- if .Values.catalog.setScrapeAnnotations }}
+        {{- if .Values.catalog.prometheus.setScrapeAnnotations }}
         prometheus.io/port: "9000"
         prometheus.io/scrape: "true"
         {{- end }}

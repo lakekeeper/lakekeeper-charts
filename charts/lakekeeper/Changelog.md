@@ -10,7 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Added
-* Added Port 9000 to Catalog deployment manifest to allow Prometheus metrics to be scraped
+* Expose Metrics Port 9000 for Catalog Pods
+* Add boolean `catalog.prometheus.setScrapeAnnotations` configuration option to set prometheus scrape labels
 
 ### Fixed
 

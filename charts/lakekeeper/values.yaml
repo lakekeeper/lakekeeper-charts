@@ -297,8 +297,9 @@ catalog:
       # -- the name of a pre-created Secret containing a TLS private key and certificate
       secretName: ""
 
-  # -- Adds the relevant Prometheus labels for automatic scraping
-  setScrapeAnnotations: false
+  prometheus:
+    # -- Adds the prometheus.io/port and prometheus.io/scrape annotations to the catalog Pods.
+    setScrapeAnnotations: false
 
 serviceAccount:
   # -- Specifies whether a service account should be created.
