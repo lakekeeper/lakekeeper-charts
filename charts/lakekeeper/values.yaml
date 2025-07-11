@@ -297,6 +297,10 @@ catalog:
       # -- the name of a pre-created Secret containing a TLS private key and certificate
       secretName: ""
 
+  prometheus:
+    # -- Adds the prometheus.io/port and prometheus.io/scrape annotations to the catalog Pods.
+    setScrapeAnnotations: false
+
 serviceAccount:
   # -- Specifies whether a service account should be created.
   # If `false`, you must create the you must create the service account outside this chart with name: `serviceAccount.name`

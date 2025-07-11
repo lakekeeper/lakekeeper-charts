@@ -30,6 +30,10 @@ spec:
         {{- if .Values.catalog.safeToEvict }}
         cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
         {{- end }}
+        {{- if .Values.catalog.prometheus.setScrapeAnnotations }}
+        prometheus.io/port: "9000"
+        prometheus.io/scrape: "true"
+        {{- end }}
       labels:
         {{- include "iceberg-catalog.labels" . | nindent 8 }}
         app.kubernetes.io/component: catalog
@@ -81,6 +85,9 @@ spec:
           ports:
             - name: http
               containerPort: 8181
+              protocol: TCP
+            - name: metrics
+              containerPort: 9000
               protocol: TCP
           {{- if .Values.catalog.command }}
           command:
