@@ -71,17 +71,23 @@ catalog:
   podSecurityContext:
     {}
     # # ---- EXAMPLE ----
-    # # securityContext:
-    # capabilities:
-    #   drop:
-    #     - ALL
-    # readOnlyRootFilesystem: true
-    # runAsNonRoot: true
+    # podSecurityContext:
+    #   runAsNonRoot: true
+    #   seccompProfile:
+    #     type: RuntimeDefault
 
   # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core">podsecuritycontext-v1-core</a></html>)
   # security context for the catalog container.
   # `runAsUser` is ignored, please set with `catalog.image.uid`, `runAsGroup` is ignored, please set with `catalog.image.gid`
-  containerSecurityContext: {}
+  containerSecurityContext:
+    {}
+    # # ---- EXAMPLE ----
+    # containerSecurityContext
+    #   allowPrivilegeEscalation: false
+    #   readOnlyRootFilesystem: true
+    #   capabilities:
+    #     drop:
+    #       - all
 
   # -- Labels for the catalog Deployment
   labels: {}
