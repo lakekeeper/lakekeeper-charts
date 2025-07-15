@@ -1,12 +1,13 @@
 helmWait: true
 catalog:
   podSecurityContext:
-    capabilities:
-      drop:
-        - ALL
-    readOnlyRootFilesystem: true
     runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
 
   containerSecurityContext:
-    runAsNonRoot: true
+    allowPrivilegeEscalation: false
     readOnlyRootFilesystem: true
+    capabilities:
+      drop:
+        - all
