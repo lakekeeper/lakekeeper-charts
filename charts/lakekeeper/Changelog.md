@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.7.1] - 2025-07-18
+
+### Changed
+* Update Lakekeeper to v0.9.3
+* Update Postgres Chart to 16.7.20
+
+### Added
+* Expose Metrics Port 9000 for Catalog Pods
+* Add boolean `catalog.prometheus.setScrapeAnnotations` configuration option to set prometheus scrape labels
+
 
 ## [0.7.0] - 2025-07-03
 
