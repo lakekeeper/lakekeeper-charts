@@ -15,6 +15,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.7.1] - 2025-08-15
+
+### Changed
+* Update Lakekeeper to v0.9.5
+* Update Postgres Chart to 16.7.26
+* Switch to Lakekeeper copies of bitnami images for postgressql to avoid breaking deployments when bitnami removes all tags but the `latest` as part of their [Secure Image initiative](https://news.broadcom.com/app-dev/broadcom-introduces-bitnami-secure-images-for-production-ready-containerized-applications). Check the README for more information.
+
+### Added
+* Expose Metrics Port 9000 for Catalog Pods
+* Add boolean `catalog.prometheus.setScrapeAnnotations` configuration option to set prometheus scrape labels
 
 ## [0.7.0] - 2025-07-03
 

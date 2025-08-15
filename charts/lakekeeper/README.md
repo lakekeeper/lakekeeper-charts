@@ -2,9 +2,23 @@
 Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lakekeeper&color=3f6ec6&labelColor=&logoColor=white)](https://artifacthub.io/packages/helm/lakekeeper/lakekeeper)
-![Version: 0.7.0](https://img.shields.io/badge/Version-0.7.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.9.2](https://img.shields.io/badge/AppVersion-0.9.2-informational?style=flat-square)
+![Version: 0.7.1](https://img.shields.io/badge/Version-0.7.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.9.3](https://img.shields.io/badge/AppVersion-0.9.3-informational?style=flat-square)
 
 Please check our [Documentation](http://docs.lakekeeper.io), the [Lakekeeper Repository](https://github.com/lakekeeper/lakekeeper) and the [`values.yaml`](https://github.com/lakekeeper/lakekeeper-charts/blob/main/charts/lakekeeper/values.yaml) for more information.
+
+## ⚠️ Important Notice: Upcoming changes to Bitnami Postgres
+
+This chart currently relies on the Bitnami PostgreSQL Helm chart for database backend services for both Lakekeeper and OpenFGA. Due to the [Bitnami Secure Images initiative](https://news.broadcom.com/app-dev/broadcom-introduces-bitnami-secure-images-for-production-ready-containerized-applications), Bitnami is retaining only the `latest` tags for their publicly available images.
+
+**Upcoming changes:**
+- Version `0.7.1`: We will transition from Bitnami images to self-hosted images on Quay.io to ensure deployment stability
+- Version `0.8.0`: We will completely migrate away from the Bitnami chart
+
+**Important notes:**
+- No automatic migration will be provided by this chart
+- **Back up your database before updating to prevent data loss**
+- As noted in the installation section and [Production Checklist](https://docs.lakekeeper.io/docs/nightly/production/), the databases included with this chart are **not production-ready**
+- For production deployments, please implement your own database backend
 
 ## Installing the Chart
 
@@ -24,7 +38,7 @@ For potential additional steps that are required for upgrades, please check the 
 | Repository | Name | Version |
 |------------|------|---------|
 | https://openfga.github.io/helm-charts | openfga(openfga) | 0.2.35 |
-| oci://registry-1.docker.io/bitnamicharts | postgresql | 16.7.15 |
+| oci://registry-1.docker.io/bitnamicharts | postgresql | 16.7.26 |
 
 ## Values
 
@@ -73,7 +87,7 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.image.gid | int | `65534` | 65534 = nobody of google container distroless |
 | catalog.image.pullPolicy | string | `"IfNotPresent"` | The image pull policy |
 | catalog.image.repository | string | `"quay.io/lakekeeper/catalog"` | The image repository to pull from |
-| catalog.image.tag | string | `"v0.9.2"` | The image tag to pull |
+| catalog.image.tag | string | `"v0.9.5"` | The image tag to pull |
 | catalog.image.uid | int | `65532` | 65532 = nonroot of google container distroless |
 | catalog.ingress.annotations | object | `{}` | annotations for the catalog Ingress |
 | catalog.ingress.enabled | bool | `false` | if we should deploy Ingress resources |
@@ -137,12 +151,16 @@ For potential additional steps that are required for upgrades, please check the 
 | openfga.datastore.engine | string | `"postgres"` |  |
 | openfga.datastore.migrationType | string | `"initContainer"` |  |
 | openfga.datastore.uriSecret | string | `"lakekeeper-openfga-pg-svcbind-postgres"` |  |
-| openfga.image.tag | string | `"v1.8.6"` |  |
+| openfga.image.tag | string | `"v1.8.16"` |  |
 | openfga.migrate.annotations."argocd.argoproj.io/hook" | string | `"Sync"` |  |
 | openfga.migrate.annotations."argocd.argoproj.io/sync-wave" | string | `"0"` |  |
 | openfga.migrate.annotations."helm.sh/hook" | string | `"post-install, post-upgrade, post-rollback"` |  |
 | openfga.postgresql.enabled | bool | `true` |  |
 | openfga.postgresql.fullnameOverride | string | `"lakekeeper-openfga-pg"` |  |
+| openfga.postgresql.global.security.allowInsecureImages | bool | `true` |  |
+| openfga.postgresql.image.registry | string | `"quay.io"` |  |
+| openfga.postgresql.image.repository | string | `"lakekeeper/postgresql"` |  |
+| openfga.postgresql.image.tag | string | `"15.4.0-debian-11-r45"` |  |
 | openfga.postgresql.serviceBindings.enabled | bool | `true` |  |
 | openfga.replicaCount | int | `1` |  |
 | postgresql.auth.database | string | `"catalog"` | the postgres database to create |
@@ -152,6 +170,11 @@ For potential additional steps that are required for upgrades, please check the 
 | postgresql.auth.secretKeys.userPasswordKey | string | `"password"` | the key within `postgresql.existingSecret` containing the user password string |
 | postgresql.auth.username | string | `"catalog"` | the postgres user to create |
 | postgresql.enabled | bool | `true` | if the `bitnami/postgresql` chart is used. [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead. set to `false` if using `externalDatabase.*` |
+| postgresql.global.security.allowInsecureImages | bool | `true` |  |
+| postgresql.image.pullPolicy | string | `"Always"` |  |
+| postgresql.image.registry | string | `"quay.io"` |  |
+| postgresql.image.repository | string | `"lakekeeper/postgresql"` |  |
+| postgresql.image.tag | string | `"17.5.0-debian-12-r16"` |  |
 | postgresql.nameOverride | string | `"lakekeeper-pg"` |  |
 | postgresql.persistence.accessModes | list | `["ReadWriteOnce"]` | the access modes of the PVC |
 | postgresql.persistence.enabled | bool | `true` | if postgres will use Persistent Volume Claims to store data. if false, data will be LOST as postgres Pods restart |

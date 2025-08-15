@@ -26,7 +26,7 @@ catalog:
     # -- The image repository to pull from
     repository: quay.io/lakekeeper/catalog
     # -- The image tag to pull
-    tag: v0.9.2
+    tag: v0.9.5
     # -- The image pull policy
     pullPolicy: IfNotPresent
     # -- 65532 = nonroot of google container distroless
@@ -366,10 +366,20 @@ secretBackend:
     passwordSecretKey: "password"
 
 postgresql:
+  global:
+    security:
+      # Required due to our own postsgresql image
+      allowInsecureImages: true
+
   # -- if the `bitnami/postgresql` chart is used.
   # [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead.
   # set to `false` if using `externalDatabase.*`
   enabled: true
+  image:
+    registry: quay.io
+    repository: lakekeeper/postgresql
+    tag: 17.5.0-debian-12-r16
+    pullPolicy: Always
 
   nameOverride: "lakekeeper-pg"
 
@@ -546,7 +556,7 @@ openfga:
   replicaCount: *catalog_replicas
 
   image:
-    tag: v1.8.6
+    tag: v1.8.16
 
   migrate:
     annotations:
@@ -567,3 +577,12 @@ openfga:
 
     serviceBindings:
       enabled: true
+
+    global:
+      security:
+        # Required due to our own postsgresql image
+        allowInsecureImages: true
+    image:
+      registry: quay.io
+      repository: lakekeeper/postgresql
+      tag: 15.4.0-debian-11-r45
