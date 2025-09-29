@@ -63,7 +63,7 @@ spec:
         {{- toYaml .Values.catalog.tolerations | nindent 8 }}
       {{- end }}
       {{- if .Values.catalog.priorityClassName }}
-      priorityClassName: {{ .Values.catalog.priorityClassName }}
+      priorityClassName: {{ .Values.catalog.priorityClassName | quote }}
       {{- end }}
       serviceAccountName: {{ include "iceberg-catalog.serviceAccountName" . }}
       {{- if .Values.catalog.podSecurityContext }}
