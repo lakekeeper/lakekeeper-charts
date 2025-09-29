@@ -95,6 +95,9 @@ catalog:
   # -- Pod labels for the catalog Deployment
   podLabels: {}
 
+  # -- Kubernetes priority class for scheduling
+  priorityClassName: ~
+
   # -- Annotations for the catalog Deployment
   annotations: {}
 
