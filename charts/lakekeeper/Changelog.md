@@ -12,6 +12,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * Expose Metrics Port 9000 for Catalog Pods
 * Add boolean `catalog.prometheus.setScrapeAnnotations` configuration option to set prometheus scrape labels
+* Bump Lakekeeper image to 0.10.0
+* Migrate away from the Bitnami chart
 
 ### Fixed
 
