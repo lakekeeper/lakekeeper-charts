@@ -2,7 +2,7 @@
 Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lakekeeper&color=3f6ec6&labelColor=&logoColor=white)](https://artifacthub.io/packages/helm/lakekeeper/lakekeeper)
-![Version: 0.7.1](https://img.shields.io/badge/Version-0.7.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.9.3](https://img.shields.io/badge/AppVersion-0.9.3-informational?style=flat-square)
+![Version: 0.8.0](https://img.shields.io/badge/Version-0.8.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.10.2](https://img.shields.io/badge/AppVersion-0.10.2-informational?style=flat-square)
 
 Please check our [Documentation](http://docs.lakekeeper.io), the [Lakekeeper Repository](https://github.com/lakekeeper/lakekeeper) and the [`values.yaml`](https://github.com/lakekeeper/lakekeeper-charts/blob/main/charts/lakekeeper/values.yaml) for more information.
 
@@ -36,8 +36,8 @@ For potential additional steps that are required for upgrades, please check the 
 
 | Repository | Name | Version |
 |------------|------|---------|
+| https://groundhog2k.github.io/helm-charts/ | postgresql(postgres) | 1.5.8 |
 | https://openfga.github.io/helm-charts | openfga(openfga) | 0.2.44 |
-| oci://registry-1.docker.io/bitnamicharts | postgresql | 16.7.26 |
 
 ## Values
 
@@ -56,7 +56,7 @@ For potential additional steps that are required for upgrades, please check the 
 | auth.oauth2.ui.resource | string | `""` | Resource to request |
 | auth.oauth2.ui.scopes | string | `""` | Space separated scopes to request |
 | authz.backend | string | `"allowall"` | type of the authorization backend. Available values: "openfga", "allowall" Authorization must not change after bootstrapping! If type "openfga" is chose, consider setting `internalOpenFGA` to true to deploy an OpenFGA instance as a subchart. |
-| authz.openfga.apiKey | string | `""` | API Key used to authenticate with OpenFGA. This is used for pre-shared key authentication. If `clientId` is set, the `apiKey` is ignored. |
+| authz.openfga.apiKey | string | `""` | API Key used to authenticate with OpenFGA. This is used for pre-shared key authentication.cc If `clientId` is set, the `apiKey` is ignored. |
 | authz.openfga.clientId | string | `""` | Client ID used to authenticate with OpenFGA. This is used for OIDC authentication. |
 | authz.openfga.clientSecret | string | `""` | Client Secret used to authenticate with OpenFGA. This is used for OIDC authentication. |
 | authz.openfga.endpoint | string | `""` | OpenFGA Endpoint (gRPC) Set automatically if `internalOpenFGA` is true. |
@@ -85,8 +85,8 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.extraVolumes | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volume-v1-core">volume</a></html> | `[]` |  extra Volumes for the catalog Pods |
 | catalog.image.gid | int | `65534` | 65534 = nobody of google container distroless |
 | catalog.image.pullPolicy | string | `"IfNotPresent"` | The image pull policy |
-| catalog.image.repository | string | `"quay.io/lakekeeper/catalog"` | The image repository to pull from |
-| catalog.image.tag | string | `"v0.9.5"` | The image tag to pull |
+| catalog.image.repository | string | `nil` | The image repository to pull from |
+| catalog.image.tag | string | `nil` | The image tag to pull |
 | catalog.image.uid | int | `65532` | 65532 = nonroot of google container distroless |
 | catalog.ingress.annotations | object | `{}` | annotations for the catalog Ingress |
 | catalog.ingress.enabled | bool | `false` | if we should deploy Ingress resources |
@@ -110,6 +110,7 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.podDisruptionBudget.minAvailable | string | `""` | the minimum available pods/percentage for the catalog |
 | catalog.podLabels | object | `{}` | Pod labels for the catalog Deployment |
 | catalog.podSecurityContext | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core">podsecuritycontext-v1-core</a></html> | `{}` |  security context for the catalog Pods. `runAsUser` and `runAsGroup` are ignored for the catalog container, please set with `catalog.image.uid` and `catalog.image.gid` |
+| catalog.priorityClassName | string | `nil` | Kubernetes priority class for scheduling |
 | catalog.prometheus.setScrapeAnnotations | bool | `false` | Adds the prometheus.io/port and prometheus.io/scrape annotations to the catalog Pods. |
 | catalog.readinessProbe.enabled | bool | `true` | if the readiness probes of the catalog Pods are enabled |
 | catalog.readinessProbe.failureThreshold | int | `5` |  |
@@ -146,6 +147,11 @@ For potential additional steps that are required for upgrades, please check the 
 | helmWait | bool | `false` | If true, set the annotation helm-hook-enabled: "false" for jobs that need to run before the catalog is started. If this is false, helm install --wait will not work. |
 | imagePullSecrets | list of <html><a href="https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/">image pull secrets</a></html> | `[]` |  pull secrets for private repositories |
 | internalOpenFGA | bool | `false` | if an OpenFGA instance is deployed as a subchart. When setting `internalOpenFGA` to true, the `openfga` subchart is deployed. |
+| lakekeeper.edition | string | `"core"` | Lakekeeper Edition to use (core|plus). Lakekeeper Plus requires a valid license. |
+| lakekeeper.licenseKey | string | `""` | License key for Lakekeeper Plus. We strongly recommend using a Kubernetes secret instead by setting `lakekeeper.useLicenseSecret: true` and creating the secret separately. If both licenseKey and useLicenseSecret are set, the secret takes precedence. |
+| lakekeeper.licenseSecretKey | string | `"license-key"` | Key within the secret to store the license key. Only used if `lakekeeper.useLicenseSecret` is true. |
+| lakekeeper.licenseSecretName | string | `"lakekeeper-license"` | Name of the secret to store the license key. Only used if `lakekeeper.useLicenseSecret` is true. |
+| lakekeeper.useLicenseSecret | bool | `true` | If true, the license key is stored in a Kubernetes secret. If false, the license key is passed as an environment variable. We recommend setting this to true. |
 | nameOverride | string | `<chart-name>` | Override the name of the chart. |
 | openfga.datastore.engine | string | `"postgres"` |  |
 | openfga.datastore.migrationType | string | `"initContainer"` |  |
@@ -170,24 +176,25 @@ For potential additional steps that are required for upgrades, please check the 
 | openfga.postgresql.image.tag | string | `"15.4.0-debian-11-r45"` |  |
 | openfga.postgresql.serviceBindings.enabled | bool | `true` |  |
 | openfga.replicaCount | int | `1` |  |
-| postgresql.auth.database | string | `"catalog"` | the postgres database to create |
-| postgresql.auth.existingSecret | string | `""` | the name of a pre-created secret containing the postgres password |
-| postgresql.auth.password | string | `""` | the postgres user's password. if not specified, a random password is generated and stored in a secret |
-| postgresql.auth.secretKeys.adminPasswordKey | string | `"postgres-password"` | the key within `postgresql.existingSecret` containing the admin (postgres) password string |
-| postgresql.auth.secretKeys.userPasswordKey | string | `"password"` | the key within `postgresql.existingSecret` containing the user password string |
-| postgresql.auth.username | string | `"catalog"` | the postgres user to create |
-| postgresql.enabled | bool | `true` | if the `bitnami/postgresql` chart is used. [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead. set to `false` if using `externalDatabase.*` |
-| postgresql.global.security.allowInsecureImages | bool | `true` |  |
-| postgresql.image.pullPolicy | string | `"Always"` |  |
-| postgresql.image.registry | string | `"quay.io"` |  |
-| postgresql.image.repository | string | `"lakekeeper/postgresql"` |  |
-| postgresql.image.tag | string | `"17.5.0-debian-12-r16"` |  |
+| postgresql.enabled | bool | `true` | if the `groundhog2k/postgres` chart is used. [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead. set to `false` if using `externalDatabase.*` |
 | postgresql.nameOverride | string | `"lakekeeper-pg"` |  |
-| postgresql.persistence.accessModes | list | `["ReadWriteOnce"]` | the access modes of the PVC |
-| postgresql.persistence.enabled | bool | `true` | if postgres will use Persistent Volume Claims to store data. if false, data will be LOST as postgres Pods restart |
-| postgresql.persistence.size | string | `"5Gi"` | the size of PVC to request |
-| postgresql.persistence.storageClass | string | `""` | the StorageClass used by the PVC |
-| postgresql.serviceBindings.enabled | bool | `true` |  |
+| postgresql.service.port | int | `5432` |  |
+| postgresql.settings.existingSecret | string | `nil` | Optional existing secret for the Postgrest superuser |
+| postgresql.settings.superuser.secretKey | string | `nil` | Key of existingSecret for the Superuser name |
+| postgresql.settings.superuser.value | string | `nil` | Superuser name (if no existingSecret was specified) - defaults to "postgres" |
+| postgresql.settings.superuserPassword.secretKey | string | `nil` | Key of existingSecret for the Superuser password |
+| postgresql.settings.superuserPassword.value | string | `"password"` | Password of Superuser (if no existingSecret was specified) |
+| postgresql.storage.accessModes[0] | string | `"ReadWriteOnce"` |  |
+| postgresql.storage.className | string | `nil` | the StorageClass used by the PVC |
+| postgresql.storage.requestedSize | string | `"5Gi"` | Size for new PVC, when no existing PVC is used if `null`, data will be LOST as postgres Pods restart |
+| postgresql.storage.size | string | `"5Gi"` | the size of PVC to request |
+| postgresql.userDatabase.existingSecret | string | `nil` | Optional existing secret with database name, user and password |
+| postgresql.userDatabase.name.secretKey | string | `nil` | Key of the existingSecret with database name |
+| postgresql.userDatabase.name.value | string | `"lakekeeper"` | Name of the user database (if no existingSecret was specified) - defaults to "lakekeeper" |
+| postgresql.userDatabase.password.secretKey | string | `nil` | Key of the existingSecret with password of created user |
+| postgresql.userDatabase.password.value | string | `"password"` | Password of created user (if no existingSecret was specified) - defaults to "password" |
+| postgresql.userDatabase.user.secretKey | string | `nil` | Key of the existingSecret with database user |
+| postgresql.userDatabase.user.value | string | `"lakekeeper"` | User name with full access to user database (if no existingSecret was specified) - defaults to "lakekeeper" |
 | secretBackend.kv2.password | string | `""` | password for authentication consider using a secret for the password |
 | secretBackend.kv2.passwordSecret | string | `""` | the name of a pre-created secret containing the KV2 password |
 | secretBackend.kv2.passwordSecretKey | string | `"password"` | the key within `kv2.passwordSecret` containing the password string |

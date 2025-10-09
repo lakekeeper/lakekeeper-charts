@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add support for setting `priorityClassName` for Lakekeeper Catalog Pods
 * Expose Metrics Port 9000 for Catalog Pods
 * Add boolean `catalog.prometheus.setScrapeAnnotations` configuration option to set prometheus scrape labels
+* Option to use Lakekeeper Plus image (requires license)
 
 ### Fixed
 
