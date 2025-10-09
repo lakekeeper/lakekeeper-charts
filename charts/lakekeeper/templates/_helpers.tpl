@@ -1,5 +1,11 @@
-{{- define "lakekeeper.image-name" -}}
+{{- define "lakekeeper.is_plus" -}}
 {{- $isPlus := required "lakekeeper.edition must be specified" .Values.lakekeeper.edition | regexMatch "(?i)plus" -}}
+{{- $isPlus -}}
+{{- end }}
+
+
+{{- define "lakekeeper.image-name" -}}
+{{- $isPlus := include "lakekeeper.is_plus" . -}}
 {{- $repository := "" -}}
 {{- if .Values.catalog.image.repository -}}
   {{- $repository = .Values.catalog.image.repository -}}
@@ -260,8 +266,8 @@ The list of `env` catalog Pods
 {{- end }}
 {{- end }}
 
-{{- /* set LAKEKEEPER__LICENSE__KEY */ -}}
-{{- if .Values.lakekeeper.useLicenseSecret }}
+{{- /* set LAKEKEEPER__LICENSE__KEY for plus edition only*/ -}}
+{{- if and .Values.lakekeeper.useLicenseSecret (include "lakekeeper.is_plus" .) }}
 - name: LAKEKEEPER__LICENSE__KEY
   valueFrom:
     secretKeyRef:
