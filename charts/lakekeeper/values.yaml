@@ -442,8 +442,6 @@ postgresql:
       - ReadWriteOnce
     # -- the StorageClass used by the PVC
     className:
-    # -- the size of PVC to request
-    size: 5Gi
 
 externalDatabase:
   # -- the type of external database.
