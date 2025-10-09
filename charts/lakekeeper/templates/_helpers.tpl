@@ -1,9 +1,9 @@
 {{- define "lakekeeper.image-name" -}}
-{{- $isEnterprise := required "lakekeeper.edition must be specified" .Values.lakekeeper.edition | regexMatch "(?i)enterprise" -}}
+{{- $isPlus := required "lakekeeper.edition must be specified" .Values.lakekeeper.edition | regexMatch "(?i)plus" -}}
 {{- $repository := "" -}}
 {{- if .Values.catalog.image.repository -}}
   {{- $repository = .Values.catalog.image.repository -}}
-{{- else if $isEnterprise -}}
+{{- else if $isPlus -}}
   {{- $repository = "quay.io/vakamo/lakekeeper-plus" -}}
 {{- else -}}
   {{- $repository = "quay.io/lakekeeper/catalog" -}}
@@ -12,8 +12,8 @@
 {{- /* Default versions: enterprise=v0.10.2, community=v0.10.2 */ -}}
 {{- if .Values.catalog.image.tag -}}
   {{- $tag = .Values.catalog.image.tag -}}
-{{- else if $isEnterprise -}}
-  {{- $tag = "v0.10.2" -}}
+{{- else if $isPlus -}}
+  {{- $tag = "v0.10.2-distroless" -}}
 {{- else -}}
   {{- $tag = "v0.10.2" -}}
 {{- end -}}
