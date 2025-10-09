@@ -8,17 +8,16 @@ Please check our [Documentation](http://docs.lakekeeper.io), the [Lakekeeper Rep
 
 ## ⚠️ Important Notice: Upcoming changes to Bitnami Postgres
 
-This chart currently relies on the Bitnami PostgreSQL Helm chart for database backend services for both Lakekeeper and OpenFGA. Due to the [Bitnami Secure Images initiative](https://news.broadcom.com/app-dev/broadcom-introduces-bitnami-secure-images-for-production-ready-containerized-applications), Bitnami is retaining only the `latest` tags for their publicly available images.
+This used to rely on the Bitnami PostgreSQL Helm chart for database backend services for both Lakekeeper and OpenFGA. Due to the [Bitnami Secure Images initiative](https://news.broadcom.com/app-dev/broadcom-introduces-bitnami-secure-images-for-production-ready-containerized-applications), this was no longer possible.
 
-**Upcoming changes:**
-- Version `0.7.1`: We will transition from Bitnami images to self-hosted images on Quay.io to ensure deployment stability
-- Version `0.8.0`: We will completely migrate away from the Bitnami chart
+**Changes:**
+- Version `0.7.1`: Transition from Bitnami images to self-hosted images on Quay.io to ensure deployment stability
+- Version `0.8.0`: Migration to [`groundhog2k/posgres`](https://github.com/groundhog2k/helm-charts).
 
 **Important notes:**
 - No automatic migration will be provided by this chart
 - **Back up your database before updating to prevent data loss**
 - As noted in the installation section and [Production Checklist](https://docs.lakekeeper.io/docs/nightly/production/), the databases included with this chart are **not production-ready**
-- For production deployments, please implement your own database backend
 
 ## Installing the Chart
 
@@ -29,7 +28,7 @@ helm repo add lakekeeper https://lakekeeper.github.io/lakekeeper-charts/
 helm install my-lakekeeper lakekeeper/lakekeeper
 ```
 
-This chart by default deploys the "postgresql" subchart. This setup is not production ready. Please use an external database for production.
+⚠️ This chart by default deploys the "postgresql" subchart. This setup is not production ready. For production deployments, please deploy an external database, set `postgresql.enabled` to false and use the `externalDatabase.*` parameters to configure the connection. To deploy production ready Databases on Kubernetes, we recommend to use the [`CloudNativePGOperator`](https://cloudnative-pg.io/).
 
 For potential additional steps that are required for upgrades, please check the [Changelog](./Changelog)
 
@@ -37,7 +36,7 @@ For potential additional steps that are required for upgrades, please check the 
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://openfga.github.io/helm-charts | openfga(openfga) | 0.2.35 |
+| https://openfga.github.io/helm-charts | openfga(openfga) | 0.2.44 |
 | oci://registry-1.docker.io/bitnamicharts | postgresql | 16.7.26 |
 
 ## Values
@@ -156,6 +155,14 @@ For potential additional steps that are required for upgrades, please check the 
 | openfga.migrate.annotations."argocd.argoproj.io/sync-wave" | string | `"0"` |  |
 | openfga.migrate.annotations."helm.sh/hook" | string | `"post-install, post-upgrade, post-rollback"` |  |
 | openfga.postgresql.enabled | bool | `true` |  |
+| openfga.postgresql.extraEnvVars[0].name | string | `"OPENFGA_CACHE_CONTROLLER_ENABLED"` |  |
+| openfga.postgresql.extraEnvVars[0].value | string | `"true"` |  |
+| openfga.postgresql.extraEnvVars[1].name | string | `"OPENFGA_CHECK_QUERY_CACHE_ENABLED"` |  |
+| openfga.postgresql.extraEnvVars[1].value | string | `"true"` |  |
+| openfga.postgresql.extraEnvVars[2].name | string | `"OPENFGA_CHECK_ITERATOR_CACHE_ENABLED"` |  |
+| openfga.postgresql.extraEnvVars[2].value | string | `"true"` |  |
+| openfga.postgresql.extraEnvVars[3].name | string | `"OPENFGA_LIST_OBJECTS_ITERATOR_CACHE_ENABLED"` |  |
+| openfga.postgresql.extraEnvVars[3].value | string | `"false"` |  |
 | openfga.postgresql.fullnameOverride | string | `"lakekeeper-openfga-pg"` |  |
 | openfga.postgresql.global.security.allowInsecureImages | bool | `true` |  |
 | openfga.postgresql.image.registry | string | `"quay.io"` |  |

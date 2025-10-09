@@ -17,6 +17,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.8.0] - 2025-10-09
+
+### Changed
+* Migrate from bitnami postgresql chart to groundhog2k (No migration provided)
+* Update Lakekeeper to v0.10.2
+* Update OpenFGA to v1.10.2 / Chart to v0.2.44
+* Enable OpenFGA Caching by default
+* Disable OpenFGA Playground by default
+* Change `ICEBERG_REST__` config prefix to `LAKEKEEPER__` for all environment variables (Lakekeeper still supports the old prefix for backwards compatibility)
+
+### Added
+* Add support for setting `priorityClassName` for Lakekeeper Catalog Pods
+* Expose Metrics Port 9000 for Catalog Pods
+* Add boolean `catalog.prometheus.setScrapeAnnotations` configuration option to set prometheus scrape labels
+
+### Fixed
+
 ## [0.7.1] - 2025-08-15
 
 ### Changed
