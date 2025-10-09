@@ -39,44 +39,45 @@ jobs:
           helm dependency update
           
           echo "Testing Core Edition (default values)..."
-          # Core edition should use community image
-          PLUS_IMAGE_COUNT=$(helm template lakekeeper --values values.yaml . | grep -c "quay.io/vakamo/lakekeeper-plus" || echo "0")
+          PLUS_IMAGE_COUNT=$(helm template lakekeeper --values values.yaml . | grep -c "quay.io/vakamo/lakekeeper-plus")
           if [ "$PLUS_IMAGE_COUNT" != "0" ]; then
             echo "ERROR: Core edition should not use plus image. Found $PLUS_IMAGE_COUNT references."
             exit 1
           fi
+          echo "✓ Core edition correctly uses no plus images"
           
-          # Core edition should use core image
-          CORE_IMAGE_COUNT=$(helm template lakekeeper --values values.yaml . | grep -c "quay.io/lakekeeper/catalog" || echo "0")
+          CORE_IMAGE_COUNT=$(helm template lakekeeper --values values.yaml . | grep -c "quay.io/lakekeeper/catalog")
           if [ "$CORE_IMAGE_COUNT" == "0" ]; then
             echo "ERROR: Core edition should use core image."
             exit 1
           fi
+          echo "✓ Core edition correctly uses core images"
           
-          # Core edition should not have license key references
-          LICENSE_REF_COUNT=$(helm template lakekeeper --values values.yaml . | grep -c "lakekeeper-license" || echo "0")
+          LICENSE_REF_COUNT=$(helm template lakekeeper --values values.yaml . | grep -c "lakekeeper-license")
+          echo "License references found: '$LICENSE_REF_COUNT'"
           if [ "$LICENSE_REF_COUNT" != "0" ]; then
             echo "ERROR: Core edition should not have license references. Found $LICENSE_REF_COUNT references."
             exit 1
           fi
+          echo "✓ Core edition correctly has no license references"
           
           echo "Testing Plus Edition..."
-          # Plus edition should use plus image
           PLUS_IMAGE_COUNT=$(helm template lakekeeper --set lakekeeper.edition=plus --values values.yaml . | grep -c "quay.io/vakamo/lakekeeper-plus" || echo "0")
+          echo "Plus image references found: $PLUS_IMAGE_COUNT"
           if [ "$PLUS_IMAGE_COUNT" == "0" ]; then
             echo "ERROR: Plus edition should use plus image."
             exit 1
           fi
           
-          # Plus edition should have license key references when useLicenseSecret=true
           LICENSE_REF_COUNT=$(helm template lakekeeper --set lakekeeper.edition=plus --values values.yaml . | grep -c "lakekeeper-license" || echo "0")
+          echo "License references found: $LICENSE_REF_COUNT"
           if [ "$LICENSE_REF_COUNT" == "0" ]; then
             echo "ERROR: Plus edition should have license references when useLicenseSecret=true."
             exit 1
           fi
           
-          # Plus edition with direct license key should store in config secret
           LICENSE_IN_SECRET=$(helm template lakekeeper --set lakekeeper.edition=plus --set lakekeeper.useLicenseSecret=false --set lakekeeper.licenseKey=test-key --values values.yaml . | grep -c "LAKEKEEPER__LICENSE__KEY" || echo "0")
+          echo "License key in config secret found: $LICENSE_IN_SECRET"
           if [ "$LICENSE_IN_SECRET" == "0" ]; then
             echo "ERROR: Plus edition with direct license key should store LAKEKEEPER__LICENSE__KEY in config secret."
             exit 1
