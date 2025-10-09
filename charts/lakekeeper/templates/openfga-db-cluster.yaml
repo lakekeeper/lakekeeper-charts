@@ -1,0 +1,52 @@
+{{- if and .Values.internalOpenFGA .Values.postgresqlAuthz.enabled -}}
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ .Values.openfga.datastore.uriSecret | trimSuffix "-app" }}
+  {{- if .Values.postgresqlAuthz.clusterAnnotations -}}
+  annotations:
+    {{- toYaml .Values.postgresqlAuthz.clusterAnnotations | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "iceberg-catalog.labels" . | nindent 4 }}
+    app.kubernetes.io/component: lakekeeper-database
+    {{- if .Values.postgresqlAuthz.clusterLabels }}
+    {{- toYaml .Values.postgresqlAuthz.clusterLabels | nindent 4 }}
+    {{- end }}
+spec:
+  instances: {{ .Values.postgresqlAuthz.instances }}
+
+  {{- if .Values.postgresqlAuthz.imageName }}
+  imageName: {{ .Values.postgresqlAuthz.imageName }}
+  {{- end }}
+
+  {{- if .Values.postgresqlAuthz.primaryUpdateStrategy }}
+  primaryUpdateStrategy: {{ .Values.postgresqlAuthz.primaryUpdateStrategy }}
+  {{- end }}
+
+  bootstrap:
+    initdb:
+      database: lakekeeper
+      owner: lakekeeper
+  
+  {{- if .Values.postgresqlAuthz.resources }}
+  resources:
+    {{- toYaml .Values.postgresqlAuthz.resources | nindent 4 }}
+  {{- end }}
+
+  {{- if .Values.postgresqlAuthz.backup }}
+  backup:
+    {{- toYaml .Values.postgresqlAuthz.backup | nindent 4 }}
+  {{- end }}
+  
+  {{- if .Values.postgresqlAuthz.superuserSecretName }}
+  superuserSecret:
+    name: {{ .Values.postgresqlAuthz.superuserSecretName }}
+  {{- end }}
+
+  storage:
+    {{- if .Values.postgresqlAuthz.persistence.storageClass }}
+    storageClass: {{ .Values.postgresqlAuthz.persistence.storageClass }}
+    {{- end }}
+    size: {{ .Values.postgresqlAuthz.persistence.size }}
+{{- end -}}

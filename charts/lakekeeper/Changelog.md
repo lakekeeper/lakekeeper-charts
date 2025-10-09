@@ -10,7 +10,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Added
-* Expose Metrics Port 9000 for Catalog Pods
+
+### Fixed
+
+## [Unreleased]
+
+### Changed
+
+### Added
+* Remove bitnami helm chart dependency - NO AUTOMATIC MIGRATION PROVIDED. `postgresql.enabled` is still honored, so production deployments are not affected.
+* Add option to install CloudNativePG Operator as part of this chart via `cloudNativePGOperator.enabled` (namespace scoped)
+* Modify `postgresql` section to deploy a CloudNativePG Cluster.
+* Update Lakekeeper to v0.10.2
+* Rename all `ICEBERG_REST__` configuration options to `LAKEKEEPER__` (Lakekeeper still accepts both prefixes for backward compatibility)
+* Update OpenFGA to v1.10.2 / Chart to v0.2.44
+* Enable OpenFGA Caching by default
+* Expose Metrics Port 9000 for Lakekeeper Pods
 * Add boolean `catalog.prometheus.setScrapeAnnotations` configuration option to set prometheus scrape labels
 
 ### Fixed

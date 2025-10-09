@@ -1,0 +1,50 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: {{ include "iceberg-catalog.postgresql.cluster-name" . }}
+  {{- if .Values.postgresql.clusterAnnotations -}}
+  annotations:
+    {{- toYaml .Values.postgresql.clusterAnnotations | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "iceberg-catalog.labels" . | nindent 4 }}
+    app.kubernetes.io/component: lakekeeper-database
+    {{- if .Values.postgresql.clusterLabels }}
+    {{- toYaml .Values.postgresql.clusterLabels | nindent 4 }}
+    {{- end }}
+spec:
+  instances: {{ .Values.postgresql.instances }}
+
+  {{- if .Values.postgresql.imageName }}
+  imageName: {{ .Values.postgresql.imageName }}
+  {{- end }}
+
+  {{- if .Values.postgresql.primaryUpdateStrategy }}
+  primaryUpdateStrategy: {{ .Values.postgresql.primaryUpdateStrategy }}
+  {{- end }}
+
+  bootstrap:
+    initdb:
+      database: lakekeeper
+      owner: lakekeeper
+  
+  {{- if .Values.postgresql.resources }}
+  resources:
+    {{- toYaml .Values.postgresql.resources | nindent 4 }}
+  {{- end }}
+
+  {{- if .Values.postgresql.backup }}
+  backup:
+    {{- toYaml .Values.postgresql.backup | nindent 4 }}
+  {{- end }}
+  
+  {{- if .Values.postgresql.superuserSecretName }}
+  superuserSecret:
+    name: {{ .Values.postgresql.superuserSecretName }}
+  {{- end }}
+
+  storage:
+    {{- if .Values.postgresql.persistence.storageClass }}
+    storageClass: {{ .Values.postgresql.persistence.storageClass }}
+    {{- end }}
+    size: {{ .Values.postgresql.persistence.size }}

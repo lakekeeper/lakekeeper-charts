@@ -26,7 +26,7 @@ catalog:
     # -- The image repository to pull from
     repository: quay.io/lakekeeper/catalog
     # -- The image tag to pull
-    tag: v0.9.5
+    tag: v0.10.2
     # -- The image pull policy
     pullPolicy: IfNotPresent
     # -- 65532 = nonroot of google container distroless
@@ -116,8 +116,8 @@ catalog:
   config: {}
   # ---- EXAMPLE ----
   # config:
-  #   ICEBERG_REST__BASE_URI: "https://data.example.com"
-  #   You only need to set ICEBERG_REST__BASE_URI if Lakekeeper is running behind a proxy that does not set x-forwarded-for / x-forwarded-host headers
+  #   LAKEKEEPER__BASE_URI: "https://data.example.com"
+  #   You only need to set LAKEKEEPER__BASE_URI if Lakekeeper is running behind a proxy that does not set x-forwarded-for / x-forwarded-host headers
   #   or if you want to force the same base url for all Iceberg clients interacting with a catalog
   #   More information regarding request routing can be found here: https://docs.lakekeeper.io/docs/latest/configuration/?h=x+forwar
   #   LAKEKEEPER__USE_X_FORWARDED_HEADERS can be set to `false` to disable usage for x-forwarded headers
@@ -366,54 +366,64 @@ secretBackend:
     passwordSecretKey: "password"
 
 postgresql:
-  global:
-    security:
-      # Required due to our own postsgresql image
-      allowInsecureImages: true
-
-  # -- if the `bitnami/postgresql` chart is used.
+  # -- if a `postgresql.cnpg.io/v1/Cluster` is created and used.
   # [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead.
-  # set to `false` if using `externalDatabase.*`
+  # Set `postgresql.enabled` to `false` if you are using `externalDatabase.*` (recommended).
+  # [WARNING] requires the CloudNativePG Operator to be installed in the cluster.
   enabled: true
-  image:
-    registry: quay.io
-    repository: lakekeeper/postgresql
-    tag: 17.5.0-debian-12-r16
-    pullPolicy: Always
 
-  nameOverride: "lakekeeper-pg"
+  # -- annotations to add to the postgresql cluster resource
+  clusterAnnotations: {}
 
-  serviceBindings:
-    enabled: true
+  # -- additional labels to add to the postgresql cluster resource
+  clusterLabels: {}
 
-  auth:
-    # -- the postgres user to create
-    username: catalog
-    # -- the postgres user's password.
-    # if not specified, a random password is generated and stored in a secret
-    password: ""
-    # -- the postgres database to create
-    database: catalog
-    # -- the name of a pre-created secret containing the postgres password
-    existingSecret: ""
-    secretKeys:
-      # -- the key within `postgresql.existingSecret` containing the admin (postgres) password string
-      adminPasswordKey: "postgres-password"
-      # -- the key within `postgresql.existingSecret` containing the user password string
-      userPasswordKey: "password"
+  # -- number of instances in the postgres cluster
+  instances: 1
+
+  # -- resource requests/limits for each of the postgres instances
+  # -------- EXAMPLE --------
+  # resources:
+  #   requests:
+  #     memory: "512Mi"
+  #     cpu: "1"
+  #   limits:
+  #     memory: "1Gi"
+  #     cpu: "2"
+  resources: {}
+
+  # -- overwrite the image of the postgres cluster
+  imageName: ""
+
+  # -- Additional postgres configuration parameters.
+  # ----- EXAMPLE -----
+  # postgresql:
+  #   parameters:
+  #     shared_buffers: 256MB
+  #     pg_stat_statements.max: '10000'
+  #     pg_stat_statements.track: all
+  #     auto_explain.log_min_duration: '10s'
+  #   pg_hba:
+  #     - host all all 10.244.0.0/16 md5
+  postgresql: {}
+
+  # -- primary update strategy
+  # - unsupervised: automated update of the primary once all
+  #                 replicas have been upgraded (default)
+  # - supervised: requires manual supervision to perform
+  #               the switchover of the primary
+  primaryUpdateStrategy: ""
+
+  # -- name of the secret for the postgres superuser (postgres)
+  superuserSecretName: ""
+
+  # -- backup configuration for the postgres cluster
+  backup: {}
 
   # configs for the PVC of postgresql
   persistence:
-    # -- if postgres will use Persistent Volume Claims to store data.
-    # if false, data will be LOST as postgres Pods restart
-    enabled: true
-
     # -- the StorageClass used by the PVC
     storageClass: ""
-
-    # -- the access modes of the PVC
-    accessModes:
-      - ReadWriteOnce
 
     # -- the size of PVC to request
     size: 5Gi
@@ -545,6 +555,68 @@ authz:
 # When setting `internalOpenFGA` to true, the `openfga` subchart is deployed.
 internalOpenFGA: false
 
+postgresqlAuthz:
+  # -- if true, a Postgres database is created for OpenFGA
+  # within the same Postgres cluster as Lakekeeper.
+  # Only used if `internalOpenFGA` is true.
+  enabled: true
+
+  # -- annotations to add to the postgresql cluster resource
+  clusterAnnotations: {}
+
+  # -- additional labels to add to the postgresql cluster resource
+  clusterLabels: {}
+
+  # -- number of instances in the postgres cluster
+  instances: 1
+
+  # -- resource requests/limits for each of the postgres instances
+  # -------- EXAMPLE --------
+  # resources:
+  #   requests:
+  #     memory: "512Mi"
+  #     cpu: "1"
+  #   limits:
+  #     memory: "1Gi"
+  #     cpu: "2"
+  resources: {}
+
+  # -- overwrite the image of the postgres cluster
+  imageName: ""
+
+  # -- Additional postgres configuration parameters.
+  # ----- EXAMPLE -----
+  # postgresql:
+  #   parameters:
+  #     shared_buffers: 256MB
+  #     pg_stat_statements.max: '10000'
+  #     pg_stat_statements.track: all
+  #     auto_explain.log_min_duration: '10s'
+  #   pg_hba:
+  #     - host all all 10.244.0.0/16 md5
+  postgresql: {}
+
+  # -- primary update strategy
+  # - unsupervised: automated update of the primary once all
+  #                 replicas have been upgraded (default)
+  # - supervised: requires manual supervision to perform
+  #               the switchover of the primary
+  primaryUpdateStrategy: ""
+
+  # -- name of the secret for the postgres superuser (postgres)
+  superuserSecretName: ""
+
+  # -- backup configuration for the postgres cluster
+  backup: {}
+
+  # configs for the PVC of postgresql
+  persistence:
+    # -- the StorageClass used by the PVC
+    storageClass: ""
+
+    # -- the size of PVC to request
+    size: 5Gi
+
 # The subchart is only deployed if `internalOpenFGA` is set to true.
 # All following values belong to the `openfga` subchart.
 # Please check the [OpenFGA Chart](https://github.com/openfga/helm-charts/tree/main/charts/openfga)
@@ -555,34 +627,34 @@ openfga:
   # By default, we use the same number of replicas as the catalog
   replicaCount: *catalog_replicas
 
-  image:
-    tag: v1.8.16
-
   migrate:
     annotations:
       helm.sh/hook: "post-install, post-upgrade, post-rollback"
       argocd.argoproj.io/hook: Sync
       argocd.argoproj.io/sync-wave: "0"
 
+  extraEnvVars:
+    - name: OPENFGA_CACHE_CONTROLLER_ENABLED
+      value: "true"
+    - name: OPENFGA_CHECK_QUERY_CACHE_ENABLED
+      value: "true"
+    - name: OPENFGA_CHECK_ITERATOR_CACHE_ENABLED
+      value: "true"
+    - name: OPENFGA_LIST_OBJECTS_ITERATOR_CACHE_ENABLED
+      value: "false"
+
   datastore:
     engine: postgres
     migrationType: initContainer
-    uriSecret: lakekeeper-openfga-pg-svcbind-postgres
+    # -- OpenFGA uri secret for the Postgres database.
+    # If `postgresqlAuthz.enabled` is true, a Cloudnative PG Cluster is created for OpenFGA.
+    # The provisioned db clusters's name is `uriSecret` without the `-app` suffix.
+    uriSecret: lakekeeper-openfga-db-app
+    secretKeys:
+      uriKey: uri
+  
+  playground:
+    enabled: false
 
   postgresql:
-    # If not set, postgresql of openfga collides with names of
-    # lakekeeper postgres. If changed, also change the `uriSecret` in `datastore`.
-    fullnameOverride: lakekeeper-openfga-pg
-    enabled: true
-
-    serviceBindings:
-      enabled: true
-
-    global:
-      security:
-        # Required due to our own postsgresql image
-        allowInsecureImages: true
-    image:
-      registry: quay.io
-      repository: lakekeeper/postgresql
-      tag: 15.4.0-debian-11-r45
+    enabled: false

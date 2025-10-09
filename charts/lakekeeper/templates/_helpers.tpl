@@ -87,21 +87,8 @@ The list of `envFrom` for catalog Pods
     name: {{ include "iceberg-catalog.fullname" . }}-config-envs
 {{- end }}
 
-{{/*
-Construct the `postgresql.fullname` of the postgresql sub-chat chart.
-Used to discover the Service and Secret name created by the sub-chart.
-*/}}
-{{- define "iceberg-catalog.postgresql.fullname" -}}
-{{- if .Values.postgresql.fullnameOverride -}}
-{{- .Values.postgresql.fullnameOverride | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- $name := default "postgresql" .Values.postgresql.nameOverride -}}
-{{- if contains $name .Release.Name -}}
-{{- .Release.Name | trunc 63 | trimSuffix "-" -}}
-{{- else -}}
-{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" -}}
-{{- end -}}
-{{- end -}}
+{{- define "iceberg-catalog.postgresql.cluster-name" -}}
+{{ include "iceberg-catalog.fullname" . }}-db
 {{- end -}}
 
 {{/*
@@ -126,60 +113,43 @@ The list of `env` catalog Pods
 */}}
 {{- define "iceberg-catalog.env" }}
 {{- if .Values.postgresql.enabled }}
-- name: ICEBERG_REST__PG_DATABASE_URL_WRITE
+- name: LAKEKEEPER__PG_DATABASE_URL_WRITE
   valueFrom:
     secretKeyRef:
-      name: {{ include "iceberg-catalog.postgresql.fullname" . }}-svcbind-custom-user
+      name: {{ include "iceberg-catalog.postgresql.cluster-name" . }}-app
       key: "uri"
-{{- end }}
-{{- /* set ICEBERG_REST__PG_USER */ -}}
+{{- else}}
+{{- /* set LAKEKEEPER__PG_USER */ -}}
 {{- if .Values.externalDatabase.userSecret }}
-- name: ICEBERG_REST__PG_USER
+- name: LAKEKEEPER__PG_USER
   valueFrom:
     secretKeyRef:
       name: {{ .Values.externalDatabase.userSecret }}
       key: {{ .Values.externalDatabase.userSecretKey }}
 {{- else }}
-{{- /* in this case, ICEBERG_REST__PG_USER is set in the `-config-envs` Secret */ -}}
+{{- /* in this case, LAKEKEEPER__PG_USER is set in the `-config-envs` Secret */ -}}
 {{- end }}
-
-{{- /* set ICEBERG_REST__PG_PASSWORD */ -}}
-{{- if .Values.postgresql.enabled }}
-{{- if .Values.postgresql.auth.existingSecret }}
-- name: ICEBERG_REST__PG_PASSWORD
-  valueFrom:
-    secretKeyRef:
-      name: {{ .Values.postgresql.auth.existingSecret }}
-      key: {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
-{{- else }}
-- name: ICEBERG_REST__PG_PASSWORD
-  valueFrom:
-    secretKeyRef:
-      name: {{ include "iceberg-catalog.postgresql.fullname" . }}
-      key: {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
-{{- end }}
-{{- else }}
 {{- if .Values.externalDatabase.passwordSecret }}
-- name: ICEBERG_REST__PG_PASSWORD
+- name: LAKEKEEPER__PG_PASSWORD
   valueFrom:
     secretKeyRef:
       name: {{ .Values.externalDatabase.passwordSecret }}
       key: {{ .Values.externalDatabase.passwordSecretKey }}
 {{- else }}
-{{- /* in this case, ICEBERG_REST__PG_PASSWORD is set in the `-config-envs` Secret */ -}}
+{{- /* in this case, LAKEKEEPER__PG_PASSWORD is set in the `-config-envs` Secret */ -}}
 {{- end }}
 {{- end }}
 
-{{- /* set ICEBERG_REST__PG_ENCRYPTION_KEY */ -}}
+{{- /* set LAKEKEEPER__PG_ENCRYPTION_KEY */ -}}
 {{- if eq "postgres" (lower .Values.secretBackend.type) }}
 {{- if .Values.secretBackend.postgres.encryptionKeySecret }}
-- name: ICEBERG_REST__PG_ENCRYPTION_KEY
+- name: LAKEKEEPER__PG_ENCRYPTION_KEY
   valueFrom:
     secretKeyRef:
       name: {{ .Values.secretBackend.postgres.encryptionKeySecret }}
       key: {{ .Values.secretBackend.postgres.encryptionKeySecretKey }}
 {{- else }}
-- name: ICEBERG_REST__PG_ENCRYPTION_KEY
+- name: LAKEKEEPER__PG_ENCRYPTION_KEY
   valueFrom:
     secretKeyRef:
       name: {{ include "iceberg-catalog.fullname" . }}-postgres-encryption
@@ -188,10 +158,10 @@ The list of `env` catalog Pods
 {{- end }}
 
 {{- if eq "kv2" (lower .Values.secretBackend.type) }}
-{{- /* set ICEBERG_REST__KV2__USER */ -}}
+{{- /* set LAKEKEEPER__KV2__USER */ -}}
 {{- if empty .Values.secretBackend.kv2.user }}
 {{- if .Values.secretBackend.kv2.userSecret }}
-- name: ICEBERG_REST__KV2__USER
+- name: LAKEKEEPER__KV2__USER
   valueFrom:
     secretKeyRef:
       name: {{ .Values.secretBackend.kv2.userSecret }}
@@ -201,7 +171,7 @@ The list of `env` catalog Pods
 
 {{- if empty .Values.secretBackend.kv2.password }}
 {{- if .Values.secretBackend.kv2.passwordSecret }}
-- name: ICEBERG_REST__KV2__PASSWORD
+- name: LAKEKEEPER__KV2__PASSWORD
   valueFrom:
     secretKeyRef:
       name: {{ .Values.secretBackend.kv2.passwordSecret }}
@@ -215,6 +185,6 @@ The list of `env` catalog Pods
 {{ toYaml .Values.catalog.extraEnv }}
 {{- end }}
 
-- name: ICEBERG_REST__PLACEHOLDER
+- name: LAKEKEEPER__PLACEHOLDER
   value: "placeholder"
 {{- end }}
