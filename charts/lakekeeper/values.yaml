@@ -387,7 +387,7 @@ postgresql:
       secretKey:
     superuserPassword:
       # -- Password of Superuser (if no existingSecret was specified)
-      value:
+      value: "password"
       # -- Key of existingSecret for the Superuser password
       secretKey:
 
@@ -395,18 +395,18 @@ postgresql:
     # -- Optional existing secret with database name, user and password
     existingSecret:
     name:
-      # -- Name of the user database (if no existingSecret was specified)
-      value:
+      # -- Name of the user database (if no existingSecret was specified) - defaults to "lakekeeper"
+      value: "lakekeeper"
       # -- Key of the existingSecret with database name
       secretKey:
     user:
-      # -- User name with full access to user database (if no existingSecret was specified)
-      value:
+      # -- User name with full access to user database (if no existingSecret was specified) - defaults to "lakekeeper"
+      value: "lakekeeper"
       # -- Key of the existingSecret with database user
       secretKey:
     password:
-      # -- Password of created user (if no existingSecret was specified)
-      value:
+      # -- Password of created user (if no existingSecret was specified) - defaults to "password"
+      value: "password"
       # -- Key of the existingSecret with password of created user
       secretKey:
 

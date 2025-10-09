@@ -26,10 +26,10 @@ jobs:
         with:
             version: v3.10.1
 
-      - name: Add helm groundhog2k repo
+      - name: Add groundhog2k helm repo
         run: helm repo add groundhog2k https://groundhog2k.github.io/helm-charts/
 
-      - name: Add openfga repo
+      - name: Add openfga helm repo
         run: helm repo add openfga https://openfga.github.io/helm-charts
 
       - name: Run chart-testing (list-changed)
