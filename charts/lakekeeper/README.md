@@ -187,7 +187,6 @@ For potential additional steps that are required for upgrades, please check the 
 | postgresql.storage.accessModes[0] | string | `"ReadWriteOnce"` |  |
 | postgresql.storage.className | string | `nil` | the StorageClass used by the PVC |
 | postgresql.storage.requestedSize | string | `"5Gi"` | Size for new PVC, when no existing PVC is used if `null`, data will be LOST as postgres Pods restart |
-| postgresql.storage.size | string | `"5Gi"` | the size of PVC to request |
 | postgresql.userDatabase.existingSecret | string | `nil` | Optional existing secret with database name, user and password |
 | postgresql.userDatabase.name.secretKey | string | `nil` | Key of the existingSecret with database name |
 | postgresql.userDatabase.name.value | string | `"lakekeeper"` | Name of the user database (if no existingSecret was specified) - defaults to "lakekeeper" |
