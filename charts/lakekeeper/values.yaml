@@ -15,18 +15,38 @@ clusterDomain: "cluster.local"
 # -- Additional labels to add to all resources
 additionalLabels:
   {}
-  # app: lakekeeper
 
 # -- If true, set the annotation helm-hook-enabled: "false" for jobs that need to run before the catalog is started.
 # If this is false, helm install --wait will not work.
 helmWait: false
 
+lakekeeper:
+  # -- Lakekeeper Edition to use (core|plus).
+  # Lakekeeper Plus requires a valid license.
+  edition: "core"
+  
+  # -- License key for Lakekeeper Plus.
+  # We strongly recommend using a Kubernetes secret instead by setting
+  # `lakekeeper.useLicenseSecret: true` and creating the secret separately.
+  # If both licenseKey and useLicenseSecret are set, the secret takes precedence.
+  licenseKey: ""
+  # -- If true, the license key is stored in a Kubernetes secret.
+  # If false, the license key is passed as an environment variable.
+  # We recommend setting this to true.
+  useLicenseSecret: true
+  # -- Name of the secret to store the license key.
+  # Only used if `lakekeeper.useLicenseSecret` is true.
+  licenseSecretName: "lakekeeper-license"
+  # -- Key within the secret to store the license key.
+  # Only used if `lakekeeper.useLicenseSecret` is true.
+  licenseSecretKey: "license-key"
+
 catalog:
   image:
     # -- The image repository to pull from
-    repository: quay.io/lakekeeper/catalog
+    repository: ~
     # -- The image tag to pull
-    tag: v0.10.0
+    tag: ~
     # -- The image pull policy
     pullPolicy: IfNotPresent
     # -- 65532 = nonroot of google container distroless
