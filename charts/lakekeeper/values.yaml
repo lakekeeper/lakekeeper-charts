@@ -26,7 +26,7 @@ catalog:
     # -- The image repository to pull from
     repository: quay.io/lakekeeper/catalog
     # -- The image tag to pull
-    tag: v0.9.5
+    tag: v0.10.0
     # -- The image pull policy
     pullPolicy: IfNotPresent
     # -- 65532 = nonroot of google container distroless
@@ -366,55 +366,59 @@ secretBackend:
     passwordSecretKey: "password"
 
 postgresql:
-  global:
-    security:
-      # Required due to our own postsgresql image
-      allowInsecureImages: true
 
-  # -- if the `bitnami/postgresql` chart is used.
+  # -- if the `groundhog2k/postgres` chart is used.
   # [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead.
   # set to `false` if using `externalDatabase.*`
   enabled: true
-  image:
-    registry: quay.io
-    repository: lakekeeper/postgresql
-    tag: 17.5.0-debian-12-r16
-    pullPolicy: Always
 
   nameOverride: "lakekeeper-pg"
 
-  serviceBindings:
-    enabled: true
+  service:
+    port: 5432
 
-  auth:
-    # -- the postgres user to create
-    username: catalog
-    # -- the postgres user's password.
-    # if not specified, a random password is generated and stored in a secret
-    password: ""
-    # -- the postgres database to create
-    database: catalog
-    # -- the name of a pre-created secret containing the postgres password
-    existingSecret: ""
-    secretKeys:
-      # -- the key within `postgresql.existingSecret` containing the admin (postgres) password string
-      adminPasswordKey: "postgres-password"
-      # -- the key within `postgresql.existingSecret` containing the user password string
-      userPasswordKey: "password"
+  settings:
+    # -- Optional existing secret for the Postgrest superuser
+    existingSecret:
+    superuser:
+      # -- Superuser name (if no existingSecret was specified) - defaults to "postgres"
+      value:
+      # -- Key of existingSecret for the Superuser name
+      secretKey:
+    superuserPassword:
+      # -- Password of Superuser (if no existingSecret was specified)
+      value: "password"
+      # -- Key of existingSecret for the Superuser password
+      secretKey:
 
-  # configs for the PVC of postgresql
-  persistence:
-    # -- if postgres will use Persistent Volume Claims to store data.
-    # if false, data will be LOST as postgres Pods restart
-    enabled: true
+  userDatabase:
+    # -- Optional existing secret with database name, user and password
+    existingSecret:
+    name:
+      # -- Name of the user database (if no existingSecret was specified) - defaults to "lakekeeper"
+      value: "lakekeeper"
+      # -- Key of the existingSecret with database name
+      secretKey:
+    user:
+      # -- User name with full access to user database (if no existingSecret was specified) - defaults to "lakekeeper"
+      value: "lakekeeper"
+      # -- Key of the existingSecret with database user
+      secretKey:
+    password:
+      # -- Password of created user (if no existingSecret was specified) - defaults to "password"
+      value: "password"
+      # -- Key of the existingSecret with password of created user
+      secretKey:
 
-    # -- the StorageClass used by the PVC
-    storageClass: ""
-
-    # -- the access modes of the PVC
+  storage:
+    # -- Size for new PVC, when no existing PVC is used
+    # if `null`, data will be LOST as postgres Pods restart
+    requestedSize: 5Gi
+    # Default access mode (ReadWriteOnce)
     accessModes:
       - ReadWriteOnce
-
+    # -- the StorageClass used by the PVC
+    className:
     # -- the size of PVC to request
     size: 5Gi
 
@@ -527,7 +531,7 @@ authz:
     # Defaults to "lakekeeper"
     store: ""
     # -- API Key used to authenticate with OpenFGA.
-    # This is used for pre-shared key authentication.
+    # This is used for pre-shared key authentication.cc
     # If `clientId` is set, the `apiKey` is ignored.
     apiKey: ""
     # -- Client ID used to authenticate with OpenFGA.

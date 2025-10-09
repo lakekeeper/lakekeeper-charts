@@ -126,13 +126,40 @@ The list of `env` catalog Pods
 */}}
 {{- define "iceberg-catalog.env" }}
 {{- if .Values.postgresql.enabled }}
-- name: ICEBERG_REST__PG_DATABASE_URL_WRITE
+- name: ICEBERG_REST__PG_HOST_W
+  value: {{ include "iceberg-catalog.postgresql.fullname" . }}
+- name: ICEBERG_REST__PG_PORT
+  value: {{ .Values.postgresql.service.port | quote }}
+{{- if .Values.postgresql.userDatabase.existingSecret }}
+- name: ICEBERG_REST__PG_DATABASE
   valueFrom:
     secretKeyRef:
-      name: {{ include "iceberg-catalog.postgresql.fullname" . }}-svcbind-custom-user
-      key: "uri"
+      name: {{ .Values.postgresql.userDatabase.existingSecret }}
+      key: {{ .Values.postgresql.userDatabase.name.secretKey }}
+{{- else }}
+- name: ICEBERG_REST__PG_DATABASE
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "iceberg-catalog.postgresql.fullname" . }}
+      key: POSTGRES_DB
+{{- end }}
 {{- end }}
 {{- /* set ICEBERG_REST__PG_USER */ -}}
+{{- if .Values.postgresql.enabled }}
+{{- if .Values.postgresql.userDatabase.existingSecret }}
+- name: ICEBERG_REST__PG_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.postgresql.userDatabase.existingSecret }}
+      key: {{ .Values.postgresql.userDatabase.user.secretKey }}
+{{- else }}
+- name: ICEBERG_REST__PG_USER
+  valueFrom:
+    secretKeyRef:
+      name: {{ include "iceberg-catalog.postgresql.fullname" . }}
+      key: USERDB_USER
+{{- end }}
+{{- else }}
 {{- if .Values.externalDatabase.userSecret }}
 - name: ICEBERG_REST__PG_USER
   valueFrom:
@@ -142,21 +169,22 @@ The list of `env` catalog Pods
 {{- else }}
 {{- /* in this case, ICEBERG_REST__PG_USER is set in the `-config-envs` Secret */ -}}
 {{- end }}
+{{- end }}
 
 {{- /* set ICEBERG_REST__PG_PASSWORD */ -}}
 {{- if .Values.postgresql.enabled }}
-{{- if .Values.postgresql.auth.existingSecret }}
+{{- if .Values.postgresql.userDatabase.existingSecret }}
 - name: ICEBERG_REST__PG_PASSWORD
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.postgresql.auth.existingSecret }}
-      key: {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
+      name: {{ .Values.postgresql.userDatabase.existingSecret }}
+      key: {{ .Values.postgresql.userDatabase.password.secretKey }}
 {{- else }}
 - name: ICEBERG_REST__PG_PASSWORD
   valueFrom:
     secretKeyRef:
       name: {{ include "iceberg-catalog.postgresql.fullname" . }}
-      key: {{ .Values.postgresql.auth.secretKeys.userPasswordKey }}
+      key: USERDB_PASSWORD
 {{- end }}
 {{- else }}
 {{- if .Values.externalDatabase.passwordSecret }}
