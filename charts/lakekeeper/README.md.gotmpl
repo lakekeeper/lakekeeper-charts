@@ -6,9 +6,9 @@
 
 Please check our [Documentation](http://docs.lakekeeper.io), the [Lakekeeper Repository](https://github.com/lakekeeper/lakekeeper) and the [`values.yaml`](https://github.com/lakekeeper/lakekeeper-charts/blob/main/charts/lakekeeper/values.yaml) for more information.
 
-## ⚠️ Important Notice: Upcoming changes to Bitnami Postgres
+## ⚠️ Important Notice: Migration from Bitnami to groundhog2k
 
-This used to rely on the Bitnami PostgreSQL Helm chart for database backend services for both Lakekeeper and OpenFGA. Due to the [Bitnami Secure Images initiative](https://news.broadcom.com/app-dev/broadcom-introduces-bitnami-secure-images-for-production-ready-containerized-applications), this was no longer possible.
+This Chart used to rely on the Bitnami PostgreSQL Helm chart for postgres for both Lakekeeper and OpenFGA. Due to the [Bitnami Secure Images initiative](https://news.broadcom.com/app-dev/broadcom-introduces-bitnami-secure-images-for-production-ready-containerized-applications), this was no longer possible. We now moved to [`groundhog2k/posgres`](https://github.com/groundhog2k/helm-charts) with Chart Version `0.8.0`.
 
 **Changes:**
 - Version `0.7.1`: Transition from Bitnami images to self-hosted images on Quay.io to ensure deployment stability
