@@ -2,7 +2,7 @@
 Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lakekeeper&color=3f6ec6&labelColor=&logoColor=white)](https://artifacthub.io/packages/helm/lakekeeper/lakekeeper)
-![Version: 0.7.1](https://img.shields.io/badge/Version-0.7.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.9.3](https://img.shields.io/badge/AppVersion-0.9.3-informational?style=flat-square)
+![Version: 0.8.0](https://img.shields.io/badge/Version-0.8.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.10.2](https://img.shields.io/badge/AppVersion-0.10.2-informational?style=flat-square)
 
 Please check our [Documentation](http://docs.lakekeeper.io), the [Lakekeeper Repository](https://github.com/lakekeeper/lakekeeper) and the [`values.yaml`](https://github.com/lakekeeper/lakekeeper-charts/blob/main/charts/lakekeeper/values.yaml) for more information.
 
@@ -11,7 +11,7 @@ Please check our [Documentation](http://docs.lakekeeper.io), the [Lakekeeper Rep
 This chart currently relies on the Bitnami PostgreSQL Helm chart for database backend services for both Lakekeeper and OpenFGA. Due to the [Bitnami Secure Images initiative](https://news.broadcom.com/app-dev/broadcom-introduces-bitnami-secure-images-for-production-ready-containerized-applications), Bitnami is retaining only the `latest` tags for their publicly available images.
 
 **Upcoming changes:**
-- Version `0.7.1`: We will transition from Bitnami images to self-hosted images on Quay.io to ensure deployment stability
+- Version `0.7.1`: We transition from Bitnami images to self-hosted images on Quay.io to ensure deployment stability
 - Version `0.8.0`: We will completely migrate away from the Bitnami chart
 
 **Important notes:**
@@ -37,8 +37,7 @@ For potential additional steps that are required for upgrades, please check the 
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://openfga.github.io/helm-charts | openfga(openfga) | 0.2.35 |
-| oci://registry-1.docker.io/bitnamicharts | postgresql | 16.7.26 |
+| https://openfga.github.io/helm-charts | openfga(openfga) | 0.2.44 |
 
 ## Values
 
@@ -87,7 +86,7 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.image.gid | int | `65534` | 65534 = nobody of google container distroless |
 | catalog.image.pullPolicy | string | `"IfNotPresent"` | The image pull policy |
 | catalog.image.repository | string | `"quay.io/lakekeeper/catalog"` | The image repository to pull from |
-| catalog.image.tag | string | `"v0.9.5"` | The image tag to pull |
+| catalog.image.tag | string | `"v0.10.2"` | The image tag to pull |
 | catalog.image.uid | int | `65532` | 65532 = nonroot of google container distroless |
 | catalog.ingress.annotations | object | `{}` | annotations for the catalog Ingress |
 | catalog.ingress.enabled | bool | `false` | if we should deploy Ingress resources |
@@ -150,37 +149,46 @@ For potential additional steps that are required for upgrades, please check the 
 | nameOverride | string | `<chart-name>` | Override the name of the chart. |
 | openfga.datastore.engine | string | `"postgres"` |  |
 | openfga.datastore.migrationType | string | `"initContainer"` |  |
-| openfga.datastore.uriSecret | string | `"lakekeeper-openfga-pg-svcbind-postgres"` |  |
-| openfga.image.tag | string | `"v1.8.16"` |  |
+| openfga.datastore.secretKeys.uriKey | string | `"uri"` |  |
+| openfga.datastore.uriSecret | string | `"lakekeeper-openfga-db-app"` | OpenFGA uri secret for the Postgres database. If `postgresqlAuthz.enabled` is true, a Cloudnative PG Cluster is created for OpenFGA. The provisioned db clusters's name is `uriSecret` without the `-app` suffix. |
+| openfga.extraEnvVars[0].name | string | `"OPENFGA_CACHE_CONTROLLER_ENABLED"` |  |
+| openfga.extraEnvVars[0].value | string | `"true"` |  |
+| openfga.extraEnvVars[1].name | string | `"OPENFGA_CHECK_QUERY_CACHE_ENABLED"` |  |
+| openfga.extraEnvVars[1].value | string | `"true"` |  |
+| openfga.extraEnvVars[2].name | string | `"OPENFGA_CHECK_ITERATOR_CACHE_ENABLED"` |  |
+| openfga.extraEnvVars[2].value | string | `"true"` |  |
+| openfga.extraEnvVars[3].name | string | `"OPENFGA_LIST_OBJECTS_ITERATOR_CACHE_ENABLED"` |  |
+| openfga.extraEnvVars[3].value | string | `"false"` |  |
 | openfga.migrate.annotations."argocd.argoproj.io/hook" | string | `"Sync"` |  |
 | openfga.migrate.annotations."argocd.argoproj.io/sync-wave" | string | `"0"` |  |
 | openfga.migrate.annotations."helm.sh/hook" | string | `"post-install, post-upgrade, post-rollback"` |  |
-| openfga.postgresql.enabled | bool | `true` |  |
-| openfga.postgresql.fullnameOverride | string | `"lakekeeper-openfga-pg"` |  |
-| openfga.postgresql.global.security.allowInsecureImages | bool | `true` |  |
-| openfga.postgresql.image.registry | string | `"quay.io"` |  |
-| openfga.postgresql.image.repository | string | `"lakekeeper/postgresql"` |  |
-| openfga.postgresql.image.tag | string | `"15.4.0-debian-11-r45"` |  |
-| openfga.postgresql.serviceBindings.enabled | bool | `true` |  |
+| openfga.playground.enabled | bool | `false` |  |
+| openfga.postgresql.enabled | bool | `false` |  |
 | openfga.replicaCount | int | `1` |  |
-| postgresql.auth.database | string | `"catalog"` | the postgres database to create |
-| postgresql.auth.existingSecret | string | `""` | the name of a pre-created secret containing the postgres password |
-| postgresql.auth.password | string | `""` | the postgres user's password. if not specified, a random password is generated and stored in a secret |
-| postgresql.auth.secretKeys.adminPasswordKey | string | `"postgres-password"` | the key within `postgresql.existingSecret` containing the admin (postgres) password string |
-| postgresql.auth.secretKeys.userPasswordKey | string | `"password"` | the key within `postgresql.existingSecret` containing the user password string |
-| postgresql.auth.username | string | `"catalog"` | the postgres user to create |
-| postgresql.enabled | bool | `true` | if the `bitnami/postgresql` chart is used. [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead. set to `false` if using `externalDatabase.*` |
-| postgresql.global.security.allowInsecureImages | bool | `true` |  |
-| postgresql.image.pullPolicy | string | `"Always"` |  |
-| postgresql.image.registry | string | `"quay.io"` |  |
-| postgresql.image.repository | string | `"lakekeeper/postgresql"` |  |
-| postgresql.image.tag | string | `"17.5.0-debian-12-r16"` |  |
-| postgresql.nameOverride | string | `"lakekeeper-pg"` |  |
-| postgresql.persistence.accessModes | list | `["ReadWriteOnce"]` | the access modes of the PVC |
-| postgresql.persistence.enabled | bool | `true` | if postgres will use Persistent Volume Claims to store data. if false, data will be LOST as postgres Pods restart |
+| postgresql.backup | object | `{}` | backup configuration for the postgres cluster |
+| postgresql.clusterAnnotations | object | `{}` | annotations to add to the postgresql cluster resource |
+| postgresql.clusterLabels | object | `{}` | additional labels to add to the postgresql cluster resource |
+| postgresql.enabled | bool | `true` | if a `postgresql.cnpg.io/v1/Cluster` is created and used. [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead. Set `postgresql.enabled` to `false` if you are using `externalDatabase.*` (recommended). [WARNING] requires the CloudNativePG Operator to be installed in the cluster. |
+| postgresql.imageName | string | `""` | overwrite the image of the postgres cluster |
+| postgresql.instances | int | `1` | number of instances in the postgres cluster |
 | postgresql.persistence.size | string | `"5Gi"` | the size of PVC to request |
 | postgresql.persistence.storageClass | string | `""` | the StorageClass used by the PVC |
-| postgresql.serviceBindings.enabled | bool | `true` |  |
+| postgresql.postgresql | object | `{}` |  |
+| postgresql.primaryUpdateStrategy | string | `""` | primary update strategy - unsupervised: automated update of the primary once all                 replicas have been upgraded (default) - supervised: requires manual supervision to perform               the switchover of the primary |
+| postgresql.resources | object | `{}` |  |
+| postgresql.superuserSecretName | string | `""` | name of the secret for the postgres superuser (postgres) |
+| postgresqlAuthz.backup | object | `{}` | backup configuration for the postgres cluster |
+| postgresqlAuthz.clusterAnnotations | object | `{}` | annotations to add to the postgresql cluster resource |
+| postgresqlAuthz.clusterLabels | object | `{}` | additional labels to add to the postgresql cluster resource |
+| postgresqlAuthz.enabled | bool | `true` | if true, a Postgres database is created for OpenFGA within the same Postgres cluster as Lakekeeper. Only used if `internalOpenFGA` is true. |
+| postgresqlAuthz.imageName | string | `""` | overwrite the image of the postgres cluster |
+| postgresqlAuthz.instances | int | `1` | number of instances in the postgres cluster |
+| postgresqlAuthz.persistence.size | string | `"5Gi"` | the size of PVC to request |
+| postgresqlAuthz.persistence.storageClass | string | `""` | the StorageClass used by the PVC |
+| postgresqlAuthz.postgresql | object | `{}` |  |
+| postgresqlAuthz.primaryUpdateStrategy | string | `""` | primary update strategy - unsupervised: automated update of the primary once all                 replicas have been upgraded (default) - supervised: requires manual supervision to perform               the switchover of the primary |
+| postgresqlAuthz.resources | object | `{}` |  |
+| postgresqlAuthz.superuserSecretName | string | `""` | name of the secret for the postgres superuser (postgres) |
 | secretBackend.kv2.password | string | `""` | password for authentication consider using a secret for the password |
 | secretBackend.kv2.passwordSecret | string | `""` | the name of a pre-created secret containing the KV2 password |
 | secretBackend.kv2.passwordSecretKey | string | `"password"` | the key within `kv2.passwordSecret` containing the password string |
