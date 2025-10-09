@@ -1,3 +1,39 @@
+{{- define "lakekeeper.image-name" -}}
+{{- $isPlus := eq (required "lakekeeper.edition must be specified" .Values.lakekeeper.edition) "plus" -}}
+{{- $repository := "" -}}
+{{- if .Values.catalog.image.repository -}}
+  {{- $repository = .Values.catalog.image.repository -}}
+{{- else if $isPlus -}}
+  {{- $repository = "quay.io/vakamo/lakekeeper-plus" -}}
+{{- else -}}
+  {{- $repository = "quay.io/lakekeeper/catalog" -}}
+{{- end -}}
+{{- $tag := "" -}}
+{{- /* Default versions: enterprise=v0.10.2, community=v0.10.2 */ -}}
+{{- if .Values.catalog.image.tag -}}
+  {{- $tag = .Values.catalog.image.tag -}}
+{{- else if $isPlus -}}
+  {{- $tag = "v0.10.2-distroless" -}}
+{{- else -}}
+  {{- $tag = "v0.10.2" -}}
+{{- end -}}
+{{- printf "%s:%s" $repository $tag -}}
+{{- end -}}
+
+{{/*
+Define the image configs for catalog containers
+*/}}
+{{- define "iceberg-catalog.image" }}
+image: {{ include "lakekeeper.image-name" . }}
+imagePullPolicy: {{ .Values.catalog.image.pullPolicy }}
+securityContext:
+  runAsUser: {{ .Values.catalog.image.uid }}
+  runAsGroup: {{ .Values.catalog.image.gid }}
+  {{- if .Values.catalog.containerSecurityContext }}
+  {{- omit .Values.catalog.containerSecurityContext "runAsUser" "runAsGroup" | toYaml | nindent 2 }}
+  {{- end }}
+{{- end }}
+
 {{/*
 Expand the name of the chart.
 */}}
@@ -63,20 +99,6 @@ Create the name of the service account to use
 {{- else }}
 {{- default "default" .Values.serviceAccount.name }}
 {{- end }}
-{{- end }}
-
-{{/*
-Define the image configs for catalog containers
-*/}}
-{{- define "iceberg-catalog.image" }}
-image: {{ .Values.catalog.image.repository }}:{{ .Values.catalog.image.tag }}
-imagePullPolicy: {{ .Values.catalog.image.pullPolicy }}
-securityContext:
-  runAsUser: {{ .Values.catalog.image.uid }}
-  runAsGroup: {{ .Values.catalog.image.gid }}
-  {{- if .Values.catalog.containerSecurityContext }}
-  {{- omit .Values.catalog.containerSecurityContext "runAsUser" "runAsGroup" | toYaml | nindent 2 }}
-  {{- end }}
 {{- end }}
 
 {{/*
@@ -236,6 +258,15 @@ The list of `env` catalog Pods
       key: {{ .Values.secretBackend.kv2.passwordSecretKey }}
 {{- end }}
 {{- end }}
+{{- end }}
+
+{{- /* set LAKEKEEPER__LICENSE__KEY for plus edition only*/ -}}
+{{- if and .Values.lakekeeper.useLicenseSecret (eq .Values.lakekeeper.edition "plus") }}
+- name: LAKEKEEPER__LICENSE__KEY
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.lakekeeper.licenseSecretName }}
+      key: {{ .Values.lakekeeper.licenseSecretKey }}
 {{- end }}
 
 {{- /* user-defined environment variables */ -}}
