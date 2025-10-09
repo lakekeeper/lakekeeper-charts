@@ -8,11 +8,8 @@ Please check our [Documentation](http://docs.lakekeeper.io), the [Lakekeeper Rep
 
 ## ⚠️ Important Notice: Upcoming changes to Bitnami Postgres
 
-This chart currently relies on the Bitnami PostgreSQL Helm chart for database backend services for both Lakekeeper and OpenFGA. Due to the [Bitnami Secure Images initiative](https://news.broadcom.com/app-dev/broadcom-introduces-bitnami-secure-images-for-production-ready-containerized-applications), Bitnami is retaining only the `latest` tags for their publicly available images.
-
-**Upcoming changes:**
-- Version `0.7.1`: We transition from Bitnami images to self-hosted images on Quay.io to ensure deployment stability
-- Version `0.8.0`: We will completely migrate away from the Bitnami chart
+This chart relied on the Bitnami PostgreSQL Helm chart until Version 0.7.
+From Version 0.8 we are switching to CloudnativePG. The CloudnativePG Operator is not installed as part of this helm chart.
 
 **Important notes:**
 - No automatic migration will be provided by this chart
@@ -22,6 +19,12 @@ This chart currently relies on the Bitnami PostgreSQL Helm chart for database ba
 
 ## Installing the Chart
 
+If the built-in Database (Postgres via ``CloudMativePGOperator) is used, make sure the `CloudNativePGOperator` is installed first:
+
+```bash
+kubectl apply --server-side -f https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.27/releases/cnpg-1.27.0.yaml
+```
+
 To install the chart with the release name `my-release`:
 
 ```bash
@@ -29,7 +32,7 @@ helm repo add lakekeeper https://lakekeeper.github.io/lakekeeper-charts/
 helm install my-lakekeeper lakekeeper/lakekeeper
 ```
 
-This chart by default deploys the "postgresql" subchart. This setup is not production ready. Please use an external database for production.
+This setup is not production ready. Please use an external database for production.
 
 For potential additional steps that are required for upgrades, please check the [Changelog](./Changelog)
 
