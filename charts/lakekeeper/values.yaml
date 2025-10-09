@@ -652,7 +652,7 @@ openfga:
     uriSecret: lakekeeper-openfga-db-app
     secretKeys:
       uriKey: uri
-  
+
   playground:
     enabled: false
 
