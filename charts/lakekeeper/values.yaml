@@ -24,7 +24,7 @@ lakekeeper:
   # -- Lakekeeper Edition to use (core|plus).
   # Lakekeeper Plus requires a valid license.
   edition: "core"
-  
+
   # -- License key for Lakekeeper Plus.
   # We strongly recommend using a Kubernetes secret instead by setting
   # `lakekeeper.useLicenseSecret: true` and creating the secret separately.
