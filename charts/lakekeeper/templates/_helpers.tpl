@@ -261,7 +261,7 @@ The list of `env` catalog Pods
 {{- end }}
 
 {{- /* set LAKEKEEPER__LICENSE__KEY */ -}}
-{{- if and .Values.lakekeeper.licenseKey .Values.lakekeeper.useLicenseSecret }}
+{{- if .Values.lakekeeper.useLicenseSecret }}
 - name: LAKEKEEPER__LICENSE__KEY
   valueFrom:
     secretKeyRef:
