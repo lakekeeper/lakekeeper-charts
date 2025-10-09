@@ -18,7 +18,7 @@ jobs:
 
       - uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.12'
           check-latest: true
 
       - name: Set up chart-testing
@@ -26,9 +26,12 @@ jobs:
         with:
             version: v3.10.1
 
-      - name: Add helm repos
+      - name: Add groundhog2k helm repo
+        run: helm repo add groundhog2k https://groundhog2k.github.io/helm-charts/
+
+      - name: Add openfga helm repo
         run: helm repo add openfga https://openfga.github.io/helm-charts
-  
+
       - name: Run chart-testing (list-changed)
         id: list-changed
         run: |
