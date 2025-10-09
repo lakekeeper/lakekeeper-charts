@@ -33,6 +33,7 @@ jobs:
         run: helm repo add openfga https://openfga.github.io/helm-charts
 
       - name: Validate Editions
+        shell: bash
         run: | 
           cd charts/lakekeeper
           helm dependency update
