@@ -139,8 +139,8 @@ catalog:
   config: {}
   # ---- EXAMPLE ----
   # config:
-  #   ICEBERG_REST__BASE_URI: "https://data.example.com"
-  #   You only need to set ICEBERG_REST__BASE_URI if Lakekeeper is running behind a proxy that does not set x-forwarded-for / x-forwarded-host headers
+  #   LAKEKEEPER__BASE_URI: "https://data.example.com"
+  #   You only need to set LAKEKEEPER__BASE_URI if Lakekeeper is running behind a proxy that does not set x-forwarded-for / x-forwarded-host headers
   #   or if you want to force the same base url for all Iceberg clients interacting with a catalog
   #   More information regarding request routing can be found here: https://docs.lakekeeper.io/docs/latest/configuration/?h=x+forwar
   #   LAKEKEEPER__USE_X_FORWARDED_HEADERS can be set to `false` to disable usage for x-forwarded headers
@@ -442,8 +442,6 @@ postgresql:
       - ReadWriteOnce
     # -- the StorageClass used by the PVC
     className:
-    # -- the size of PVC to request
-    size: 5Gi
 
 externalDatabase:
   # -- the type of external database.
@@ -604,6 +602,16 @@ openfga:
 
     serviceBindings:
       enabled: true
+
+    extraEnvVars:
+      - name: OPENFGA_CACHE_CONTROLLER_ENABLED
+        value: "true"
+      - name: OPENFGA_CHECK_QUERY_CACHE_ENABLED
+        value: "true"
+      - name: OPENFGA_CHECK_ITERATOR_CACHE_ENABLED
+        value: "true"
+      - name: OPENFGA_LIST_OBJECTS_ITERATOR_CACHE_ENABLED
+        value: "false"
 
     global:
       security:
