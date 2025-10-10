@@ -10,10 +10,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Added
-* Expose Metrics Port 9000 for Catalog Pods
-* Add boolean `catalog.prometheus.setScrapeAnnotations` configuration option to set prometheus scrape labels
-* Bump Lakekeeper image to 0.10.0
-* Migrate away from the Bitnami chart
 
 ### Fixed
 
@@ -26,6 +22,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Enable OpenFGA Caching by default
 * Disable OpenFGA Playground by default
 * Change `ICEBERG_REST__` config prefix to `LAKEKEEPER__` for all environment variables (Lakekeeper still supports the old prefix for backwards compatibility)
+* Expose Metrics Port 9000 for Catalog Pods
+* Add boolean `catalog.prometheus.setScrapeAnnotations` configuration option to set prometheus scrape labels
 
 ### Added
 * Add support for setting `priorityClassName` for Lakekeeper Catalog Pods
