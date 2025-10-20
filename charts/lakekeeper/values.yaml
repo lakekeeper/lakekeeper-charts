@@ -561,6 +561,14 @@ authz:
     # -- Client Secret used to authenticate with OpenFGA.
     # This is used for OIDC authentication.
     clientSecret: ""
+    # -- the name of a pre-created secret containing the OIDC Client ID
+    clientIdSecret: ""
+    # -- the key within `openfga.clientIdSecret` containing the client-id string
+    clientIdSecretKey: "client-id"
+    # -- the name of a pre-created secret containing the OIDC Client Secret
+    clientSecretSecret: ""
+    # -- the key within `openfga.clientSecretSecret` containing the client-secret string
+    clientSecretSecretKey: "client-secret"
     # -- OIDC token endpoint used to authenticate with OpenFGA.
     # Used when exchanging client credentials for an access token for OpenFGA.
     # Required if Client ID is set.

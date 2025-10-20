@@ -269,6 +269,34 @@ The list of `env` catalog Pods
       key: {{ .Values.lakekeeper.licenseSecretKey }}
 {{- end }}
 
+{{- if eq "openfga" (lower .Values.authz.backend) }}
+{{- if empty .Values.authz.openfga.clientId }}
+{{- /* set LAKEKEEPER__OPENFGA__CLIENT_ID */ -}}
+{{- if empty .Values.authz.openfga.clientId }}
+{{- if .Values.authz.openfga.clientIdSecret }}
+- name: LAKEKEEPER__OPENFGA__CLIENT_ID
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.authz.openfga.clientIdSecret }}
+      key: {{ .Values.authz.openfga.clientIdSecretKey }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{- if empty .Values.authz.openfga.clientSecret }}
+{{- /* set LAKEKEEPER__OPENFGA__CLIENT_SECRET */ -}}
+{{- if empty .Values.authz.openfga.clientSecret }}
+{{- if .Values.authz.openfga.clientSecretSecret }}
+- name: LAKEKEEPER__OPENFGA__CLIENT_SECRET
+  valueFrom:
+    secretKeyRef:
+      name: {{ .Values.authz.openfga.clientSecretSecret }}
+      key: {{ .Values.authz.openfga.clientSecretSecretKey }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+
 {{- /* user-defined environment variables */ -}}
 {{- if .Values.catalog.extraEnv }}
 {{ toYaml .Values.catalog.extraEnv }}
