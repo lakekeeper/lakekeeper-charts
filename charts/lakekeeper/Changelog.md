@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 ## [0.8.1] - 2025-11-03
+
+### Added
+* Add option to fetch OpenFGA Client Credentials from Kubernetes Secret
+
 ### Fixed
 * Unpin openfga image version to avoid the image version drifting from the helm chart version
 * Fix default `extraEnvVars` indentation in OpenFGA subchart to enable cache
