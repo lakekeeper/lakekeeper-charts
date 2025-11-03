@@ -15,7 +15,7 @@
 {{- else if $isPlus -}}
   {{- $tag = "v0.10.2-distroless" -}}
 {{- else -}}
-  {{- $tag = "v0.10.2" -}}
+  {{- $tag = "v0.10.4" -}}
 {{- end -}}
 {{- printf "%s:%s" $repository $tag -}}
 {{- end -}}

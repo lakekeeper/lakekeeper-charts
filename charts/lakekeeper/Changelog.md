@@ -6,13 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-* Unpin openfga image version to avoid the image version drifting from the helm chart version
 
 ### Changed
 
 ### Added
 
 ### Fixed
+
+## [0.8.1] - 2025-11-03
+
+### Added
+* Add option to fetch OpenFGA Client Credentials from Kubernetes Secret
+
+### Fixed
+* Update Lakekeeper to v0.10.4
+* Unpin openfga image version to avoid the image version drifting from the helm chart version
+* Fix default `extraEnvVars` indentation in OpenFGA subchart to enable cache
 
 ## [0.8.0] - 2025-10-09
 
