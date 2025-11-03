@@ -58,7 +58,11 @@ For potential additional steps that are required for upgrades, please check the 
 | authz.backend | string | `"allowall"` | type of the authorization backend. Available values: "openfga", "allowall" Authorization must not change after bootstrapping! If type "openfga" is chose, consider setting `internalOpenFGA` to true to deploy an OpenFGA instance as a subchart. |
 | authz.openfga.apiKey | string | `""` | API Key used to authenticate with OpenFGA. This is used for pre-shared key authentication.cc If `clientId` is set, the `apiKey` is ignored. |
 | authz.openfga.clientId | string | `""` | Client ID used to authenticate with OpenFGA. This is used for OIDC authentication. |
+| authz.openfga.clientIdSecret | string | `""` | the name of a pre-created secret containing the OIDC Client ID |
+| authz.openfga.clientIdSecretKey | string | `"client-id"` | the key within `openfga.clientIdSecret` containing the client-id string |
 | authz.openfga.clientSecret | string | `""` | Client Secret used to authenticate with OpenFGA. This is used for OIDC authentication. |
+| authz.openfga.clientSecretSecret | string | `""` | the name of a pre-created secret containing the OIDC Client Secret |
+| authz.openfga.clientSecretSecretKey | string | `"client-secret"` | the key within `openfga.clientSecretSecret` containing the client-secret string |
 | authz.openfga.endpoint | string | `""` | OpenFGA Endpoint (gRPC) Set automatically if `internalOpenFGA` is true. |
 | authz.openfga.store | string | `""` | Name of the Store to use in OpenFGA Defaults to "lakekeeper" |
 | authz.openfga.tokenEndpoint | string | `""` | OIDC token endpoint used to authenticate with OpenFGA. Used when exchanging client credentials for an access token for OpenFGA. Required if Client ID is set. |
