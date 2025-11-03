@@ -588,9 +588,6 @@ openfga:
   # By default, we use the same number of replicas as the catalog
   replicaCount: *catalog_replicas
 
-  image:
-    tag: v1.8.16
-
   migrate:
     annotations:
       helm.sh/hook: "post-install, post-upgrade, post-rollback"
