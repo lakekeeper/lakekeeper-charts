@@ -599,6 +599,16 @@ openfga:
     migrationType: initContainer
     uriSecret: lakekeeper-openfga-pg-svcbind-postgres
 
+  extraEnvVars:
+    - name: OPENFGA_CACHE_CONTROLLER_ENABLED
+      value: "true"
+    - name: OPENFGA_CHECK_QUERY_CACHE_ENABLED
+      value: "true"
+    - name: OPENFGA_CHECK_ITERATOR_CACHE_ENABLED
+      value: "true"
+    - name: OPENFGA_LIST_OBJECTS_ITERATOR_CACHE_ENABLED
+      value: "false"
+
   postgresql:
     # If not set, postgresql of openfga collides with names of
     # lakekeeper postgres. If changed, also change the `uriSecret` in `datastore`.
@@ -607,16 +617,6 @@ openfga:
 
     serviceBindings:
       enabled: true
-
-    extraEnvVars:
-      - name: OPENFGA_CACHE_CONTROLLER_ENABLED
-        value: "true"
-      - name: OPENFGA_CHECK_QUERY_CACHE_ENABLED
-        value: "true"
-      - name: OPENFGA_CHECK_ITERATOR_CACHE_ENABLED
-        value: "true"
-      - name: OPENFGA_LIST_OBJECTS_ITERATOR_CACHE_ENABLED
-        value: "false"
 
     global:
       security:
