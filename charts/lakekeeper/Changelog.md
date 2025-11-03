@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Add option to fetch OpenFGA Client Credentials from Kubernetes Secret
 
 ### Fixed
+* Update Lakekeeper to v0.10.4
 * Unpin openfga image version to avoid the image version drifting from the helm chart version
 * Fix default `extraEnvVars` indentation in OpenFGA subchart to enable cache
 
