@@ -17,7 +17,7 @@ keywords:
   - lakehouse
 dependencies:
   - name: postgres
-    version: 1.5.8
+    version: 1.6.1
     repository: https://groundhog2k.github.io/helm-charts/
     condition: postgresql.enabled
     alias: postgresql
