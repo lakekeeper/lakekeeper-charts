@@ -8,6 +8,6 @@ authz:
 OPABridge:
   enabled: true
   lakekeeper:
-    tokenEndpoint: "http://localhost/nonexistant/oatuh2/token"
+    tokenEndpoint: "http://localhost/nonexistant/oauth2/token"
     clientId: "example-client-id"
     clientSecret: "example-client-secret"

@@ -699,6 +699,18 @@ OPABridge:
     # -- The scope specified in the client credentials flow.
     scope: "lakekeeper"
 
+    # -- Name of an existing secret containing Lakekeeper authentication credentials.
+    # If set, tokenEndpoint, clientId, clientSecret, and scope will be read from this secret.
+    existingSecret: ""
+    # -- Key within existingSecret containing the token endpoint
+    tokenEndpointSecretKey: "tokenEndpoint"
+    # -- Key within existingSecret containing the client ID
+    clientIdSecretKey: "clientId"
+    # -- Key within existingSecret containing the client secret
+    clientSecretSecretKey: "clientSecret"
+    # -- Key within existingSecret containing the scope
+    scopeSecretKey: "scope"
+
   # -- Trino catalog to Lakekeeper warehouse mappings.
   # Each entry maps a Trino catalog name to a Lakekeeper warehouse.
   catalogs: []

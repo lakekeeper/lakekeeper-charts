@@ -140,21 +140,46 @@ spec:
               value: {{ .Values.OPABridge.allowUnmanagedCatalogs | quote }}
             - name: LAKEKEEPER_URL
               value: {{ .Values.OPABridge.lakekeeper.url | quote }}
-          {{- if .Values.OPABridge.lakekeeper.tokenEndpoint }}
+          {{- if .Values.OPABridge.lakekeeper.existingSecret }}
+            {{- /* Read credentials from existing secret */ -}}
+            - name: LAKEKEEPER_TOKEN_ENDPOINT
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.OPABridge.lakekeeper.existingSecret }}
+                  key: {{ .Values.OPABridge.lakekeeper.tokenEndpointSecretKey }}
+            - name: LAKEKEEPER_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.OPABridge.lakekeeper.existingSecret }}
+                  key: {{ .Values.OPABridge.lakekeeper.clientIdSecretKey }}
+            - name: LAKEKEEPER_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.OPABridge.lakekeeper.existingSecret }}
+                  key: {{ .Values.OPABridge.lakekeeper.clientSecretSecretKey }}
+            - name: LAKEKEEPER_SCOPE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.OPABridge.lakekeeper.existingSecret }}
+                  key: {{ .Values.OPABridge.lakekeeper.scopeSecretKey }}
+          {{- else }}
+            {{- /* Read credentials from values */ -}}
+            {{- if .Values.OPABridge.lakekeeper.tokenEndpoint }}
             - name: LAKEKEEPER_TOKEN_ENDPOINT
               value: {{ .Values.OPABridge.lakekeeper.tokenEndpoint | quote }}
-          {{- end }}
-          {{- if .Values.OPABridge.lakekeeper.clientId }}
+            {{- end }}
+            {{- if .Values.OPABridge.lakekeeper.clientId }}
             - name: LAKEKEEPER_CLIENT_ID
               value: {{ .Values.OPABridge.lakekeeper.clientId | quote }}
-          {{- end }}
-          {{- if .Values.OPABridge.lakekeeper.clientSecret }}
+            {{- end }}
+            {{- if .Values.OPABridge.lakekeeper.clientSecret }}
             - name: LAKEKEEPER_CLIENT_SECRET
               value: {{ .Values.OPABridge.lakekeeper.clientSecret | quote }}
-          {{- end }}
-          {{- if .Values.OPABridge.lakekeeper.scope }}
+            {{- end }}
+            {{- if .Values.OPABridge.lakekeeper.scope }}
             - name: LAKEKEEPER_SCOPE
               value: {{ .Values.OPABridge.lakekeeper.scope | quote }}
+            {{- end }}
           {{- end }}
           {{- with .Values.OPABridge.extraEnv }}
             {{- toYaml . | nindent 12 }}

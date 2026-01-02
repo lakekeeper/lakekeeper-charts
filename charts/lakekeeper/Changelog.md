@@ -8,9 +8,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-* Default to Lakekeeper v0.11.0
 
 ### Added
+
+### Fixed
+
+## [0.9.0] - 2026-01-02
+
+### Changed
+* Default to Lakekeeper v0.11.0
+* Update OpenFGA Chart to v0.2.50 / OpenFGA 1.11.2
+* Update Postgres Chart to v1.5.12, Postgres 17.7
+
+### Added
+* Add support for Lakekeeper's OPA bridge via `OPABridge` configuraiton options
 
 ### Fixed
 

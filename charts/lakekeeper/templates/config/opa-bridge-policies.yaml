@@ -7,7 +7,10 @@ metadata:
     {{- include "iceberg-catalog.labels" . | nindent 4 }}
     app.kubernetes.io/component: opa-bridge
 data:
-{{ (.Files.Glob "opa-bridge/v0.11/policies/**.rego").AsConfig | indent 2 }}
+{{- range $path, $content := .Files.Glob "opa-bridge/v0.11/policies/**.rego" }}
+  {{ trimPrefix "opa-bridge/v0.11/policies/" $path | replace "/" "." }}: |
+{{ $content | toString | indent 4 }}
+{{- end }}
   catalogs.rego: |
     # This file contains Trino catalog to Lakekeeper warehouse mappings.
     # Generated from Helm values.
