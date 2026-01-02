@@ -1,0 +1,40 @@
+{{- if .Values.OPABridge.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "iceberg-catalog.fullname" . }}-opa
+  {{- if .Values.OPABridge.service.annotations }}
+  annotations:
+    {{- toYaml .Values.OPABridge.service.annotations | nindent 4 }}
+  {{- end }}
+  labels:
+    {{- include "iceberg-catalog.labels" . | nindent 4 }}
+    app.kubernetes.io/component: opa-bridge
+spec:
+  type: {{ .Values.OPABridge.service.type }}
+  sessionAffinity: {{ .Values.OPABridge.service.sessionAffinity }}
+  {{- if .Values.OPABridge.service.sessionAffinityConfig }}
+  sessionAffinityConfig:
+    {{- toYaml .Values.OPABridge.service.sessionAffinityConfig | nindent 4 }}
+  {{- end }}
+  ports:
+    - port: {{ .Values.OPABridge.service.externalPort | default 8282 }}
+      targetPort: opa
+      protocol: TCP
+      {{- if and (eq .Values.OPABridge.service.type "NodePort") (.Values.OPABridge.service.nodePort.opa) }}
+      nodePort: {{ .Values.OPABridge.service.nodePort.opa }}
+      {{- end }}
+      name: opa
+  selector:
+    {{- include "iceberg-catalog.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: catalog
+  {{- if eq .Values.OPABridge.service.type "LoadBalancer" }}
+  {{- if .Values.OPABridge.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.OPABridge.service.loadBalancerIP | quote }}
+  {{- end }}
+  {{- if .Values.OPABridge.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges:
+    {{- toYaml .Values.OPABridge.service.loadBalancerSourceRanges | nindent 4 }}
+  {{- end }}
+  {{- end }}
+{{- end }}

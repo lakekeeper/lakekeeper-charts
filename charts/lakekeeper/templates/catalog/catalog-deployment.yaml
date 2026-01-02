@@ -24,6 +24,10 @@ spec:
     metadata:
       annotations:
         checksum/secret-config-envs: {{ include (print $.Template.BasePath "/config/secret-config-envs.yaml") . | sha256sum }}
+        {{- if .Values.OPABridge.enabled }}
+        checksum/opa-config: {{ include (print $.Template.BasePath "/config/opa-bridge-config-secret.yaml") . | sha256sum }}
+        checksum/opa-policies: {{ include (print $.Template.BasePath "/config/opa-bridge-policies.yaml") . | sha256sum }}
+        {{- end }}
         {{- if .Values.catalog.podAnnotations -}}
         {{- toYaml .Values.catalog.podAnnotations | nindent 8 }}
         {{- end }}
@@ -124,10 +128,93 @@ spec:
           volumeMounts:
             {{- toYaml . | nindent 12 }}
           {{- end }}
-        {{- if .Values.catalog.extraContainers }}
-        {{- toYaml .Values.catalog.extraContainers | nindent 8 }}
-        {{- end }}
-      {{- with .Values.catalog.extraVolumes }}
+      {{- if .Values.OPABridge.enabled }}
+        - name: opa
+          image: {{ .Values.OPABridge.image.repository }}:{{ .Values.OPABridge.image.tag }}
+          imagePullPolicy: {{ .Values.OPABridge.image.pullPolicy }}
+          securityContext:
+            runAsUser: {{ .Values.OPABridge.image.uid }}
+            runAsGroup: {{ .Values.OPABridge.image.gid }}
+          env:
+            - name: TRINO_ALLOW_UNMANAGED_CATALOGS
+              value: {{ .Values.OPABridge.allowUnmanagedCatalogs | quote }}
+            - name: LAKEKEEPER_URL
+              value: {{ .Values.OPABridge.lakekeeper.url | quote }}
+          {{- if .Values.OPABridge.lakekeeper.tokenEndpoint }}
+            - name: LAKEKEEPER_TOKEN_ENDPOINT
+              value: {{ .Values.OPABridge.lakekeeper.tokenEndpoint | quote }}
+          {{- end }}
+          {{- if .Values.OPABridge.lakekeeper.clientId }}
+            - name: LAKEKEEPER_CLIENT_ID
+              value: {{ .Values.OPABridge.lakekeeper.clientId | quote }}
+          {{- end }}
+          {{- if .Values.OPABridge.lakekeeper.clientSecret }}
+            - name: LAKEKEEPER_CLIENT_SECRET
+              value: {{ .Values.OPABridge.lakekeeper.clientSecret | quote }}
+          {{- end }}
+          {{- if .Values.OPABridge.lakekeeper.scope }}
+            - name: LAKEKEEPER_SCOPE
+              value: {{ .Values.OPABridge.lakekeeper.scope | quote }}
+          {{- end }}
+          {{- with .Values.OPABridge.extraEnv }}
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.OPABridge.extraEnvFrom }}
+          envFrom:
+            {{- toYaml .Values.OPABridge.extraEnvFrom | nindent 12 }}
+          {{- end }}
+          args:
+            - "run"
+            - "--server"
+            - "--ignore=.*" # exclude hidden dirs created by Kubernetes
+            - "--addr=:8282"
+            - "--config-file=/run/secrets/opa-config.yaml"
+          {{- range .Values.OPABridge.extraArgs }}
+            - {{ . | quote }}
+          {{- end }}
+            - "/policies"
+          ports:
+            - name: opa
+              containerPort: 8282
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /health
+              scheme: HTTP
+              port: 8282
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              scheme: HTTP
+              port: 8282
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            {{- toYaml .Values.OPABridge.resources | nindent 12 }}
+          volumeMounts:
+            - name: opa-config
+              mountPath: /run/secrets
+              readOnly: true
+            - name: opa-policies
+              mountPath: /policies
+              readOnly: true
+      {{- end }}
+      {{- if .Values.catalog.extraContainers }}
+      {{- toYaml .Values.catalog.extraContainers | nindent 8 }}
+      {{- end }}
+      {{- if or .Values.OPABridge.enabled .Values.catalog.extraVolumes }}
       volumes:
+      {{- if .Values.OPABridge.enabled }}
+        - name: opa-config
+          secret:
+            secretName: {{ include "iceberg-catalog.fullname" . }}-opa-config
+        - name: opa-policies
+          configMap:
+            name: {{ include "iceberg-catalog.fullname" . }}-opa-policies
+      {{- end }}
+      {{- with .Values.catalog.extraVolumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
+    {{- end }}
