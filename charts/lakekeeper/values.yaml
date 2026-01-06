@@ -534,7 +534,7 @@ auth:
 
 authz:
   # -- type of the authorization backend.
-  # Available values: "openfga", "allowall"
+  # Available values: "openfga", "allowall", "cedar"
   # Authorization must not change after bootstrapping!
   # If type "openfga" is chose, consider setting `internalOpenFGA` to true
   # to deploy an OpenFGA instance as a subchart.
@@ -626,3 +626,132 @@ openfga:
       registry: quay.io
       repository: lakekeeper/postgresql
       tag: 15.4.0-debian-11-r45
+
+OPABridge:
+  # -- if the Lakekeeper OPA Bridge is deployed. OPA is launched as a sidecar container.
+  enabled: false
+
+  image:
+    # -- The image repository to pull from
+    repository: openpolicyagent/opa
+    # -- The image tag to pull
+    tag: 1.12.1
+    # -- The image pull policy
+    pullPolicy: IfNotPresent
+    # -- User ID for the OPA container. Any non-zero number works with
+    # the default OPA image.
+    uid: 64287
+    # -- Group ID for the OPA container. Any non-zero number works with
+    # the default OPA image.
+    gid: 64287
+
+  # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html>)
+  # resources for the OPA sidecar container of the catalog pod
+  resources: {}
+  # ---- EXAMPLE ----
+  # resources:
+  #   limits:
+  #     cpu: 100m
+  #     memory: 128Mi
+  #   requests:
+  #     cpu: 100m
+  #     memory: 128Mi
+
+  # -- (list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envvar-v1-core">envvar-v1-core</a></html>)
+  # extra variables for the OPA container
+  extraEnv: []
+
+  # -- (list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envfromsource-v1-core">envfromsource-v1-core</a></html>)
+  # extra variables for the OPA container
+  extraEnvFrom: []
+
+  # -- Additional arguments to pass to the OPA "run --server" command.
+  # These are appended to the default command arguments.
+  extraArgs: []
+  # ---- EXAMPLE ----
+  # extraArgs:
+  #   - "--log-level=debug"
+  #   - "--log-format=text"
+
+  # -- Additional configuration options for OPA.
+  # Please check the OPA documentation for the available options.
+  opaConfig: {}
+  # ---- EXAMPLE ----
+  #   decision_logs:
+  #     console: true
+
+  # -- Allow access to unmanaged catalogs (catalogs not configured in trino_catalog).
+  # When Trino has multiple authorizers configured, ALL authorizers must allow an action for it to succeed.
+  # If Trino uses catalogs managed by other authorizers (not Lakekeeper), set this to true.
+  allowUnmanagedCatalogs: false
+
+  # -- Configuration for connecting to Lakekeeper instance.
+  lakekeeper:
+    # -- The URL where OPA can reach the Lakekeeper instance.
+    url: "http://localhost:8181"
+    # -- The URL of the token endpoint of the identity provider.
+    # Example: http://localhost:30080/realms/iceberg/protocol/openid-connect/token
+    tokenEndpoint: ""
+    # -- The client ID used for authentication with the IdP (Client Credentials Flow).
+    clientId: ""
+    # -- The client secret used for authentication with the IdP (Client Credentials Flow).
+    clientSecret: ""
+    # -- The scope specified in the client credentials flow.
+    scope: "lakekeeper"
+
+    # -- Name of an existing secret containing Lakekeeper authentication credentials.
+    # If set, tokenEndpoint, clientId, clientSecret, and scope will be read from this secret.
+    existingSecret: ""
+    # -- Key within existingSecret containing the token endpoint
+    tokenEndpointSecretKey: "tokenEndpoint"
+    # -- Key within existingSecret containing the client ID
+    clientIdSecretKey: "clientId"
+    # -- Key within existingSecret containing the client secret
+    clientSecretSecretKey: "clientSecret"
+    # -- Key within existingSecret containing the scope
+    scopeSecretKey: "scope"
+
+  # -- Trino catalog to Lakekeeper warehouse mappings.
+  # Each entry maps a Trino catalog name to a Lakekeeper warehouse.
+  catalogs: []
+  # ---- EXAMPLE ----
+  # catalogs:
+  #   - trinoCatalog: "dev"
+  #     lakekeeperWarehouse: "development"
+  #   - trinoCatalog: "prod"
+  #     lakekeeperWarehouse: "production"
+
+  # -- Custom OPA policies.
+  # Map of policy filenames to policy content.
+  customPolicies: {}
+  # ---- EXAMPLE ----
+  # customPolicies:
+  #   my-policy.rego: |
+  #     package myapp
+  #
+  #     allow if {
+  #       input.user == "admin"
+  #     }
+
+  # configs for the OPA Bridge Service
+  service:
+    # -- OPA service annotations
+    annotations: {}
+    # -- OPA service session affinity
+    sessionAffinity: "None"
+    # -- OPA service session affinity config
+    sessionAffinityConfig: {}
+    # -- OPA service type
+    type: ClusterIP
+    # -- OPA service external port
+    externalPort: 8282
+    # -- OPA service ip of the load balancer service.
+    # Only used when `type: LoadBalancer`
+    loadBalancerIP: ""
+    # -- Source ip ranges for the OPA services.
+    # Only used when `type: LoadBalancer`
+    loadBalancerSourceRanges: []
+    # -- OPA service node port
+    # Only used when `type: NodePort`
+    nodePort:
+      opa: ""

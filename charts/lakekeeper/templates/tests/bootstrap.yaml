@@ -11,13 +11,11 @@ spec:
   serviceAccountName: {{ include "iceberg-catalog.serviceAccountName" . }}
   containers:
     - name: base
-      image: debian
-      command: ['bash', "-c"]
+      image: curlimages/curl:latest
+      command: ['sh', "-c"]
       args:
         - |
           set -e
-          apt-get update -yqq
-          apt-get install -yqq curl
           TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
           BOOTSTRAP_URL="http://{{ include "iceberg-catalog.fullname" . }}:8181/management/v1/bootstrap"
           if [ -n "$TOKEN" ]; then

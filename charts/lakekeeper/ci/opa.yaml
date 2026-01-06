@@ -1,0 +1,13 @@
+helmWait: true
+internalOpenFGA: true
+authn:
+  k8s:
+    enabled: true
+authz:
+  backend: "openfga"
+OPABridge:
+  enabled: true
+  lakekeeper:
+    tokenEndpoint: "http://localhost/nonexistant/oauth2/token"
+    clientId: "example-client-id"
+    clientSecret: "example-client-secret"

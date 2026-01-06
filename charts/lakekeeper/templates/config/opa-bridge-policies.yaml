@@ -1,0 +1,33 @@
+{{- if .Values.OPABridge.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "iceberg-catalog.fullname" . }}-opa-policies
+  labels:
+    {{- include "iceberg-catalog.labels" . | nindent 4 }}
+    app.kubernetes.io/component: opa-bridge
+data:
+{{- range $path, $content := .Files.Glob "opa-bridge/v0.11/policies/**.rego" }}
+  {{ trimPrefix "opa-bridge/v0.11/policies/" $path | replace "/" "." }}: |
+{{ $content | toString | indent 4 }}
+{{- end }}
+  catalogs.rego: |
+    # This file contains Trino catalog to Lakekeeper warehouse mappings.
+    # Generated from Helm values.
+
+    package configuration
+
+    trino_catalog := [
+    {{- range .Values.OPABridge.catalogs }}
+      {
+        "name": {{ .trinoCatalog | quote }},
+        "lakekeeper_id": "default",
+        "lakekeeper_warehouse": {{ .lakekeeperWarehouse | quote }}
+      },
+    {{- end }}
+    ]
+  {{- range $filename, $content := .Values.OPABridge.customPolicies }}
+  {{ $filename }}: |
+{{ $content | indent 4 }}
+  {{- end }}
+{{- end }}
