@@ -729,7 +729,7 @@ OPABridge:
   #   my-policy.rego: |
   #     package myapp
   #
-  #     allow {
+  #     allow if {
   #       input.user == "admin"
   #     }
 

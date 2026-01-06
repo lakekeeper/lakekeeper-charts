@@ -7,7 +7,7 @@ import data.lakekeeper
 # Cache the result for 1 hour to avoid repeated calls to the Lakekeeper API.
 warehouse_id_for_name(lakekeeper_id, warehouse_name) := warehouse_id if {
     this := lakekeeper.lakekeeper_by_id[lakekeeper_id]
-    url := concat("/", [this.url, "catalog/v1/config?warehouse=", urlquery.encode(warehouse_name)])
+    url := concat("/", [this.url, sprintf("catalog/v1/config?warehouse=%s", [urlquery.encode(warehouse_name)])])
     warehouse_id := http.send({
         "method": "GET",  
         "url": url,

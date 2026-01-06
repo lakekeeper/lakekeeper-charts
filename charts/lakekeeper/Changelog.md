@@ -16,7 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.9.0] - 2026-01-02
 
 ### Changed
-* Default to Lakekeeper v0.11.0
+* Default to Lakekeeper Community v0.11.1, Plus v0.11.0
 * Update OpenFGA Chart to v0.2.50 / OpenFGA 1.11.2
 * Update Postgres Chart to v1.5.12, Postgres 17.7
 
