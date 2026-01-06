@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 * Add support for Lakekeeper's OPA bridge via `OPABridge` configuraiton options
+* Add support for "cedar" Authorizer - extend RBAC permissions to `get configmaps` in Namespace
 
 ### Fixed
 

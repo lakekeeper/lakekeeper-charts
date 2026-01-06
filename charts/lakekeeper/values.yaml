@@ -534,7 +534,7 @@ auth:
 
 authz:
   # -- type of the authorization backend.
-  # Available values: "openfga", "allowall"
+  # Available values: "openfga", "allowall", "cedar"
   # Authorization must not change after bootstrapping!
   # If type "openfga" is chose, consider setting `internalOpenFGA` to true
   # to deploy an OpenFGA instance as a subchart.
