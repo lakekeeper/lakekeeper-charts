@@ -82,7 +82,7 @@ allow_filter_catalogs_for_system_catalog if {
 }
 
 # Allow access to ReadSystemInformation, is required
-# for Trino in order to allow access to the API /metrics endoint
+# for Trino in order to allow access to the API /metrics endpoint
 # see: https://trino.io/docs/current/admin/openmetrics.html
 allow_read_system_information if {
     input.action.operation == "ReadSystemInformation"
