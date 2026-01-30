@@ -31,6 +31,10 @@ allow_default_access if {
     allow_filter_catalogs_for_system_catalog
 }
 
+allow_default_access if {
+    allow_read_system_information
+}
+
 # Every authenticated user can execute queries.
 # Authentication is checked by trino.
 allow_execute_query if {
@@ -75,4 +79,11 @@ allow_sfc_on_table_columns_in_system_catalog if {
 allow_filter_catalogs_for_system_catalog if {
     input.action.operation == "FilterCatalogs"
     input.action.resource.catalog.name == "system"
+}
+
+# Allow access to ReadSystemInformation, is required
+# for Trino in order to allow access to the API /metrics endoint
+# see: https://trino.io/docs/current/admin/openmetrics.html
+allow_read_system_information if {
+    input.action.operation == "ReadSystemInformation"
 }
