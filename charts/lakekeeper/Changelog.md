@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Added
+* Add support for `CreateViewWithSelectFromColumns` operation in OPA bridge (requires table read permissions)
 
 ### Fixed
 
