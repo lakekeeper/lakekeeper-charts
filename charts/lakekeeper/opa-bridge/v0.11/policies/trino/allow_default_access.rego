@@ -87,3 +87,15 @@ allow_filter_catalogs_for_system_catalog if {
 allow_read_system_information if {
     input.action.operation == "ReadSystemInformation"
 }
+
+allow_default_access if {
+    allow_select_columns_on_system_catalog
+}
+
+# Will run if you'll try to use Apache Superset "Create Dataset"
+allow_select_columns_on_system_catalog if {
+    input.action.operation == "SelectFromColumns"
+    input.action.resource.table.catalogName == "system"
+    input.action.resource.table.schemaName == "metadata"
+    input.action.resource.table.tableName == "table_comments"
+}
