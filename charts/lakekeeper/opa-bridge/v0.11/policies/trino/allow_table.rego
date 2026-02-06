@@ -119,7 +119,7 @@ allow_table_metadata_read if {
 
 allow_table_procedure if {
     input.action.operation in ["ExecuteTableProcedure"]
-    input.action.resource.function.functionName in ["OPTIMIZE", "OPTIMIZE_MANIFESTS", "EXPIRE_SNAPSHOTS", "DROP_EXTENDED_STATS", "REMOVE_ORPHAN_FILES"]
+    input.action.resource.function.functionName in ["OPTIMIZE", "OPTIMIZE_MANIFESTS", "EXPIRE_SNAPSHOTS", "DROP_EXTENDED_STATS", "REMOVE_ORPHAN_FILES","ADD_FILES"]
     catalog := input.action.resource.table.catalogName
     schema := input.action.resource.table.schemaName
     table := input.action.resource.table.tableName
