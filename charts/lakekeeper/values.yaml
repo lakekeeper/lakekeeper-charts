@@ -292,6 +292,7 @@ catalog:
     # Only used when `type: NodePort`
     nodePort:
       http: ""
+      metrics: ""
 
   ingress:
     # -- if we should deploy Ingress resources
@@ -329,6 +330,7 @@ catalog:
   prometheus:
     # -- Adds the prometheus.io/port and prometheus.io/scrape annotations to the catalog Pods.
     setScrapeAnnotations: false
+    port: 9000
 
 serviceAccount:
   # -- Specifies whether a service account should be created.
