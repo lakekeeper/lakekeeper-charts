@@ -8,8 +8,8 @@ metadata:
     app.kubernetes.io/component: opa-bridge
 data:
 {{- range $path, $content := .Files.Glob "opa-bridge/v0.11/policies/**.rego" }}
-  {{ trimPrefix "opa-bridge/v0.11/policies/" $path | replace "/" "." }}: |
-{{ $content | toString | indent 4 }}
+  {{ trimPrefix "opa-bridge/v0.11/policies/" $path | replace "/" "." }}: |2
+{{ regexReplaceAll "[ \t]+\n" ($content | toString) "\n" | indent 4 }}
 {{- end }}
   catalogs.rego: |
     # This file contains Trino catalog to Lakekeeper warehouse mappings.
@@ -28,6 +28,6 @@ data:
     ]
   {{- range $filename, $content := .Values.OPABridge.customPolicies }}
   {{ $filename }}: |
-{{ $content | indent 4 }}
+{{ regexReplaceAll "[ \t]+\n" $content "\n" | indent 4 }}
   {{- end }}
 {{- end }}
