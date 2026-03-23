@@ -28,6 +28,6 @@ data:
     ]
   {{- range $filename, $content := .Values.OPABridge.customPolicies }}
   {{ $filename }}: |
-{{ regexReplaceAll "[ \t]+\n" $content "\n" | indent 4 }}
+{{ $content | indent 4 }}
   {{- end }}
 {{- end }}
