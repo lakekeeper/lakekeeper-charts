@@ -637,7 +637,7 @@ OPABridge:
     # -- The image repository to pull from
     repository: openpolicyagent/opa
     # -- The image tag to pull
-    tag: 1.12.1
+    tag: 1.15.1
     # -- The image pull policy
     pullPolicy: IfNotPresent
     # -- User ID for the OPA container. Any non-zero number works with
