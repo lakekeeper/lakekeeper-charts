@@ -31,6 +31,10 @@ allow_default_access if {
     allow_filter_catalogs_for_system_catalog
 }
 
+allow_default_access if {
+    allow_select_columns_on_system_catalog
+}
+
 # Every authenticated user can execute queries.
 # Authentication is checked by trino.
 allow_execute_query if {
@@ -75,4 +79,12 @@ allow_sfc_on_table_columns_in_system_catalog if {
 allow_filter_catalogs_for_system_catalog if {
     input.action.operation == "FilterCatalogs"
     input.action.resource.catalog.name == "system"
+}
+
+# Will run if you'll try to use Apache Superset "Create Dataset"
+allow_select_columns_on_system_catalog if {
+    input.action.operation == "SelectFromColumns"
+    input.action.resource.table.catalogName == "system"
+    input.action.resource.table.schemaName == "metadata"
+    input.action.resource.table.tableName == "table_comments"
 }
