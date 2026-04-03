@@ -24,6 +24,15 @@ spec:
       nodePort: {{ .Values.catalog.service.nodePort.http }}
       {{- end }}
       name: http
+    {{- if .Values.catalog.prometheus.setScrapeAnnotations }}
+    - port: {{ .Values.catalog.prometheus.port }}
+      targetPort: metrics
+      protocol: TCP
+      {{- if and (eq .Values.catalog.service.type "NodePort") (.Values.catalog.service.nodePort.metrics) }}
+      nodePort: {{ .Values.catalog.service.nodePort.metrics }}
+      {{- end }}
+      name: metrics
+    {{- end }}
   selector:
     {{- include "iceberg-catalog.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: catalog

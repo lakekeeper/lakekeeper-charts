@@ -8,8 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Remove trailing whitespace from .rego files to improve k8s formatting
 
 ### Added
+* Add support for `CreateViewWithSelectFromColumns` operation in OPA bridge (requires table read permissions)
 
 ### Fixed
 

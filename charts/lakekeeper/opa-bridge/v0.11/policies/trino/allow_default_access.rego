@@ -35,6 +35,10 @@ allow_default_access if {
     allow_read_system_information
 }
 
+allow_default_access if {
+    allow_select_columns_on_system_catalog
+}
+
 # Every authenticated user can execute queries.
 # Authentication is checked by trino.
 allow_execute_query if {
@@ -86,10 +90,6 @@ allow_filter_catalogs_for_system_catalog if {
 # see: https://trino.io/docs/current/admin/openmetrics.html
 allow_read_system_information if {
     input.action.operation == "ReadSystemInformation"
-}
-
-allow_default_access if {
-    allow_select_columns_on_system_catalog
 }
 
 # Will run if you'll try to use Apache Superset "Create Dataset"
