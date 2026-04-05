@@ -8,10 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
-- Remove trailing whitespace from .rego files to improve k8s formatting
+
+### Added
+
+### Fixed
+
+## [0.10.0] - 2026-04-05
+
+### Changed
+* Default to Lakekeeper Community v0.12.0, Enterprise v0.11.3
+* Update OPA bridge policies to Lakekeeper 0.12 with batch check
+* Update OPA docker tag to v1.15.1
+* Update OpenFGA Chart to v0.2.62 / OpenFGA v1.14.0
+* Update Postgres Chart to v1.5.13, Postgres 17.9
+* Remove trailing whitespace from .rego files to improve k8s formatting
 
 ### Added
 * Add support for `CreateViewWithSelectFromColumns` operation in OPA bridge (requires table read permissions)
+* Allow Superset access to system tables to create new datasets
+* Add Service Port for Prometheus Metrics
+* Add support for Trino ADD_FILES function
 
 ### Fixed
 
