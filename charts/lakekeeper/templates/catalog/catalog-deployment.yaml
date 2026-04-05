@@ -140,6 +140,12 @@ spec:
               value: {{ .Values.OPABridge.allowUnmanagedCatalogs | quote }}
             - name: LAKEKEEPER_URL
               value: {{ .Values.OPABridge.lakekeeper.url | quote }}
+            - name: LAKEKEEPER_MAX_BATCH_CHECK_SIZE
+              value: {{ .Values.OPABridge.maxBatchCheckSize | quote }}
+          {{- if .Values.OPABridge.adminUsers }}
+            - name: TRINO_ADMIN_USERS
+              value: {{ .Values.OPABridge.adminUsers | join "," | quote }}
+          {{- end }}
           {{- if .Values.OPABridge.lakekeeper.existingSecret }}
             {{- /* Read credentials from existing secret */ -}}
             - name: LAKEKEEPER_TOKEN_ENDPOINT
