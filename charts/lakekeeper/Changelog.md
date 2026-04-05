@@ -13,6 +13,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.10.1] - 2026-04-05
+
+### Fixed
+* Fix OPA Bridge sidecar failing to start with OPA >= 1.13 due to read-only root filesystem in Chainguard base image
+* Fix internal OpenFGA endpoint DNS resolution on clusters with custom DNS search domains (use absolute FQDN)
+
+### Changed
+* Move OPA config mount from `/run/secrets` to `/etc/opa` to avoid conflict with `/var/run` symlink
+
 ## [0.10.0] - 2026-04-05
 
 ### Changed

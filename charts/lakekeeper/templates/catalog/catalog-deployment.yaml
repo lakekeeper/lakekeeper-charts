@@ -136,6 +136,7 @@ spec:
           securityContext:
             runAsUser: {{ .Values.OPABridge.image.uid }}
             runAsGroup: {{ .Values.OPABridge.image.gid }}
+            readOnlyRootFilesystem: false
           env:
             - name: TRINO_ALLOW_UNMANAGED_CATALOGS
               value: {{ .Values.OPABridge.allowUnmanagedCatalogs | quote }}
@@ -200,7 +201,7 @@ spec:
             - "--server"
             - "--ignore=.*" # exclude hidden dirs created by Kubernetes
             - "--addr=:8282"
-            - "--config-file=/run/secrets/opa-config.yaml"
+            - "--config-file=/etc/opa/opa-config.yaml"
           {{- range .Values.OPABridge.extraArgs }}
             - {{ . | quote }}
           {{- end }}
@@ -227,11 +228,13 @@ spec:
             {{- toYaml .Values.OPABridge.resources | nindent 12 }}
           volumeMounts:
             - name: opa-config
-              mountPath: /run/secrets
+              mountPath: /etc/opa
               readOnly: true
             - name: opa-policies
               mountPath: /policies
               readOnly: true
+            - name: opa-var-run
+              mountPath: /var/run/secrets
       {{- end }}
       {{- if .Values.catalog.extraContainers }}
       {{- toYaml .Values.catalog.extraContainers | nindent 8 }}
@@ -245,6 +248,8 @@ spec:
         - name: opa-policies
           configMap:
             name: {{ include "iceberg-catalog.fullname" . }}-opa-policies
+        - name: opa-var-run
+          emptyDir: {}
       {{- end }}
       {{- with .Values.catalog.extraVolumes }}
         {{- toYaml . | nindent 8 }}
