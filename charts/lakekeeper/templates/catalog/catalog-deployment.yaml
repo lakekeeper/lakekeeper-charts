@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "iceberg-catalog.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   {{- if .Values.catalog.annotations }}
   annotations:
     {{- toYaml .Values.catalog.annotations | nindent 4 }}

@@ -3,6 +3,7 @@ apiVersion: policy/v1
 kind: PodDisruptionBudget
 metadata:
   name: {{ include "iceberg-catalog.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   labels:
     {{- include "iceberg-catalog.labels" . | nindent 4 }}
     app.kubernetes.io/component: catalog

@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * Allow Superset access to system tables to create new datasets
 * Add Service Port for Prometheus Metrics
 * Add support for Trino ADD_FILES function
+* Add explicit `namespace` to all namespace-scoped resource templates (#120)
 
 ### Fixed
 

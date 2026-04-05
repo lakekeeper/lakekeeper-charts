@@ -3,6 +3,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: {{ include "iceberg-catalog.fullname" . }}
+  namespace: {{ .Release.Namespace }}
   {{- if .Values.catalog.ingress.annotations }}
   annotations:
     {{- toYaml .Values.catalog.ingress.annotations | nindent 4 }}
