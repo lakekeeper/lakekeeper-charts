@@ -687,6 +687,19 @@ OPABridge:
   # If Trino uses catalogs managed by other authorizers (not Lakekeeper), set this to true.
   allowUnmanagedCatalogs: false
 
+  # -- Maximum number of checks per batch-check request to Lakekeeper.
+  # Lakekeeper server limit is 1000.
+  maxBatchCheckSize: 1000
+
+  # -- Trino admin users with full access to all system schemas/tables across all catalogs,
+  # including FilterViewQueryOwnedBy for all users.
+  # Specify Trino user IDs (typically OIDC subject) as a list.
+  adminUsers: []
+  # ---- EXAMPLE ----
+  # adminUsers:
+  #   - "admin-user-id"
+  #   - "another-admin-id"
+
   # -- Configuration for connecting to Lakekeeper instance.
   lakekeeper:
     # -- The URL where OPA can reach the Lakekeeper instance.
