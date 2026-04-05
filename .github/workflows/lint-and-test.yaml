@@ -40,14 +40,22 @@ jobs:
             echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
 
+      - name: Check for any chart file changes
+        id: chart-files-changed
+        run: |
+          changed=$(git diff --name-only origin/${{ github.event.repository.default_branch }}...HEAD -- charts/)
+          if [[ -n "$changed" ]]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run chart-testing (lint)
         if: steps.list-changed.outputs.changed == 'true'
         run: ct lint --target-branch ${{ github.event.repository.default_branch }} --check-version-increment=false
 
       - name: Create kind cluster
-        if: steps.list-changed.outputs.changed == 'true'
+        if: steps.chart-files-changed.outputs.changed == 'true'
         uses: helm/kind-action@v1.14.0
 
       - name: Run chart-testing (install)
-        if: steps.list-changed.outputs.changed == 'true'
-        run: ct install --target-branch ${{ github.event.repository.default_branch }} --helm-extra-set-args "--set lakekeeper.licenseKey=${{ secrets.LAKEKEEPER_PLUS_LICENSE_KEY }}"
+        if: steps.chart-files-changed.outputs.changed == 'true'
+        run: ct install --all --target-branch ${{ github.event.repository.default_branch }} --helm-extra-set-args "--set lakekeeper.licenseKey=${{ secrets.LAKEKEEPER_PLUS_LICENSE_KEY }}"
