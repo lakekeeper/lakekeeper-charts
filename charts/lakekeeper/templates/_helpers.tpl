@@ -295,7 +295,7 @@ The list of `env` catalog Pods
 
 {{- /* user-defined environment variables */ -}}
 {{- if .Values.catalog.extraEnv }}
-{{ toYaml .Values.catalog.extraEnv }}
+{{ tpl (toYaml .Values.catalog.extraEnv) . }}
 {{- end }}
 
 - name: LAKEKEEPER__PLACEHOLDER

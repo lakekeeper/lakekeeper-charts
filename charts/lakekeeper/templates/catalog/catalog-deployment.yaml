@@ -88,7 +88,7 @@ spec:
           envFrom:
             {{- include "iceberg-catalog.envFrom" . | indent 12 }}
             {{- if .Values.catalog.extraEnvFrom -}}
-            {{- toYaml .Values.catalog.extraEnvFrom | nindent 12 }}
+            {{- tpl (toYaml .Values.catalog.extraEnvFrom) . | nindent 12 }}
             {{- end }}
           ports:
             - name: http
@@ -190,11 +190,11 @@ spec:
             {{- end }}
           {{- end }}
           {{- with .Values.OPABridge.extraEnv }}
-            {{- toYaml . | nindent 12 }}
+            {{- tpl (toYaml .) $ | nindent 12 }}
           {{- end }}
           {{- if .Values.OPABridge.extraEnvFrom }}
           envFrom:
-            {{- toYaml .Values.OPABridge.extraEnvFrom | nindent 12 }}
+            {{- tpl (toYaml .Values.OPABridge.extraEnvFrom) . | nindent 12 }}
           {{- end }}
           args:
             - "run"
