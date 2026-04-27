@@ -22,7 +22,7 @@ dependencies:
     condition: postgresql.enabled
     alias: postgresql
   - name: openfga
-    version: 0.2.62
+    version: 0.3.3
     repository: https://openfga.github.io/helm-charts
     condition: internalOpenFGA
     alias: openfga
