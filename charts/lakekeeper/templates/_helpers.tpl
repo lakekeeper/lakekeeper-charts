@@ -226,8 +226,8 @@ The list of `env` catalog Pods
 - name: LAKEKEEPER__PG_ENCRYPTION_KEY
   valueFrom:
     secretKeyRef:
-      name: {{ .Values.secretBackend.postgres.encryptionKeySecret }}
-      key: {{ .Values.secretBackend.postgres.encryptionKeySecretKey }}
+      name: {{ tpl .Values.secretBackend.postgres.encryptionKeySecret . }}
+      key: {{ tpl .Values.secretBackend.postgres.encryptionKeySecretKey . }}
 {{- else }}
 - name: LAKEKEEPER__PG_ENCRYPTION_KEY
   valueFrom:
