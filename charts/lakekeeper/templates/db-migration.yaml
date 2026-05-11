@@ -76,7 +76,7 @@ spec:
           envFrom:
             {{- include "iceberg-catalog.envFrom" . | indent 12 }}
             {{- if .Values.catalog.extraEnvFrom -}}
-            {{- toYaml .Values.catalog.extraEnvFrom | nindent 12 }}
+            {{- tpl (toYaml .Values.catalog.extraEnvFrom) . | nindent 12 }}
             {{- end }}
           {{- if .Values.catalog.command }}
           command:
