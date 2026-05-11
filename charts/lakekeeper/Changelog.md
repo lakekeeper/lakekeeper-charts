@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+## [0.11.0] - 2026-05-11
+
+### Changed
+* Update OPA docker tag to v1.16.1
+
+### Added
+* Render `catalog.extraEnv`, `catalog.extraEnvFrom`, `OPABridge.extraEnv` and `OPABridge.extraEnvFrom` through `tpl` so values can reference other chart values / templates
+
 ### Fixed
 
 ## [0.10.1] - 2026-04-05
