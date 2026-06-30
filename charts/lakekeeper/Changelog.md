@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+* Update OPA docker tag to v1.18.1
+* Update OpenFGA Chart to v0.3.10 / OpenFGA v1.18.1
+* Update Postgres Chart to v1.6.4, Postgres 18.4
+  * ⚠️ Major Postgres version bump (17 -> 18). There is **no automatic data migration**: PostgreSQL 18 will not start on a data directory created by PostgreSQL 17 without a manual `pg_upgrade`. The embedded Postgres is intended for testing only — use an external Postgres for production.
 
 ### Added
 

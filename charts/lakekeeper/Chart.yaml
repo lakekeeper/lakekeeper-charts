@@ -17,12 +17,12 @@ keywords:
   - lakehouse
 dependencies:
   - name: postgres
-    version: 1.5.13
+    version: 1.6.4
     repository: https://groundhog2k.github.io/helm-charts/
     condition: postgresql.enabled
     alias: postgresql
   - name: openfga
-    version: 0.2.62
+    version: 0.3.10
     repository: https://openfga.github.io/helm-charts
     condition: internalOpenFGA
     alias: openfga
