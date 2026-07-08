@@ -81,6 +81,7 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.dbMigrations.podAnnotations | object | `{}` | Annotations for the migration pod |
 | catalog.dbMigrations.podLabels | object | `{}` | Labels for the migration pod |
 | catalog.dbMigrations.resources | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html> | `{}` |  resources for the catalog container of the catalog pod |
+| catalog.dbMigrations.ttlSecondsAfterFinished | int | `~` | Time in seconds the dbMigrations Job should be allowed to live before being deleted automatically. |
 | catalog.extraContainers | list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core">containers</a></html> | `[]` |  extra containers for the catalog Pods |
 | catalog.extraEnv | list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envvar-v1-core">envvar-v1-core</a></html> | `[]` |  extra variables for the catalog Pods |
 | catalog.extraEnvFrom | list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envfromsource-v1-core">envfromsource-v1-core</a></html> | `[]` |  extra variables for the catalog Pods |
