@@ -262,6 +262,9 @@ catalog:
     # extra init-containers for the migration Pod
     extraInitContainers: []
 
+    # -- TTL after Job finishes in seconds
+    ttlSecondsAfterFinished: ~
+
     # Other configurations are equal to the `catalog` section
 
   initContainers:
