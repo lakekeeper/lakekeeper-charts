@@ -44,6 +44,7 @@ lakekeeper:
 catalog:
   image:
     # -- The image repository to pull from
+    # Use quay.io/repository/vakamo/lakekeeper-plus when `lakekeeper.edition` set to `plus`
     repository: ~
     # -- The image tag to pull
     tag: ~
@@ -231,7 +232,7 @@ catalog:
 
   dbMigrations:
     # -- if the db-migrations Job is created.
-    # if `false`, you have to MANUALLY run `airflow db upgrade` when required
+    # if `false`, you will need to ensure `lakekeeper migrate` runs before the catalog pods start.
     enabled: true
 
     # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html>)
