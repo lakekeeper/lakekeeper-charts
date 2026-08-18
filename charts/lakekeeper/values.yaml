@@ -44,7 +44,7 @@ lakekeeper:
 catalog:
   image:
     # -- The image repository to pull from
-    # Use quay.io/repository/vakamo/lakekeeper-plus when `lakekeeper.edition` set to `plus`
+    # Chart sets this to quay.io/vakamo/lakekeeper-plus when `lakekeeper.edition` set to `plus`
     repository: ~
     # -- The image tag to pull
     tag: ~
