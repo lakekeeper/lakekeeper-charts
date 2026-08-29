@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * ⚠️ Major Postgres version bump (17 -> 18). There is **no automatic data migration**: PostgreSQL 18 will not start on a data directory created by PostgreSQL 17 without a manual `pg_upgrade`. The embedded Postgres is intended for testing only — use an external Postgres for production.
 
 ### Added
+* Add `catalog.dbMigrations.ttlSecondsAfterFinished` to automatically delete finished db-migration Jobs
 
 ## [0.11.0] - 2026-05-11
 
