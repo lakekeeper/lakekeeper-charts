@@ -2,7 +2,7 @@
 Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lakekeeper&color=3f6ec6&labelColor=&logoColor=white)](https://artifacthub.io/packages/helm/lakekeeper/lakekeeper)
-![Version: 0.11.0](https://img.shields.io/badge/Version-0.11.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.12.2](https://img.shields.io/badge/AppVersion-0.12.2-informational?style=flat-square)
+![Version: 0.12.0](https://img.shields.io/badge/Version-0.12.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.13.3](https://img.shields.io/badge/AppVersion-0.13.3-informational?style=flat-square)
 
 Please check our [Documentation](http://docs.lakekeeper.io), the [Lakekeeper Repository](https://github.com/lakekeeper/lakekeeper) and the [`values.yaml`](https://github.com/lakekeeper/lakekeeper-charts/blob/main/charts/lakekeeper/values.yaml) for more information.
 
@@ -110,7 +110,7 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.config | object | `{}` | Configuration options for the catalog. Please check the documentation for the available options. https://docs.lakekeeper.io/docs/nightly/configuration/ Configuration items are mounted as environment variables. |
 | catalog.containerSecurityContext | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core">podsecuritycontext-v1-core</a></html> | `{}` |  security context for the catalog container. `runAsUser` is ignored, please set with `catalog.image.uid`, `runAsGroup` is ignored, please set with `catalog.image.gid` |
 | catalog.dbMigrations.annotations | object | `{}` | Annotations for the migration job |
-| catalog.dbMigrations.enabled | bool | `true` | if the db-migrations Job is created. if `false`, you have to MANUALLY run `airflow db upgrade` when required |
+| catalog.dbMigrations.enabled | bool | `true` | if the db-migrations Job is created. if `false`, you will need to ensure `lakekeeper migrate` runs before the catalog pods start. |
 | catalog.dbMigrations.extraInitContainers | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core">container</a></html> | `[]` |  extra init-containers for the migration Pod |
 | catalog.dbMigrations.labels | object | `{}` | Labels for the catalog migration job |
 | catalog.dbMigrations.podAnnotations | object | `{}` | Annotations for the migration pod |
@@ -125,7 +125,7 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.extraVolumes | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#volume-v1-core">volume</a></html> | `[]` |  extra Volumes for the catalog Pods |
 | catalog.image.gid | int | `65534` | 65534 = nobody of google container distroless |
 | catalog.image.pullPolicy | string | `"IfNotPresent"` | The image pull policy |
-| catalog.image.repository | string | `nil` | The image repository to pull from |
+| catalog.image.repository | string | `nil` | The image repository to pull from Chart sets this to quay.io/vakamo/lakekeeper-plus when `lakekeeper.edition` set to `plus` |
 | catalog.image.tag | string | `nil` | The image tag to pull |
 | catalog.image.uid | int | `65532` | 65532 = nonroot of google container distroless |
 | catalog.ingress.annotations | object | `{}` | annotations for the catalog Ingress |
