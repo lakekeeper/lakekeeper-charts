@@ -2,7 +2,7 @@
 Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lakekeeper&color=3f6ec6&labelColor=&logoColor=white)](https://artifacthub.io/packages/helm/lakekeeper/lakekeeper)
-![Version: 0.8.0](https://img.shields.io/badge/Version-0.8.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.10.2](https://img.shields.io/badge/AppVersion-0.10.2-informational?style=flat-square)
+![Version: 0.11.0](https://img.shields.io/badge/Version-0.11.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.12.2](https://img.shields.io/badge/AppVersion-0.12.2-informational?style=flat-square)
 
 Please check our [Documentation](http://docs.lakekeeper.io), the [Lakekeeper Repository](https://github.com/lakekeeper/lakekeeper) and the [`values.yaml`](https://github.com/lakekeeper/lakekeeper-charts/blob/main/charts/lakekeeper/values.yaml) for more information.
 
@@ -36,13 +36,48 @@ For potential additional steps that are required for upgrades, please check the 
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://groundhog2k.github.io/helm-charts/ | postgresql(postgres) | 1.5.8 |
-| https://openfga.github.io/helm-charts | openfga(openfga) | 0.2.44 |
+| https://groundhog2k.github.io/helm-charts/ | postgresql(postgres) | 1.6.4 |
+| https://openfga.github.io/helm-charts | openfga(openfga) | 0.3.10 |
 
 ## Values
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
+| OPABridge.adminUsers | list | `[]` | Trino admin users with full access to all system schemas/tables across all catalogs, including FilterViewQueryOwnedBy for all users. Specify Trino user IDs (typically OIDC subject) as a list. |
+| OPABridge.allowUnmanagedCatalogs | bool | `false` | Allow access to unmanaged catalogs (catalogs not configured in trino_catalog). When Trino has multiple authorizers configured, ALL authorizers must allow an action for it to succeed. If Trino uses catalogs managed by other authorizers (not Lakekeeper), set this to true. |
+| OPABridge.catalogs | list | `[]` | Trino catalog to Lakekeeper warehouse mappings. Each entry maps a Trino catalog name to a Lakekeeper warehouse. |
+| OPABridge.customPolicies | object | `{}` | Custom OPA policies. Map of policy filenames to policy content. |
+| OPABridge.enabled | bool | `false` | if the Lakekeeper OPA Bridge is deployed. OPA is launched as a sidecar container. |
+| OPABridge.extraArgs | list | `[]` |  |
+| OPABridge.extraEnv | list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envvar-v1-core">envvar-v1-core</a></html> | `[]` |  extra variables for the OPA container |
+| OPABridge.extraEnvFrom | list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envfromsource-v1-core">envfromsource-v1-core</a></html> | `[]` |  extra variables for the OPA container |
+| OPABridge.image.gid | int | `64287` | Group ID for the OPA container. Any non-zero number works with the default OPA image. |
+| OPABridge.image.pullPolicy | string | `"IfNotPresent"` | The image pull policy |
+| OPABridge.image.repository | string | `"openpolicyagent/opa"` | The image repository to pull from |
+| OPABridge.image.tag | string | `"1.18.1"` | The image tag to pull |
+| OPABridge.image.uid | int | `64287` | User ID for the OPA container. Any non-zero number works with the default OPA image. |
+| OPABridge.lakekeeper | object | `{"clientId":"","clientIdSecretKey":"clientId","clientSecret":"","clientSecretSecretKey":"clientSecret","existingSecret":"","scope":"lakekeeper","scopeSecretKey":"scope","tokenEndpoint":"","tokenEndpointSecretKey":"tokenEndpoint","url":"http://localhost:8181"}` | Configuration for connecting to Lakekeeper instance. |
+| OPABridge.lakekeeper.clientId | string | `""` | The client ID used for authentication with the IdP (Client Credentials Flow). |
+| OPABridge.lakekeeper.clientIdSecretKey | string | `"clientId"` | Key within existingSecret containing the client ID |
+| OPABridge.lakekeeper.clientSecret | string | `""` | The client secret used for authentication with the IdP (Client Credentials Flow). |
+| OPABridge.lakekeeper.clientSecretSecretKey | string | `"clientSecret"` | Key within existingSecret containing the client secret |
+| OPABridge.lakekeeper.existingSecret | string | `""` | Name of an existing secret containing Lakekeeper authentication credentials. If set, tokenEndpoint, clientId, clientSecret, and scope will be read from this secret. |
+| OPABridge.lakekeeper.scope | string | `"lakekeeper"` | The scope specified in the client credentials flow. |
+| OPABridge.lakekeeper.scopeSecretKey | string | `"scope"` | Key within existingSecret containing the scope |
+| OPABridge.lakekeeper.tokenEndpoint | string | `""` | The URL of the token endpoint of the identity provider. Example: http://localhost:30080/realms/iceberg/protocol/openid-connect/token |
+| OPABridge.lakekeeper.tokenEndpointSecretKey | string | `"tokenEndpoint"` | Key within existingSecret containing the token endpoint |
+| OPABridge.lakekeeper.url | string | `"http://localhost:8181"` | The URL where OPA can reach the Lakekeeper instance. |
+| OPABridge.maxBatchCheckSize | int | `1000` | Maximum number of checks per batch-check request to Lakekeeper. Lakekeeper server limit is 1000. |
+| OPABridge.opaConfig | object | `{}` | Additional configuration options for OPA. Please check the OPA documentation for the available options. |
+| OPABridge.resources | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html> | `{}` |  resources for the OPA sidecar container of the catalog pod |
+| OPABridge.service.annotations | object | `{}` | OPA service annotations |
+| OPABridge.service.externalPort | int | `8282` | OPA service external port |
+| OPABridge.service.loadBalancerIP | string | `""` | OPA service ip of the load balancer service. Only used when `type: LoadBalancer` |
+| OPABridge.service.loadBalancerSourceRanges | list | `[]` | Source ip ranges for the OPA services. Only used when `type: LoadBalancer` |
+| OPABridge.service.nodePort | object | `{"opa":""}` | OPA service node port Only used when `type: NodePort` |
+| OPABridge.service.sessionAffinity | string | `"None"` | OPA service session affinity |
+| OPABridge.service.sessionAffinityConfig | object | `{}` | OPA service session affinity config |
+| OPABridge.service.type | string | `"ClusterIP"` | OPA service type |
 | additionalLabels | object | `{}` | Additional labels to add to all resources |
 | auth.k8s.audience | string | `""` | The expected Audience of the Kubernetes Service Account. The aud (audience) claim of the JWT token must match this value. If oauth2 and kubernetes authentication are enabled, this value must be specified. Most clusters can use the default value of `https://kubernetes.default.svc`. |
 | auth.k8s.createClusterRoleBinding | bool | `true` | If true and `auth.k8s.enabled` is true, a ClusterRoleBinding is created that allows lakekeeper to introspect tokens. |
@@ -55,7 +90,7 @@ For potential additional steps that are required for upgrades, please check the 
 | auth.oauth2.ui.clientID | string | `""` | Client ID used for the Authorization Code Flow of the UI. Required if Authentication is enabled. |
 | auth.oauth2.ui.resource | string | `""` | Resource to request |
 | auth.oauth2.ui.scopes | string | `""` | Space separated scopes to request |
-| authz.backend | string | `"allowall"` | type of the authorization backend. Available values: "openfga", "allowall" Authorization must not change after bootstrapping! If type "openfga" is chose, consider setting `internalOpenFGA` to true to deploy an OpenFGA instance as a subchart. |
+| authz.backend | string | `"allowall"` | type of the authorization backend. Available values: "openfga", "allowall", "cedar" Authorization must not change after bootstrapping! If type "openfga" is chose, consider setting `internalOpenFGA` to true to deploy an OpenFGA instance as a subchart. |
 | authz.openfga.apiKey | string | `""` | API Key used to authenticate with OpenFGA. This is used for pre-shared key authentication.cc If `clientId` is set, the `apiKey` is ignored. |
 | authz.openfga.clientId | string | `""` | Client ID used to authenticate with OpenFGA. This is used for OIDC authentication. |
 | authz.openfga.clientIdSecret | string | `""` | the name of a pre-created secret containing the OIDC Client ID |
@@ -81,6 +116,7 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.dbMigrations.podAnnotations | object | `{}` | Annotations for the migration pod |
 | catalog.dbMigrations.podLabels | object | `{}` | Labels for the migration pod |
 | catalog.dbMigrations.resources | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html> | `{}` |  resources for the catalog container of the catalog pod |
+| catalog.dbMigrations.ttlSecondsAfterFinished | int | `nil` | Time in seconds a finished db-migration Job is kept before Kubernetes deletes it (`ttlSecondsAfterFinished`). If unset, finished Jobs are kept indefinitely. Mainly useful with `helmWait: true`, where a new Job is created per release revision. In hook mode (`helmWait: false`) Helm and ArgoCD wait on the Job, so use a TTL of at least a few minutes to avoid the Job being deleted before its result is read. |
 | catalog.extraContainers | list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core">containers</a></html> | `[]` |  extra containers for the catalog Pods |
 | catalog.extraEnv | list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envvar-v1-core">envvar-v1-core</a></html> | `[]` |  extra variables for the catalog Pods |
 | catalog.extraEnvFrom | list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#envfromsource-v1-core">envfromsource-v1-core</a></html> | `[]` |  extra variables for the catalog Pods |
@@ -115,6 +151,7 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.podLabels | object | `{}` | Pod labels for the catalog Deployment |
 | catalog.podSecurityContext | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#podsecuritycontext-v1-core">podsecuritycontext-v1-core</a></html> | `{}` |  security context for the catalog Pods. `runAsUser` and `runAsGroup` are ignored for the catalog container, please set with `catalog.image.uid` and `catalog.image.gid` |
 | catalog.priorityClassName | string | `nil` | Kubernetes priority class for scheduling |
+| catalog.prometheus.port | int | `9000` |  |
 | catalog.prometheus.setScrapeAnnotations | bool | `false` | Adds the prometheus.io/port and prometheus.io/scrape annotations to the catalog Pods. |
 | catalog.readinessProbe.enabled | bool | `true` | if the readiness probes of the catalog Pods are enabled |
 | catalog.readinessProbe.failureThreshold | int | `5` |  |
@@ -128,7 +165,7 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.service.externalPort | int | `8181` | catalog service external port |
 | catalog.service.loadBalancerIP | string | `""` | catalog service ip of the load balancer service. Only used when `type: LoadBalancer` |
 | catalog.service.loadBalancerSourceRanges | list | `[]` | Source ip ranges for the catalog services. Only used when `type: LoadBalancer` |
-| catalog.service.nodePort | object | `{"http":""}` | catalog service node port Only used when `type: NodePort` |
+| catalog.service.nodePort | object | `{"http":"","metrics":""}` | catalog service node port Only used when `type: NodePort` |
 | catalog.service.sessionAffinity | string | `"None"` | catalog service session affinity |
 | catalog.service.sessionAffinityConfig | object | `{}` | catalog service session affinity config |
 | catalog.service.type | string | `"ClusterIP"` | catalog service type |
@@ -160,19 +197,18 @@ For potential additional steps that are required for upgrades, please check the 
 | openfga.datastore.engine | string | `"postgres"` |  |
 | openfga.datastore.migrationType | string | `"initContainer"` |  |
 | openfga.datastore.uriSecret | string | `"lakekeeper-openfga-pg-svcbind-postgres"` |  |
-| openfga.image.tag | string | `"v1.8.16"` |  |
+| openfga.extraEnvVars[0].name | string | `"OPENFGA_CACHE_CONTROLLER_ENABLED"` |  |
+| openfga.extraEnvVars[0].value | string | `"true"` |  |
+| openfga.extraEnvVars[1].name | string | `"OPENFGA_CHECK_QUERY_CACHE_ENABLED"` |  |
+| openfga.extraEnvVars[1].value | string | `"true"` |  |
+| openfga.extraEnvVars[2].name | string | `"OPENFGA_CHECK_ITERATOR_CACHE_ENABLED"` |  |
+| openfga.extraEnvVars[2].value | string | `"true"` |  |
+| openfga.extraEnvVars[3].name | string | `"OPENFGA_LIST_OBJECTS_ITERATOR_CACHE_ENABLED"` |  |
+| openfga.extraEnvVars[3].value | string | `"false"` |  |
 | openfga.migrate.annotations."argocd.argoproj.io/hook" | string | `"Sync"` |  |
 | openfga.migrate.annotations."argocd.argoproj.io/sync-wave" | string | `"0"` |  |
 | openfga.migrate.annotations."helm.sh/hook" | string | `"post-install, post-upgrade, post-rollback"` |  |
 | openfga.postgresql.enabled | bool | `true` |  |
-| openfga.postgresql.extraEnvVars[0].name | string | `"OPENFGA_CACHE_CONTROLLER_ENABLED"` |  |
-| openfga.postgresql.extraEnvVars[0].value | string | `"true"` |  |
-| openfga.postgresql.extraEnvVars[1].name | string | `"OPENFGA_CHECK_QUERY_CACHE_ENABLED"` |  |
-| openfga.postgresql.extraEnvVars[1].value | string | `"true"` |  |
-| openfga.postgresql.extraEnvVars[2].name | string | `"OPENFGA_CHECK_ITERATOR_CACHE_ENABLED"` |  |
-| openfga.postgresql.extraEnvVars[2].value | string | `"true"` |  |
-| openfga.postgresql.extraEnvVars[3].name | string | `"OPENFGA_LIST_OBJECTS_ITERATOR_CACHE_ENABLED"` |  |
-| openfga.postgresql.extraEnvVars[3].value | string | `"false"` |  |
 | openfga.postgresql.fullnameOverride | string | `"lakekeeper-openfga-pg"` |  |
 | openfga.postgresql.global.security.allowInsecureImages | bool | `true` |  |
 | openfga.postgresql.image.registry | string | `"quay.io"` |  |
