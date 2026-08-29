@@ -8,12 +8,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+
+### Added
+
+## [0.12.0] - 2026-08-29
+
+### Changed
+* Default to Lakekeeper Community v0.13.3, Enterprise v0.13.5
+  * ⚠️ Lakekeeper 0.13 changes the default storage layout for **newly created** namespaces to `<base>/<tabular-uuid>` and refuses to start against a database that was migrated by a newer version (no downgrades). See the [Lakekeeper v0.13.0 release notes](https://github.com/lakekeeper/lakekeeper/releases/tag/v0.13.0).
 * Update OPA docker tag to v1.18.1
 * Update OpenFGA Chart to v0.3.10 / OpenFGA v1.18.1
 * Update Postgres Chart to v1.6.4, Postgres 18.4
   * ⚠️ Major Postgres version bump (17 -> 18). There is **no automatic data migration**: PostgreSQL 18 will not start on a data directory created by PostgreSQL 17 without a manual `pg_upgrade`. The embedded Postgres is intended for testing only — use an external Postgres for production.
-
-### Added
 
 ## [0.11.0] - 2026-05-11
 
