@@ -23,6 +23,9 @@ metadata:
     {{- toYaml .Values.catalog.dbMigrations.annotations | nindent 4 }}
     {{- end }}
 spec:
+  {{- if not (kindIs "invalid" .Values.catalog.dbMigrations.ttlSecondsAfterFinished) }}
+  ttlSecondsAfterFinished: {{ .Values.catalog.dbMigrations.ttlSecondsAfterFinished }}
+  {{- end }}
   template:
     metadata:
       name: "{{ include "iceberg-catalog.fullname" . }}-migration"

@@ -1,5 +1,7 @@
 helmWait: true
 catalog:
+  dbMigrations:
+    ttlSecondsAfterFinished: 600
   podSecurityContext:
     runAsNonRoot: true
     seccompProfile:
