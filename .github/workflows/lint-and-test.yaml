@@ -55,12 +55,14 @@ jobs:
       - name: Test KV2 secret mount rendering
         if: steps.chart-files-changed.outputs.changed == 'true'
         run: |
+          secret_mount='my/custom/kv/path'
+          encoded_secret_mount=$(printf '%s' "$secret_mount" | base64 | tr -d '\n')
           helm dependency build charts/lakekeeper
           helm template issue-1918 charts/lakekeeper \
             --show-only templates/config/secret-config-envs.yaml \
             --set secretBackend.type=KV2 \
-            --set-string secretBackend.kv2.secretMount=my/custom/kv/path \
-            | grep -F 'LAKEKEEPER__KV2__SECRET_MOUNT: "bXkvY3VzdG9tL2t2L3BhdGg="'
+            --set-string secretBackend.kv2.secretMount="$secret_mount" \
+            | grep -F "LAKEKEEPER__KV2__SECRET_MOUNT: \"$encoded_secret_mount\""
 
       - name: Create kind cluster
         if: steps.chart-files-changed.outputs.changed == 'true'
