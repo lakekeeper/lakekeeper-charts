@@ -149,7 +149,7 @@ spec:
               value: {{ .Values.OPABridge.adminUsers | join "," | quote }}
           {{- end }}
           {{- if .Values.OPABridge.lakekeeper.existingSecret }}
-            {{- /* Read credentials from existing secret */ -}}
+            {{- /* Read credentials from existing secret */}}
             - name: LAKEKEEPER_TOKEN_ENDPOINT
               valueFrom:
                 secretKeyRef:
