@@ -52,6 +52,16 @@ jobs:
         if: steps.list-changed.outputs.changed == 'true'
         run: ct lint --target-branch ${{ github.event.repository.default_branch }} --check-version-increment=false
 
+      - name: Test KV2 secret mount rendering
+        if: steps.chart-files-changed.outputs.changed == 'true'
+        run: |
+          helm dependency build charts/lakekeeper
+          helm template issue-1918 charts/lakekeeper \
+            --show-only templates/config/secret-config-envs.yaml \
+            --set secretBackend.type=KV2 \
+            --set-string secretBackend.kv2.secretMount=my/custom/kv/path \
+            | grep -F 'LAKEKEEPER__KV2__SECRET_MOUNT: "bXkvY3VzdG9tL2t2L3BhdGg="'
+
       - name: Create kind cluster
         if: steps.chart-files-changed.outputs.changed == 'true'
         uses: helm/kind-action@v1.14.0
