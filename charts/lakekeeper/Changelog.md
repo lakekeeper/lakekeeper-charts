@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Fixed
+
+* Fix invalid Deployment YAML when `OPABridge.lakekeeper.existingSecret` is set
+
 ## [0.12.0] - 2026-08-29
 
 ### Changed
