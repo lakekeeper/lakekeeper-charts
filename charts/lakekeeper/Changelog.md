@@ -11,6 +11,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+### Fixed
+* Fix `secretBackend.kv2.secretMount` being ignored: the deployment template read the undefined key `secret_mount`, so `LAKEKEEPER__KV2__SECRET_MOUNT` was always rendered as the literal string `<nil>`
+
 ## [0.12.0] - 2026-08-29
 
 ### Changed
