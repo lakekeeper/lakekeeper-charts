@@ -13,10 +13,11 @@ metadata:
 spec:
   replicas: {{ .Values.catalog.replicas }}
   strategy:
-    type: RollingUpdate
+    type: {{ .Values.catalog.strategy.type }}
+    {{- if and (eq .Values.catalog.strategy.type "RollingUpdate") .Values.catalog.strategy.rollingUpdate }}
     rollingUpdate:
-      maxSurge: 25%
-      maxUnavailable: 0
+      {{- toYaml .Values.catalog.strategy.rollingUpdate | nindent 6 }}
+    {{- end }}
   selector:
     matchLabels:
       {{- include "iceberg-catalog.selectorLabels" . | nindent 6 }}

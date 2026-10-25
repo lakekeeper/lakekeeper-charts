@@ -188,6 +188,26 @@ batch_check_results(lakekeeper_id, checks) := all_results if {
 	]
 }
 
+# Like `batch_check_results` but uses OPA force_cache, keyed via the
+# `X-Request-ID` header set to `request_id`. Prefer this for probes that
+# repeat many times within one query's fan-out (e.g. warehouse/namespace
+# list_everything checks) — pass queryId so each new query re-probes once,
+# then all its waves hit the cache, and Lakekeeper's audit logs carry the
+# originating Trino queryId.
+batch_check_results_cached(lakekeeper_id, checks, request_id, cache_secs) := all_results if {
+	count(checks) > 0
+	_raw_max := object.get(config_by_id[lakekeeper_id], "max_batch_check_size", 1000)
+	max_size := max([_raw_max, 1])
+	num_batches := ceil(count(checks) / max_size)
+	all_results := [result |
+		some batch_idx in numbers.range(0, num_batches - 1)
+		start := batch_idx * max_size
+		batch := array.slice(checks, start, start + max_size)
+		chunk_results := _batch_check_http_cached(lakekeeper_id, batch, request_id, cache_secs)
+		some result in chunk_results
+	]
+}
+
 # Send a single batch-check HTTP request.
 _batch_check_http(lakekeeper_id, checks) := value.results if {
 	value := authenticated_http_send(
@@ -198,6 +218,29 @@ _batch_check_http(lakekeeper_id, checks) := value.results if {
 			"checks": checks,
 		},
 	).body
+}
+
+# Cached variant of `_batch_check_http`.
+_batch_check_http_cached(lakekeeper_id, checks, request_id, cache_secs) := value.results if {
+	value := authenticated_http_send_cached(
+		lakekeeper_id,
+		"POST", "/management/v1/action/batch-check",
+		{
+			"error-on-not-found": false,
+			"checks": checks,
+		},
+		request_id,
+		cache_secs,
+	).body
+}
+
+# Build a single check object for a warehouse action
+build_warehouse_check(warehouse_id, user, action) := {
+	"operation": {"warehouse": {
+		"action": {"action": action},
+		"warehouse-id": warehouse_id,
+	}},
+	"identity": {"user": user},
 }
 
 # Build a single check object for a table action
@@ -252,4 +295,40 @@ require_view_access_simple(lakekeeper_id, warehouse_name, namespace_name, view_n
 	).body
 	value.results[0].allowed == true
 	count(value.results) == 1
+}
+
+# Check a table or view move into another namespace: `move` on the tabular and
+# `accept_moved_tabular` on the destination namespace. `kind` is "table" or "view".
+require_tabular_move_access(
+	lakekeeper_id, warehouse_name, kind, namespace_name,
+	tabular_name, destination_namespace_name, user,
+) if {
+	warehouse_id := warehouse_id_for_name(lakekeeper_id, warehouse_name)
+	results := batch_check_results(lakekeeper_id, [
+		build_tabular_move_check(warehouse_id, kind, namespace_name, tabular_name, destination_namespace_name, user),
+		build_accept_moved_tabular_check(warehouse_id, destination_namespace_name, namespace_name, user),
+	])
+	count(results) == 2
+	every result in results {
+		result.allowed == true
+	}
+}
+
+build_tabular_move_check(warehouse_id, kind, namespace_name, tabular_name, destination_namespace_name, user) := {
+	"operation": {kind: {
+		"action": {"action": "move", "destination": destination_namespace_name},
+		"warehouse-id": warehouse_id,
+		"namespace": namespace_name,
+		"table": tabular_name,
+	}},
+	"identity": {"user": user},
+}
+
+build_accept_moved_tabular_check(warehouse_id, namespace_name, source_namespace_name, user) := {
+	"operation": {"namespace": {
+		"action": {"action": "accept_moved_tabular", "source": source_namespace_name},
+		"warehouse-id": warehouse_id,
+		"namespace": namespace_name,
+	}},
+	"identity": {"user": user},
 }
