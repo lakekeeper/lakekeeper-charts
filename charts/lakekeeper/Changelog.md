@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   * `LAKEKEEPER__MAX_REQUEST_BODY_SIZE` defaults to 32 MiB (was 2 MiB). `LAKEKEEPER__CACHE__ROLE_MEMBERS__*` has no effect (cache was removed).
 * Update OPA bridge policies to Lakekeeper 0.14 (required for cross-schema renames).
   * Reading a view in Trino now requires `select` instead of `get_metadata`.
-  * `OPABridge.opaConfig` now limits OPA's response cache to 100 MiB and evicts expired entries.
+  * `OPABridge.opaConfig` now evicts expired entries from OPA's response cache every 60s (OPA keeps them forever by default).
 * Update OPA to v1.21.4, OpenFGA Chart to v0.3.16 (OpenFGA v1.22.0), Postgres Chart to v1.6.8 (Postgres 18.6)
 * CI: Update Helm to v3.22.1, chart-testing to v3.15.0, chart-testing-action to v2.9.0, kind-action to v1.15.1, Python to 3.15
 
