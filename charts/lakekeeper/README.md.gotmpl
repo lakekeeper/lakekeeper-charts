@@ -34,7 +34,7 @@ For potential additional steps that are required for upgrades, please check the 
 
 ## ⚠️ Upgrading to Chart 0.13 (Lakekeeper 0.14)
 
-The 0.14 migration rewrites table and view schemas and can take several minutes on large catalogs. Reads keep working: the 0.13 pods serve them until the migration is done. Changes wait until then.
+The 0.14 migration rewrites table and view schemas and can take several minutes on large catalogs. Reads keep working: the 0.13 pods serve them until the migration is done, apart from a short pause at its end. Changes wait until then.
 
 1. **Back up the database.** There is no downgrade to 0.13 without restoring it.
 2. **Check for tables and views that would share a location.** This query must return no rows (see the [release notes](https://docs.lakekeeper.io/about/release-notes/) to fix them):

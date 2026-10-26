@@ -34,7 +34,7 @@ For potential additional steps that are required for upgrades, please check the 
 
 ## ⚠️ Upgrading to Chart 0.13 (Lakekeeper 0.14)
 
-The 0.14 migration rewrites table and view schemas and can take several minutes on large catalogs. Reads keep working: the 0.13 pods serve them until the migration is done. Changes wait until then.
+The 0.14 migration rewrites table and view schemas and can take several minutes on large catalogs. Reads keep working: the 0.13 pods serve them until the migration is done, apart from a short pause at its end. Changes wait until then.
 
 1. **Back up the database.** There is no downgrade to 0.13 without restoring it.
 2. **Check for tables and views that would share a location.** This query must return no rows (see the [release notes](https://docs.lakekeeper.io/about/release-notes/) to fix them):
@@ -94,7 +94,7 @@ To stop all 0.13 pods during the migration instead, upgrade with `--set catalog.
 | OPABridge.lakekeeper.tokenEndpointSecretKey | string | `"tokenEndpoint"` | Key within existingSecret containing the token endpoint |
 | OPABridge.lakekeeper.url | string | `"http://localhost:8181"` | The URL where OPA can reach the Lakekeeper instance. |
 | OPABridge.maxBatchCheckSize | int | `1000` | Maximum number of checks per batch-check request to Lakekeeper. Lakekeeper server limit is 1000. |
-| OPABridge.opaConfig | object | `{}` | Additional configuration options for OPA. Please check the OPA documentation for the available options. |
+| OPABridge.opaConfig | object | `{"caching":{"inter_query_builtin_cache":{"max_size_bytes":104857600,"stale_entry_eviction_period_seconds":60}}}` | Additional configuration options for OPA. Please check the OPA documentation for the available options. The policies cache Lakekeeper responses per Trino query. OPA's cache is unbounded by default, so the chart limits its size and evicts expired entries. |
 | OPABridge.resources | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html> | `{}` |  resources for the OPA sidecar container of the catalog pod |
 | OPABridge.service.annotations | object | `{}` | OPA service annotations |
 | OPABridge.service.externalPort | int | `8282` | OPA service external port |

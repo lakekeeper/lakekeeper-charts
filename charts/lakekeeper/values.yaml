@@ -698,7 +698,13 @@ OPABridge:
 
   # -- Additional configuration options for OPA.
   # Please check the OPA documentation for the available options.
-  opaConfig: {}
+  # The policies cache Lakekeeper responses per Trino query. OPA's cache is unbounded by default,
+  # so the chart limits its size and evicts expired entries.
+  opaConfig:
+    caching:
+      inter_query_builtin_cache:
+        max_size_bytes: 104857600 # 100 MiB
+        stale_entry_eviction_period_seconds: 60
   # ---- EXAMPLE ----
   #   decision_logs:
   #     console: true

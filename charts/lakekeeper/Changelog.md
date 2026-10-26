@@ -16,16 +16,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.13.0] - 2026-10-25
 
 ### ⚠️ Upgrade notes
-* The Lakekeeper 0.14 migration rewrites table and view schemas and can take several minutes. Reads keep working; changes wait until it is done. Back up the database first (no downgrade to 0.13) and raise `helm upgrade --timeout`. See "Upgrading to Chart 0.13" in the [README](./README.md).
+* The Lakekeeper 0.14 migration rewrites table and view schemas and can take several minutes. Reads keep working apart from a short pause at the end; changes wait until it is done. Back up the database first (no downgrade to 0.13) and raise `helm upgrade --timeout`. See "Upgrading to Chart 0.13" in the [README](./README.md).
 
 ### Changed
 * Default to Lakekeeper Community v0.14.2, Plus v0.14.2. See the [release notes](https://docs.lakekeeper.io/about/release-notes/). Breaking:
   * Invalid OpenID settings stop startup: an empty or multi-word `LAKEKEEPER__OPENID_SCOPE`, unknown keys under `LAKEKEEPER__OPENID_PROVIDERS__<IDP_ID>__`, or `auth.k8s.enabled` without `auth.k8s.audience` when a provider checks scopes or claims.
   * Rename `LAKEKEEPER__TASK_TABULAR_EXPIRATION_WORKERS` to `LAKEKEEPER__TASK_SOFT_DELETION_WORKERS`.
+  * Remove `LAKEKEEPER__OPENFGA__AUTHORIZATION_MODEL_VERSION` if set; otherwise the OpenFGA model update is skipped and Lakekeeper does not start.
   * New audit log format; update your parsers. (see Lakekeeper release notes)
   * `LAKEKEEPER__MAX_REQUEST_BODY_SIZE` defaults to 32 MiB (was 2 MiB). `LAKEKEEPER__CACHE__ROLE_MEMBERS__*` has no effect (cache was removed).
 * Update OPA bridge policies to Lakekeeper 0.14 (required for cross-schema renames).
   * Reading a view in Trino now requires `select` instead of `get_metadata`.
+  * `OPABridge.opaConfig` now limits OPA's response cache to 100 MiB and evicts expired entries.
 * Update OPA to v1.21.4, OpenFGA Chart to v0.3.16 (OpenFGA v1.22.0), Postgres Chart to v1.6.8 (Postgres 18.6)
 * CI: Update Helm to v3.22.1, chart-testing to v3.15.0, chart-testing-action to v2.9.0, kind-action to v1.15.1, Python to 3.15
 
