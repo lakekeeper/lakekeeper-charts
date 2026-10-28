@@ -704,7 +704,7 @@ OPABridge:
   opaConfig:
     caching:
       inter_query_builtin_cache:
-        max_size_bytes: 104857600 # 100 MiB
+        max_size_bytes: 104857600  # 100 MiB
         stale_entry_eviction_period_seconds: 60
   # ---- EXAMPLE ----
   #   decision_logs:
