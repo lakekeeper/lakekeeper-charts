@@ -58,6 +58,19 @@ catalog:
   # -- Number of replicas to deploy. Replicas are stateless.
   replicas: &catalog_replicas 1
 
+  # -- (<html><a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy">deployment strategy</a></html>)
+  # for the catalog Deployment. By default, the db-migration Job runs while the old pods still serve.
+  # For long migrations, concurrent writes can make the migration
+  # roll back and retry. `type: Recreate` stops all old pods first, so reads also pause until the migration is done.
+  # For write-heavy deployments that need reads during the upgrade, use the two-step upgrade
+  # with read-only mode instead (see for example "Upgrading to Chart 0.13" in the README).
+  # `rollingUpdate` is only used with `type: RollingUpdate`.
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+
   # -- (<html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html>)
   # resources for the catalog container of the catalog pod
   resources: {}
@@ -645,7 +658,7 @@ OPABridge:
     # -- The image repository to pull from
     repository: openpolicyagent/opa
     # -- The image tag to pull
-    tag: 1.18.1
+    tag: 1.21.4
     # -- The image pull policy
     pullPolicy: IfNotPresent
     # -- User ID for the OPA container. Any non-zero number works with
@@ -685,7 +698,14 @@ OPABridge:
 
   # -- Additional configuration options for OPA.
   # Please check the OPA documentation for the available options.
-  opaConfig: {}
+  # The policies cache Lakekeeper responses per Trino query. OPA never evicts expired entries by default,
+  # so the chart evicts them every 60s. `max_size_bytes` only applies to serialized entries
+  # (the bundled policies use `caching_mode: deserialized`).
+  opaConfig:
+    caching:
+      inter_query_builtin_cache:
+        max_size_bytes: 104857600  # 100 MiB
+        stale_entry_eviction_period_seconds: 60
   # ---- EXAMPLE ----
   #   decision_logs:
   #     console: true
