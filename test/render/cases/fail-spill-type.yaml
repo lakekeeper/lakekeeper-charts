@@ -1,0 +1,11 @@
+# expect: optimizeWorkers.sizeClasses small: spill.type is "hostPath"; it must be local or pvc.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: small
+      resources: { cpu: "2", memory: 8Gi }
+      keda: { maxJobs: 1 }
+      spill: { type: hostPath }

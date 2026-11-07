@@ -1,0 +1,76 @@
+# Worker pod settings: extra init containers before check-db, catalog.extraEnv on the workers, check-db with the worker's
+# envFrom and mounts and the CPU and memory of the class, pod annotations merged with the chart's two keys (the chart's
+# values win).
+# catalog.terminationPeriod as a string sets the grace period of the catalog Pods.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+catalog:
+  terminationPeriod: "90"
+  extraEnv:
+    # On the workers.
+    - name: HTTPS_PROXY
+      value: "http://proxy.example:3128"
+    # optimizeWorkers.extraEnv sets it for the workers.
+    - name: RUST_LOG
+      value: warn
+    # The class extraEnv sets it for the class.
+    - name: AWS_REGION
+      value: eu-central-1
+    # The chart sets these for the workers.
+    - name: LAKEKEEPER__TASK_DRAIN_TIMEOUT
+      value: 30s
+    - name: LAKEKEEPER__TASK_OPTIMIZE_WORKERS
+      value: "0"
+  extraVolumes:
+    - name: ca-bundle
+      configMap:
+        name: ca-bundle
+    - name: tmp
+      emptyDir: {}
+  extraVolumeMounts:
+    - name: ca-bundle
+      mountPath: /etc/ssl/custom
+      readOnly: true
+    # On check-db, not on the worker container: its /tmp is the spill volume.
+    - name: tmp
+      mountPath: /tmp
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: standard
+      resources:
+        cpu: "2"
+        memory: 8Gi
+      keda:
+        maxJobs: 2
+      extraEnv:
+        - name: AWS_REGION
+          value: us-east-1
+  extraEnv:
+    - name: RUST_LOG
+      value: info
+  extraEnvFrom:
+    - secretRef:
+        name: worker-db
+  extraVolumes:
+    - name: vault-secrets
+      emptyDir:
+        medium: Memory
+  extraVolumeMounts:
+    - name: vault-secrets
+      mountPath: /vault/secrets
+      readOnly: true
+  podAnnotations:
+    example.com/team: data
+    # Ignored: the chart sets both keys.
+    karpenter.sh/do-not-disrupt: "false"
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+  extraInitContainers:
+    - name: vault-agent
+      image: hashicorp/vault:1.21.0
+      restartPolicy: Always
+      args: ["agent", "-config=/vault/config/agent.hcl"]
+      volumeMounts:
+        - name: vault-secrets
+          mountPath: /vault/secrets

@@ -1,0 +1,483 @@
+---
+# Source: lakekeeper/templates/optimize/optimize-scaledjob.yaml
+apiVersion: keda.sh/v1alpha1
+kind: ScaledJob
+metadata:
+  name: lk-lakekeeper-optimize-standard
+  namespace: lk
+  labels:
+    helm.sh/chart: <chart>
+    app.kubernetes.io/name: lakekeeper
+    app.kubernetes.io/instance: lk
+    app.kubernetes.io/version: <app-version>
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: lakekeeper
+    app.kubernetes.io/component: optimize-worker
+    lakekeeper.io/size-class: "standard"
+spec:
+  pollingInterval: 15
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 10
+  minReplicaCount: 0
+  maxReplicaCount: 2
+  # A `helm upgrade` that keeps the class leaves its running Jobs alone. Deleting the ScaledJob (workers turned off,
+  # class renamed or removed, uninstall) deletes its Jobs, which stops their workers.
+  rollout:
+    strategy: gradual
+  triggers:
+    - type: metrics-api
+      metadata:
+        url: "http://lk-lakekeeper-metrics.lk.svc.cluster.local:9000/task-queue/optimize/demand?class=standard"
+        format: json
+        valueLocation: demand
+        # One task per Job: each Job runs one optimize worker.
+        targetValue: "1"
+        activationTargetValue: "0"
+  jobTargetRef:
+    parallelism: 1
+    completions: 1
+    backoffLimit: 0
+    activeDeadlineSeconds: 7800
+    # On a node drain or preemption the worker stops and exits 0, which completes the Job; KEDA starts a new Job
+    # while tasks wait. If a disrupted Pod fails instead, this rule keeps the Job from failing: the Job starts a new
+    # Pod. A Pod evicted for filling its `local` spill volume gets no disruption condition and fails the Job unless
+    # the worker stops within the short time Kubernetes gives it.
+    # `status` is explicit: KEDA writes the ScaledJob back with every field of this rule, and a value that
+    # differs from the chart's makes the next `helm upgrade` (server-side apply) fail with a conflict.
+    podFailurePolicy:
+      rules:
+        - action: Ignore
+          onPodConditions:
+            - type: DisruptionTarget
+              status: "True"
+    template:
+      metadata:
+        annotations:
+          checksum/secret-config-envs: <checksum>
+          cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+          karpenter.sh/do-not-disrupt: "true"
+        labels:
+          helm.sh/chart: <chart>
+          app.kubernetes.io/name: lakekeeper
+          app.kubernetes.io/instance: lk
+          app.kubernetes.io/version: <app-version>
+          app.kubernetes.io/managed-by: Helm
+          app.kubernetes.io/part-of: lakekeeper
+          app.kubernetes.io/component: optimize-worker
+          lakekeeper.io/size-class: "standard"
+      spec:
+        restartPolicy: Never
+        terminationGracePeriodSeconds: 60
+        serviceAccountName: lk-lakekeeper
+        initContainers:          
+          
+          - name: check-db  
+            image: quay.io/vakamo/lakekeeper-plus:<tag>
+            imagePullPolicy: IfNotPresent
+            securityContext:
+              runAsUser: 65532
+              runAsGroup: 65534
+            resources:
+              limits:
+                cpu: "2"
+                memory: 8Gi
+              requests:
+                cpu: "2"
+                memory: 8Gi
+            envFrom:    
+              - secretRef:
+                  name: lk-lakekeeper-config-envs
+            env:    
+              - name: LAKEKEEPER__PG_HOST_W
+                value: pg.example
+              - name: LAKEKEEPER__PG_PORT
+                value: "5432"
+              - name: LAKEKEEPER__PG_DATABASE
+                valueFrom:
+                  secretKeyRef:
+                    key: POSTGRES_DB
+                    name: lk-lakekeeper-pg
+              - name: LAKEKEEPER__PG_USER
+                valueFrom:
+                  secretKeyRef:
+                    key: USERDB_USER
+                    name: lk-lakekeeper-pg
+              - name: LAKEKEEPER__PG_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    key: USERDB_PASSWORD
+                    name: lk-lakekeeper-pg
+              - name: LAKEKEEPER__PG_ENCRYPTION_KEY
+                valueFrom:
+                  secretKeyRef:
+                    key: key
+                    name: my-encryption-key
+              - name: LAKEKEEPER__SERVE_HTTP_API
+                value: "false"
+              - name: LAKEKEEPER__TASK_OPTIMIZE_WORKERS
+                value: "1"
+              - name: LAKEKEEPER__TASK_EXPIRE_SNAPSHOTS_WORKERS
+                value: "0"
+              - name: LAKEKEEPER__TASK_REMOVE_ORPHAN_FILES_WORKERS
+                value: "0"
+              - name: LAKEKEEPER__TASK_SOFT_DELETION_WORKERS
+                value: "0"
+              - name: LAKEKEEPER__TASK_TABULAR_PURGE_WORKERS
+                value: "0"
+              - name: LAKEKEEPER__TASK_LOG_CLEANUP_WORKERS
+                value: "0"
+              - name: LAKEKEEPER__TASK_IDLE_EXIT_AFTER
+                value: 180s
+              - name: LAKEKEEPER__TASK_MAX_LIFETIME
+                value: 3600s
+              - name: LAKEKEEPER__TASK_DRAIN_TIMEOUT
+                value: 0s
+              - name: LAKEKEEPER__PG_READ_POOL_CONNECTIONS
+                value: "2"
+              - name: LAKEKEEPER__PG_WRITE_POOL_CONNECTIONS
+                value: "2"
+              - name: LAKEKEEPER__OPTIMIZE__AVAILABLE
+                value: "true"
+              - name: LAKEKEEPER__OPTIMIZE__SIZE_CLASSES
+                value: '{"standard":{"cpu":"2","memory":"8Gi"}}'
+              - name: LAKEKEEPER__OPTIMIZE__SIZE_CLASS
+                value: standard
+              - name: LAKEKEEPER__OPTIMIZE__SPILL_DISK_LIMIT_BYTES
+                value: "7730941132"
+              - name: TMPDIR
+                value: /tmp
+              - name: HTTPS_PROXY
+                value: http://proxy.example:3128
+              - name: RUST_LOG
+                value: info
+              - name: AWS_REGION
+                value: us-east-1
+            args:
+              - wait-for-db
+              - -dm
+              - -r
+              - "100"
+              - -b
+              - "2"
+        containers:
+          - name: optimize-worker            
+            image: quay.io/vakamo/lakekeeper-plus:<tag>
+            imagePullPolicy: IfNotPresent
+            securityContext:
+              runAsUser: 65532
+              runAsGroup: 65534
+            env:              
+              - name: LAKEKEEPER__PG_HOST_W
+                value: pg.example
+              - name: LAKEKEEPER__PG_PORT
+                value: "5432"
+              - name: LAKEKEEPER__PG_DATABASE
+                valueFrom:
+                  secretKeyRef:
+                    key: POSTGRES_DB
+                    name: lk-lakekeeper-pg
+              - name: LAKEKEEPER__PG_USER
+                valueFrom:
+                  secretKeyRef:
+                    key: USERDB_USER
+                    name: lk-lakekeeper-pg
+              - name: LAKEKEEPER__PG_PASSWORD
+                valueFrom:
+                  secretKeyRef:
+                    key: USERDB_PASSWORD
+                    name: lk-lakekeeper-pg
+              - name: LAKEKEEPER__PG_ENCRYPTION_KEY
+                valueFrom:
+                  secretKeyRef:
+                    key: key
+                    name: my-encryption-key
+              - name: LAKEKEEPER__SERVE_HTTP_API
+                value: "false"
+              - name: LAKEKEEPER__TASK_OPTIMIZE_WORKERS
+                value: "1"
+              - name: LAKEKEEPER__TASK_EXPIRE_SNAPSHOTS_WORKERS
+                value: "0"
+              - name: LAKEKEEPER__TASK_REMOVE_ORPHAN_FILES_WORKERS
+                value: "0"
+              - name: LAKEKEEPER__TASK_SOFT_DELETION_WORKERS
+                value: "0"
+              - name: LAKEKEEPER__TASK_TABULAR_PURGE_WORKERS
+                value: "0"
+              - name: LAKEKEEPER__TASK_LOG_CLEANUP_WORKERS
+                value: "0"
+              - name: LAKEKEEPER__TASK_IDLE_EXIT_AFTER
+                value: 180s
+              - name: LAKEKEEPER__TASK_MAX_LIFETIME
+                value: 3600s
+              - name: LAKEKEEPER__TASK_DRAIN_TIMEOUT
+                value: 0s
+              - name: LAKEKEEPER__PG_READ_POOL_CONNECTIONS
+                value: "2"
+              - name: LAKEKEEPER__PG_WRITE_POOL_CONNECTIONS
+                value: "2"
+              - name: LAKEKEEPER__OPTIMIZE__AVAILABLE
+                value: "true"
+              - name: LAKEKEEPER__OPTIMIZE__SIZE_CLASSES
+                value: '{"standard":{"cpu":"2","memory":"8Gi"}}'
+              - name: LAKEKEEPER__OPTIMIZE__SIZE_CLASS
+                value: standard
+              - name: LAKEKEEPER__OPTIMIZE__SPILL_DISK_LIMIT_BYTES
+                value: "7730941132"
+              - name: TMPDIR
+                value: /tmp
+              - name: HTTPS_PROXY
+                value: http://proxy.example:3128
+              - name: RUST_LOG
+                value: info
+              - name: AWS_REGION
+                value: us-east-1
+            envFrom:              
+              - secretRef:
+                  name: lk-lakekeeper-config-envs
+            args:
+              - serve
+            ports:
+              - name: metrics
+                containerPort: 9000
+                protocol: TCP
+            resources:
+              requests:
+                cpu: "2"
+                memory: "8Gi"
+                ephemeral-storage: "8Gi"
+              limits:
+                cpu: "2"
+                memory: "8Gi"
+            volumeMounts:
+              - name: spill
+                mountPath: /tmp
+        volumes:
+          - name: spill
+            emptyDir:
+              sizeLimit: "8Gi"
+---
+# Source: lakekeeper/templates/optimize/optimize-metrics-service.yaml
+# Only inside the cluster: KEDA reads the demand of each size class from the metrics port of the catalog Pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: lk-lakekeeper-metrics
+  namespace: lk
+  labels:
+    helm.sh/chart: <chart>
+    app.kubernetes.io/name: lakekeeper
+    app.kubernetes.io/instance: lk
+    app.kubernetes.io/version: <app-version>
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: lakekeeper
+    app.kubernetes.io/component: catalog-metrics
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9000
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    app.kubernetes.io/name: lakekeeper
+    app.kubernetes.io/instance: lk
+    app.kubernetes.io/component: catalog
+---
+# Source: lakekeeper/templates/catalog/catalog-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: lk-lakekeeper
+  namespace: lk
+  labels:
+    helm.sh/chart: <chart>
+    app.kubernetes.io/name: lakekeeper
+    app.kubernetes.io/instance: lk
+    app.kubernetes.io/version: <app-version>
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/part-of: lakekeeper
+    app.kubernetes.io/component: catalog
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: lakekeeper
+      app.kubernetes.io/instance: lk
+      app.kubernetes.io/component: catalog
+  template:
+    metadata:
+      annotations:
+        checksum/secret-config-envs: <checksum>
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        helm.sh/chart: <chart>
+        app.kubernetes.io/name: lakekeeper
+        app.kubernetes.io/instance: lk
+        app.kubernetes.io/version: <app-version>
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/part-of: lakekeeper
+        app.kubernetes.io/component: catalog
+    spec:
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 60
+      serviceAccountName: lk-lakekeeper
+      initContainers:        
+        
+        - name: check-db  
+          image: quay.io/vakamo/lakekeeper-plus:<tag>
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 65532
+            runAsGroup: 65534
+          resources:
+            {}
+          envFrom:    
+            - secretRef:
+                name: lk-lakekeeper-config-envs
+          env:    
+            - name: LAKEKEEPER__PG_HOST_W
+              value: lk-lakekeeper-pg
+            - name: LAKEKEEPER__PG_PORT
+              value: "5432"
+            - name: LAKEKEEPER__PG_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: lk-lakekeeper-pg
+                  key: POSTGRES_DB
+            - name: LAKEKEEPER__PG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: lk-lakekeeper-pg
+                  key: USERDB_USER
+            - name: LAKEKEEPER__PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lk-lakekeeper-pg
+                  key: USERDB_PASSWORD
+            - name: LAKEKEEPER__PG_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lk-lakekeeper-postgres-encryption
+                  key: encryptionKey
+            - name: LAKEKEEPER__PG_HOST_W
+              value: pg.example
+            - name: LAKEKEEPER__PG_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: key
+                  name: my-encryption-key
+            - name: HTTPS_PROXY
+              value: http://old-proxy.example:3128
+            - name: HTTPS_PROXY
+              value: http://proxy.example:3128
+            - name: LAKEKEEPER__TASK_DRAIN_TIMEOUT
+              value: 30s
+            - name: TMPDIR
+              value: /var/tmp
+            - name: RUST_LOG
+              value: warn
+            - name: AWS_REGION
+              value: eu-central-1
+            
+            - name: LAKEKEEPER__PLACEHOLDER
+              value: "placeholder"
+          args:
+            - wait-for-db
+            - -dm
+            - -r
+            - "100"
+            - -b
+            - "2"
+      containers:
+        - name: lakekeeper          
+          image: quay.io/vakamo/lakekeeper-plus:<tag>
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 65532
+            runAsGroup: 65534
+          env:            
+            - name: LAKEKEEPER__PG_HOST_W
+              value: lk-lakekeeper-pg
+            - name: LAKEKEEPER__PG_PORT
+              value: "5432"
+            - name: LAKEKEEPER__PG_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  name: lk-lakekeeper-pg
+                  key: POSTGRES_DB
+            - name: LAKEKEEPER__PG_USER
+              valueFrom:
+                secretKeyRef:
+                  name: lk-lakekeeper-pg
+                  key: USERDB_USER
+            - name: LAKEKEEPER__PG_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: lk-lakekeeper-pg
+                  key: USERDB_PASSWORD
+            - name: LAKEKEEPER__PG_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: lk-lakekeeper-postgres-encryption
+                  key: encryptionKey
+            - name: LAKEKEEPER__PG_HOST_W
+              value: pg.example
+            - name: LAKEKEEPER__PG_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  key: key
+                  name: my-encryption-key
+            - name: HTTPS_PROXY
+              value: http://old-proxy.example:3128
+            - name: HTTPS_PROXY
+              value: http://proxy.example:3128
+            - name: LAKEKEEPER__TASK_DRAIN_TIMEOUT
+              value: 30s
+            - name: TMPDIR
+              value: /var/tmp
+            - name: RUST_LOG
+              value: warn
+            - name: AWS_REGION
+              value: eu-central-1
+            
+            - name: LAKEKEEPER__PLACEHOLDER
+              value: "placeholder"            
+            - name: LAKEKEEPER__OPTIMIZE__AVAILABLE
+              value: "true"
+            - name: LAKEKEEPER__OPTIMIZE__SIZE_CLASSES
+              value: "{\"standard\":{\"cpu\":\"2\",\"memory\":\"8Gi\"}}"
+          envFrom:            
+            - secretRef:
+                name: lk-lakekeeper-config-envs
+          ports:
+            - name: http
+              containerPort: 8181
+              protocol: TCP
+            - name: metrics
+              containerPort: 9000
+              protocol: TCP
+          args:
+            - serve
+          livenessProbe:
+            initialDelaySeconds: 1
+            periodSeconds: 5
+            failureThreshold: 5
+            timeoutSeconds: 5
+            httpGet:
+              path: /health
+              port: 8181
+          readinessProbe:
+            initialDelaySeconds: 1
+            periodSeconds: 5
+            failureThreshold: 5
+            timeoutSeconds: 5
+            httpGet:
+              path: /health
+              port: 8181
+          resources:
+            {}

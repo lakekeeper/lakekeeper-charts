@@ -1,0 +1,10 @@
+# expect: optimizeWorkers.enabled runs optimize tasks in the KEDA Jobs: set LAKEKEEPER__TASK_OPTIMIZE_WORKERS of the catalog
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+catalog:
+  extraEnv:
+    - name: LAKEKEEPER__TASK_OPTIMIZE_WORKERS
+      value: "2"
+optimizeWorkers:
+  enabled: true

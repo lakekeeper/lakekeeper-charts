@@ -1,0 +1,8 @@
+# expect: optimizeWorkers.keda.maxLifetime is "3600"; it must be a whole number of seconds or milliseconds with its unit, such as 300s or 500ms.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  keda:
+    maxLifetime: 3600

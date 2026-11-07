@@ -1,0 +1,10 @@
+# expect: optimizeWorkers.sizeClasses small: keda.maxJobs must be a whole number of at least 1.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: small
+      resources: { cpu: "1", memory: 4Gi }
+      keda: { maxJobs: 0 }

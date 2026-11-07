@@ -1,0 +1,9 @@
+# expect: optimizeWorkers.extraEnv: the chart sets LAKEKEEPER__TASK_OPTIMIZE_WORKERS for optimize workers; remove it.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  extraEnv:
+    - name: LAKEKEEPER__TASK_OPTIMIZE_WORKERS
+      value: "2"

@@ -1,0 +1,13 @@
+# expect: the class name "small" appears more than once.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: small
+      resources: { cpu: "1", memory: 4Gi }
+      keda: { maxJobs: 1 }
+    - name: small
+      resources: { cpu: "2", memory: 8Gi }
+      keda: { maxJobs: 1 }

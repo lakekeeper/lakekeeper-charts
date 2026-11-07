@@ -1,0 +1,6 @@
+# The default size class.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true

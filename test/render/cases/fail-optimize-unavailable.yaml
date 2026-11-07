@@ -1,0 +1,9 @@
+# expect: optimizeWorkers.enabled sets LAKEKEEPER__OPTIMIZE__AVAILABLE to true on the catalog and the workers: remove LAKEKEEPER__OPTIMIZE__AVAILABLE=false from catalog.config, or set optimizeWorkers.enabled to false.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+catalog:
+  config:
+    LAKEKEEPER__OPTIMIZE__AVAILABLE: false
+optimizeWorkers:
+  enabled: true

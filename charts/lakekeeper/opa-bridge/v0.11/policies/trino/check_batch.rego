@@ -32,17 +32,24 @@ _broad_access_cache_secs := 30
 # from Trino).
 _broad_access_request_id := object.get(input.context, "queryId", "")
 
+# Schemas always use the fast path: Lakekeeper itself lists every namespace of a
+# warehouse to a caller allowed `list_everything` on it. Tables and views use it
+# unless `list_everything_grants_tabular_metadata` is false for the instance.
+_fast_path_enabled(_) if input.action.operation == "FilterSchemas"
+
+_fast_path_enabled(lakekeeper_id) if {
+	object.get(lakekeeper.config_by_id[lakekeeper_id], "list_everything_grants_tabular_metadata", true) == true
+}
+
 # --- Fast path: warehouse-level `list_everything` ---
 #
-# `can_list_everything` on a warehouse is defined as `describe_effective` in the
-# FGA model, which propagates `describe_effective from parent` to every
-# namespace/table and implies `can_get_metadata` on each. So it's semantically
-# safe to short-circuit FilterTables/FilterColumns/FilterSchemas.
-# SelectFromColumns needs `read_data` (= `select_effective`, NOT implied by
-# `describe_effective`) and must stay on the slow path.
+# Short-circuits FilterTables/FilterColumns/FilterSchemas. SelectFromColumns
+# needs `read_data`, which `list_everything` never implies, and must stay on
+# the slow path.
 _warehouse_broad contains catalog_name if {
 	some catalog_name in _managed_catalog_names
 	trino_catalog := catalog_config_by_name[catalog_name]
+	_fast_path_enabled(trino_catalog.lakekeeper_id)
 	warehouse_id := lakekeeper.warehouse_id_for_name(trino_catalog.lakekeeper_id, trino_catalog.lakekeeper_warehouse)
 	check := lakekeeper.build_warehouse_check(warehouse_id, lakekeeper_user_id, "list_everything")
 	results := lakekeeper.batch_check_results_cached(
@@ -63,12 +70,14 @@ _namespace_broad[catalog_name] := allowed_names if {
 	some catalog_name in _managed_catalog_names
 	not catalog_name in _warehouse_broad
 	trino_catalog := catalog_config_by_name[catalog_name]
+	_fast_path_enabled(trino_catalog.lakekeeper_id)
 	warehouse_id := lakekeeper.warehouse_id_for_name(trino_catalog.lakekeeper_id, trino_catalog.lakekeeper_warehouse)
 	schema_set := _distinct_schemas_for(catalog_name)
 	count(schema_set) > 0
 
 	# Sort the set into a deterministic list so `checks[i]` aligns with
-	# `schema_names[i]` when mapping results back to allowed names.
+	# `schema_names[i]` when mapping results back to allowed names. Every name
+	# has a namespace (see `_distinct_schemas_for`), so none is skipped.
 	schema_names := sort(schema_set)
 	checks := [
 	lakekeeper.build_namespace_check(warehouse_id, namespace_for_schema(name), lakekeeper_user_id, "list_everything") |
@@ -89,12 +98,14 @@ _namespace_broad[catalog_name] := allowed_names if {
 # Helper: distinct schema names appearing in the batch for one catalog.
 # Set comprehension dedups — a single FilterTables batch can contain thousands
 # of rows sharing the same schema, and we want one namespace check per schema.
+# Only resources whose names checks can use are included.
 _distinct_schemas_for(catalog_name) := names if {
 	input.action.operation in ["FilterTables", "FilterColumns", "SelectFromColumns"]
 	names := {r.table.schemaName |
 		some r in input.action.filterResources
 		r.table.catalogName == catalog_name
 		not r.table.schemaName in lakekeeper_system_schemas
+		_is_canonical_table_resource(r)
 	}
 } else := names if {
 	input.action.operation == "FilterSchemas"
@@ -102,8 +113,22 @@ _distinct_schemas_for(catalog_name) := names if {
 		some r in input.action.filterResources
 		r.schema.catalogName == catalog_name
 		not r.schema.schemaName in lakekeeper_system_schemas
+		_is_canonical_schema_resource(r)
 	}
 } else := set()
+
+# A resource is excluded from the Lakekeeper batch checks when a check cannot
+# use its names as they are (see `namespace_for_schema` and
+# `is_canonical_tabular_name`).
+# Metadata tables are decided one by one in `main.rego`.
+_is_canonical_table_resource(raw_resource) if {
+	namespace_for_schema(raw_resource.table.schemaName)
+	is_canonical_tabular_name(raw_resource.table.tableName)
+}
+
+_is_canonical_schema_resource(raw_resource) if {
+	namespace_for_schema(raw_resource.schema.schemaName)
+}
 
 # Helper: does the fast path cover this table resource? Used to exclude
 # such resources from the per-table slow path. Applies only to the describe-
@@ -144,7 +169,7 @@ _lakekeeper_batch_table_indices contains i if {
 	some i, raw_resource in input.action.filterResources
 	raw_resource.table.catalogName in _managed_catalog_names
 	not raw_resource.table.schemaName in lakekeeper_system_schemas
-	not is_metadata_table(raw_resource.table.tableName)
+	_is_canonical_table_resource(raw_resource)
 	not _fast_path_covers_table(raw_resource)
 }
 
@@ -161,7 +186,8 @@ _lakekeeper_batch_allowed[catalog_name] := allowed_indices if {
 
 	# Build an ordered list of (index, resource) from the input array (deterministic order).
 	# Sets are unordered in Rego, so we iterate the array directly to guarantee
-	# that checks and ordered_indices are aligned.
+	# that checks and ordered_indices are aligned. Every resource in
+	# `_lakekeeper_batch_table_indices` has a namespace, so each yields two checks.
 	catalog_resources := [{"idx": i, "res": raw_resource} |
 		some i, raw_resource in input.action.filterResources
 		i in _lakekeeper_batch_table_indices
@@ -203,6 +229,7 @@ _lakekeeper_batch_schema_indices contains i if {
 	some i, raw_resource in input.action.filterResources
 	raw_resource.schema.catalogName in _managed_catalog_names
 	not raw_resource.schema.schemaName in lakekeeper_system_schemas
+	_is_canonical_schema_resource(raw_resource)
 	not _fast_path_covers_schema(raw_resource)
 }
 
@@ -258,7 +285,7 @@ batch contains i if {
 	some i, raw_resource in input.action.filterResources
 	raw_resource.table.catalogName in _warehouse_broad
 	not raw_resource.table.schemaName in lakekeeper_system_schemas
-	not is_metadata_table(raw_resource.table.tableName)
+	_is_canonical_table_resource(raw_resource)
 }
 
 # Fast-path: namespace-level broad access → allow table indices in those namespaces.
@@ -268,7 +295,7 @@ batch contains i if {
 	catalog := raw_resource.table.catalogName
 	not catalog in _warehouse_broad
 	not raw_resource.table.schemaName in lakekeeper_system_schemas
-	not is_metadata_table(raw_resource.table.tableName)
+	_is_canonical_table_resource(raw_resource)
 	raw_resource.table.schemaName in object.get(_namespace_broad, catalog, set())
 }
 
@@ -278,6 +305,7 @@ batch contains i if {
 	some i, raw_resource in input.action.filterResources
 	raw_resource.schema.catalogName in _warehouse_broad
 	not raw_resource.schema.schemaName in lakekeeper_system_schemas
+	_is_canonical_schema_resource(raw_resource)
 }
 
 # Fast-path for FilterSchemas: namespace broad → matching schema indices.
@@ -287,6 +315,7 @@ batch contains i if {
 	catalog := raw_resource.schema.catalogName
 	not catalog in _warehouse_broad
 	not raw_resource.schema.schemaName in lakekeeper_system_schemas
+	_is_canonical_schema_resource(raw_resource)
 	raw_resource.schema.schemaName in object.get(_namespace_broad, catalog, set())
 }
 
@@ -300,7 +329,7 @@ batch contains i if {
 	count(raw_resource.table.columns) > 0
 	raw_resource.table.catalogName in _managed_catalog_names
 	not raw_resource.table.schemaName in lakekeeper_system_schemas
-	not is_metadata_table(raw_resource.table.tableName)
+	_is_canonical_table_resource(raw_resource)
 	_single_table_filter_columns_allowed(raw_resource)
 	some i in numbers.range(0, count(raw_resource.table.columns) - 1)
 }

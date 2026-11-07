@@ -1,0 +1,9 @@
+# expect: optimizeWorkers.keda.activeDeadlineSeconds is 7800; with keda.maxLifetime 7200s it must be at least 11400: maxLifetime, the run limit of 3600 seconds and 600 seconds to start. A smaller value can stop a Job in the middle of a run. Leave it empty to use this minimum.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  keda:
+    maxLifetime: 7200s
+    activeDeadlineSeconds: 7800

@@ -1,0 +1,13 @@
+# expect: optimizeWorkers.sizeClasses: spot and on-demand both have 4 CPUs. Every class must have a different number of CPUs: a class takes the tasks larger than the next smaller class, up to its own CPUs.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: spot
+      resources: { cpu: "4", memory: 16Gi }
+      keda: { maxJobs: 4 }
+    - name: on-demand
+      resources: { cpu: 4000m, memory: 16Gi }
+      keda: { maxJobs: 1 }

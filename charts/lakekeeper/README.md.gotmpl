@@ -58,6 +58,31 @@ In 0.13, read-only mode also rejects S3 remote signing and Trino (OPA bridge) re
 
 To stop all 0.13 pods during the migration instead, upgrade with `--set catalog.strategy.type=Recreate`.
 
+## Optimize Workers (Lakekeeper Plus)
+
+With Lakekeeper Plus 0.15 or later, the chart can run [optimize](https://docs.lakekeeper.io/docs/latest/optimize/) workers as Kubernetes Jobs that [KEDA](https://keda.sh/) starts only while optimize tasks wait. Install KEDA in the cluster first, then set:
+
+```yaml
+lakekeeper:
+  edition: plus
+optimizeWorkers:
+  enabled: true
+```
+
+The chart creates one KEDA ScaledJob per entry of `optimizeWorkers.sizeClasses`. The default is one class `small` with 2 CPUs, 8 GiB memory and at most 2 Jobs at the same time. The chart's `values.yaml` lists larger classes as comments. If your nodes have room for them, copy them into your `optimizeWorkers.sizeClasses` and keep `small`. By default, each Job requests 4 GiB of node disk per CPU for spilling (`optimizeWorkers.spill`). If your nodes have small disks, set `optimizeWorkers.spill.type: pvc`. With `optimizeWorkers.enabled: true`, the chart also sets `LAKEKEEPER__OPTIMIZE__AVAILABLE=true` on the catalog Pods and the Jobs. To choose the size classes and the other `optimizeWorkers.*` values, see [Optimize Workers](https://docs.lakekeeper.io/docs/latest/optimize-workers/).
+
+Optimize itself is off by default. Turn it on for each warehouse that should use it, see [Turn It On](https://docs.lakekeeper.io/docs/latest/optimize/#turn-it-on).
+
+KEDA reads the demand of each size class from port 9000 of the catalog Pods, through the Service `<fullname>-metrics`. If NetworkPolicies restrict traffic to the catalog Pods, allow the KEDA operator to reach this port.
+
+Turning the workers off, renaming or removing a class, or uninstalling the chart deletes the ScaledJob of the class, and Kubernetes deletes its running Jobs with it.
+
+Each worker Job opens up to 2 read and 2 write connections to Postgres (`optimizeWorkers.databasePoolConnections`). Make sure Postgres allows 4 more connections for every Job that can run at the same time (`keda.maxJobs` of each class).
+
+With Helm 4, write CPU, memory and size values that reach the worker Jobs (`catalog.extraVolumes`, `optimizeWorkers.extraInitContainers`, `optimizeWorkers.extraVolumes`) as Kubernetes writes them, and quote numbers: `"1"`, `500m`, `1Gi`, not `1`, `1000m` or `1024Mi`. KEDA rewrites other forms, and the next `helm upgrade` fails with a conflict.
+
+Lakekeeper can also run optimize in the catalog Pods (`LAKEKEEPER__TASK_OPTIMIZE_WORKERS`), but we do not recommend it: compaction needs a lot of memory and CPU, which the API then lacks.
+
 {{ template "chart.requirementsSection" . }}
 
 {{ template "chart.valuesSection" . }}

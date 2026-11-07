@@ -1,0 +1,68 @@
+# Three classes at 8 GiB per CPU with per-class scheduling, shared settings and extra env. keda.activeDeadlineSeconds
+# follows keda.maxLifetime. The spill disk is 2.5 GiB per CPU: 2560Mi, 10Gi and 40Gi.
+# CPU and memory of the Pods are rendered as Kubernetes writes them back: 4000m as 4, 32768Mi as 32Gi, "16.0" as 16,
+# and the number 137438953472 without an exponent.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+postgresql:
+  enabled: false
+externalDatabase:
+  host_read: pg.example
+  host_write: pg.example
+  passwordSecret: pg-credentials
+catalog:
+  config:
+    LAKEKEEPER__TASK_OPTIMIZE_WORKERS: "0"
+  extraEnv:
+    - name: HTTPS_PROXY
+      value: "http://proxy.example:3128"
+  extraEnvFrom:
+    - secretRef:
+        name: s3-credentials
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: small
+      resources:
+        cpu: "1"
+        memory: 8Gi
+      keda:
+        maxJobs: 10
+      extraEnv:
+        - name: LAKEKEEPER__OPTIMIZE__CPU_LIMIT
+          value: "1"
+    - name: medium
+      resources:
+        cpu: 4000m
+        memory: 32768Mi
+      keda:
+        maxJobs: 4
+    - name: large
+      resources:
+        cpu: "16.0"
+        memory: 137438953472
+      keda:
+        maxJobs: 1
+      nodeSelector:
+        node.kubernetes.io/instance-type: r7i.4xlarge
+      tolerations:
+        - key: compaction
+          operator: Exists
+          effect: NoSchedule
+  keda:
+    maxLifetime: 7200s
+  drainTimeout: 300s
+  terminationGracePeriodSeconds: 330
+  spill:
+    sizePerCpu: 2560Mi
+  nodeSelector:
+    workload: compaction
+  priorityClassName: batch-low
+  podAnnotations:
+    example.com/team: data
+  podLabels:
+    example.com/cost-center: lake
+  extraEnv:
+    - name: RUST_LOG
+      value: info

@@ -1,0 +1,8 @@
+# expect: optimizeWorkers.keda.idleExitAfter is "0s"; it must be greater than 0.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  keda:
+    idleExitAfter: 0s
