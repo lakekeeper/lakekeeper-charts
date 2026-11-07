@@ -1,0 +1,7 @@
+# expect: optimizeWorkers.terminationGracePeriodSeconds is 60; with drainTimeout 300s it must be at least 330, or Kubernetes kills the worker before it stops cleanly. Raise it or lower drainTimeout.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  drainTimeout: 300s

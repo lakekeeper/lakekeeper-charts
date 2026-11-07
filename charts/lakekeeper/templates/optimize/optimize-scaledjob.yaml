@@ -1,0 +1,185 @@
+{{- if .Values.optimizeWorkers.enabled }}
+{{- include "lakekeeper.optimize.validate" . }}
+{{- $c := .Values.optimizeWorkers }}
+{{- range $class := $c.sizeClasses }}
+{{- $name := toString $class.name }}
+{{- $spill := include "lakekeeper.optimize.spill" (dict "root" $ "class" $class) | fromJson }}
+{{- $ctx := dict "Values" $.Values "Release" $.Release "Chart" $.Chart "className" $name "classExtraEnv" $class.extraEnv "spillBytes" $spill.bytes }}
+{{- $securityContext := deepCopy ($.Values.catalog.podSecurityContext | default dict) }}
+{{- /* A new volume belongs to root, and the worker does not run as root. */}}
+{{- if and (eq $spill.type "pvc") (not (hasKey $securityContext "fsGroup")) }}
+{{- $_ := set $securityContext "fsGroup" (int64 $.Values.catalog.image.gid) }}
+{{- end }}
+{{- $nodeSelector := hasKey $class "nodeSelector" | ternary $class.nodeSelector $c.nodeSelector }}
+{{- $tolerations := hasKey $class "tolerations" | ternary $class.tolerations $c.tolerations }}
+{{- $affinity := hasKey $class "affinity" | ternary $class.affinity $c.affinity }}
+{{- $cpu := include "lakekeeper.optimize.cpus" $class }}
+{{- $memory := include "lakekeeper.optimize.canonicalQuantity" (dict "bytes" (include "lakekeeper.optimize.quantityBytes" $class.resources.memory) "binary" (regexMatch "i$" (toString $class.resources.memory))) }}
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledJob
+metadata:
+  name: {{ include "lakekeeper.optimize.scaledJobName" (dict "root" $ "className" $name) }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "iceberg-catalog.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: optimize-worker
+    lakekeeper.io/size-class: {{ $name | quote }}
+spec:
+  pollingInterval: {{ $c.keda.pollingInterval }}
+  successfulJobsHistoryLimit: {{ $c.keda.successfulJobsHistoryLimit }}
+  failedJobsHistoryLimit: {{ $c.keda.failedJobsHistoryLimit }}
+  minReplicaCount: 0
+  maxReplicaCount: {{ int $class.keda.maxJobs }}
+  # A `helm upgrade` that keeps the class leaves its running Jobs alone. Deleting the ScaledJob (workers turned off,
+  # class renamed or removed, uninstall) deletes its Jobs, which stops their workers.
+  rollout:
+    strategy: gradual
+  triggers:
+    - type: metrics-api
+      metadata:
+        url: {{ printf "http://%s.%s.svc.%s:9000/task-queue/optimize/demand?class=%s" (include "lakekeeper.optimize.metricsServiceName" $) $.Release.Namespace $.Values.clusterDomain $name | quote }}
+        format: json
+        valueLocation: demand
+        # One task per Job: each Job runs one optimize worker.
+        targetValue: "1"
+        activationTargetValue: "0"
+  jobTargetRef:
+    parallelism: 1
+    completions: 1
+    backoffLimit: 0
+    activeDeadlineSeconds: {{ include "lakekeeper.optimize.activeDeadlineSeconds" $ }}
+    # On a node drain or preemption the worker stops and exits 0, which completes the Job; KEDA starts a new Job
+    # while tasks wait. If a disrupted Pod fails instead, this rule keeps the Job from failing: the Job starts a new
+    # Pod. A Pod evicted for filling its `local` spill volume gets no disruption condition and fails the Job unless
+    # the worker stops within the short time Kubernetes gives it.
+    # `status` is explicit: KEDA writes the ScaledJob back with every field of this rule, and a value that
+    # differs from the chart's makes the next `helm upgrade` (server-side apply) fail with a conflict.
+    podFailurePolicy:
+      rules:
+        - action: Ignore
+          onPodConditions:
+            - type: DisruptionTarget
+              status: "True"
+    template:
+      metadata:
+        annotations:
+          checksum/secret-config-envs: {{ include (print $.Template.BasePath "/config/secret-config-envs.yaml") $ | sha256sum }}
+          {{- /* The chart's two keys win over the same keys in podAnnotations: the docs rely on both. */}}
+          {{- toYaml (merge (dict "karpenter.sh/do-not-disrupt" "true" "cluster-autoscaler.kubernetes.io/safe-to-evict" "false") ($c.podAnnotations | default dict)) | nindent 10 }}
+        labels:
+          {{- include "iceberg-catalog.labels" $ | nindent 10 }}
+          app.kubernetes.io/component: optimize-worker
+          lakekeeper.io/size-class: {{ $name | quote }}
+          {{- with $c.podLabels }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+      spec:
+        restartPolicy: Never
+        terminationGracePeriodSeconds: {{ int $c.terminationGracePeriodSeconds }}
+        {{- with $.Values.imagePullSecrets }}
+        imagePullSecrets:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with $nodeSelector }}
+        nodeSelector:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with $tolerations }}
+        tolerations:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with $affinity }}
+        affinity:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with $c.priorityClassName }}
+        priorityClassName: {{ . | quote }}
+        {{- end }}
+        serviceAccountName: {{ include "iceberg-catalog.serviceAccountName" $ }}
+        {{- with $securityContext }}
+        securityContext:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        initContainers:
+          {{- with $c.extraInitContainers }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- include "iceberg-catalog.init_container.check_db" (merge (dict "awaitMigration" true "envTemplate" "lakekeeper.optimize.env" "extraEnvFrom" $c.extraEnvFrom "extraVolumeMounts" $c.extraVolumeMounts "resources" (dict "requests" (dict "cpu" $cpu "memory" $memory) "limits" (dict "cpu" $cpu "memory" $memory))) $ctx) | indent 10 }}
+        containers:
+          - name: optimize-worker
+            {{- include "iceberg-catalog.image" $ | indent 12 }}
+            env:
+              {{- include "lakekeeper.optimize.env" $ctx | indent 14 }}
+            envFrom:
+              {{- include "iceberg-catalog.envFrom" $ | indent 14 }}
+              {{- with $.Values.catalog.extraEnvFrom }}
+              {{- tpl (toYaml .) $ | nindent 14 }}
+              {{- end }}
+              {{- with $c.extraEnvFrom }}
+              {{- tpl (toYaml .) $ | nindent 14 }}
+              {{- end }}
+            {{- with $.Values.catalog.command }}
+            command:
+              {{- toYaml . | nindent 14 }}
+            {{- end }}
+            args:
+              - serve
+            ports:
+              - name: metrics
+                containerPort: 9000
+                protocol: TCP
+            resources:
+              {{- /* In the form KEDA writes them back, see "lakekeeper.optimize.canonicalQuantity". */}}
+              requests:
+                cpu: {{ $cpu | quote }}
+                memory: {{ $memory | quote }}
+                {{- if eq $spill.type "local" }}
+                ephemeral-storage: {{ $spill.size | quote }}
+                {{- end }}
+              limits:
+                cpu: {{ $cpu | quote }}
+                memory: {{ $memory | quote }}
+            volumeMounts:
+              - name: spill
+                mountPath: /tmp
+              {{- /* The spill volume is /tmp of the worker: a /tmp mount of the catalog would be a second one. */}}
+              {{- range $.Values.catalog.extraVolumeMounts }}
+              {{- if ne .mountPath "/tmp" }}
+              {{- list . | toYaml | nindent 14 }}
+              {{- end }}
+              {{- end }}
+              {{- with $c.extraVolumeMounts }}
+              {{- toYaml . | nindent 14 }}
+              {{- end }}
+        volumes:
+          - name: spill
+            {{- if eq $spill.type "pvc" }}
+            ephemeral:
+              volumeClaimTemplate:
+                metadata:
+                  labels:
+                    {{- include "iceberg-catalog.labels" $ | nindent 20 }}
+                    app.kubernetes.io/component: optimize-worker
+                    lakekeeper.io/size-class: {{ $name | quote }}
+                spec:
+                  accessModes:
+                    - ReadWriteOnce
+                  {{- with $spill.storageClassName }}
+                  storageClassName: {{ . | quote }}
+                  {{- end }}
+                  resources:
+                    requests:
+                      storage: {{ $spill.size | quote }}
+            {{- else }}
+            emptyDir:
+              sizeLimit: {{ $spill.size | quote }}
+            {{- end }}
+          {{- with $.Values.catalog.extraVolumes }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+          {{- with $c.extraVolumes }}
+          {{- toYaml . | nindent 10 }}
+          {{- end }}
+{{- end }}
+{{- end }}

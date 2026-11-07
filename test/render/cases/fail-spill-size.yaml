@@ -1,0 +1,11 @@
+# expect: optimizeWorkers.sizeClasses small: spill.size is "20 GiB"; it must be a whole number with an optional suffix and at least 1Gi, such as 20Gi.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: small
+      resources: { cpu: "2", memory: 8Gi }
+      keda: { maxJobs: 1 }
+      spill: { size: 20 GiB }

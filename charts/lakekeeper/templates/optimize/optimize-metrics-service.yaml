@@ -1,0 +1,22 @@
+{{- if .Values.optimizeWorkers.enabled }}
+{{- include "lakekeeper.optimize.validate" . }}
+# Only inside the cluster: KEDA reads the demand of each size class from the metrics port of the catalog Pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "lakekeeper.optimize.metricsServiceName" . }}
+  namespace: {{ .Release.Namespace }}
+  labels:
+    {{- include "iceberg-catalog.labels" . | nindent 4 }}
+    app.kubernetes.io/component: catalog-metrics
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9000
+      targetPort: metrics
+      protocol: TCP
+      name: metrics
+  selector:
+    {{- include "iceberg-catalog.selectorLabels" . | nindent 4 }}
+    app.kubernetes.io/component: catalog
+{{- end }}

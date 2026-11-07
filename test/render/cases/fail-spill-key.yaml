@@ -1,0 +1,10 @@
+# expect: optimizeWorkers.spill.pvc.storageClass is not a known key; the only key is storageClassName.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  spill:
+    type: pvc
+    pvc:
+      storageClass: gp3

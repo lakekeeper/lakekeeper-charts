@@ -1,0 +1,10 @@
+# expect: the class name "16" must start with a lower case letter, contain only lower case letters, digits and hyphens, not end with a hyphen, and not be true or false.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: 16
+      resources: { cpu: "16", memory: 64Gi }
+      keda: { maxJobs: 1 }

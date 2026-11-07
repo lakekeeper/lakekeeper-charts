@@ -1,0 +1,38 @@
+# Spill disks: pvc by default with a storage class. medium takes it as it is; large sets its own size and storage
+# class; small stays on the node's disk (local). The pvc classes get the fsGroup of the catalog image.
+# Sizes are rendered as Kubernetes writes them back: 10240Mi as 10Gi.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  spill:
+    type: pvc
+    pvc:
+      storageClassName: gp3
+  sizeClasses:
+    - name: small
+      resources:
+        cpu: "2"
+        memory: 8Gi
+      keda:
+        maxJobs: 2
+      spill:
+        type: local
+        size: 10240Mi
+    - name: medium
+      resources:
+        cpu: "4"
+        memory: 16Gi
+      keda:
+        maxJobs: 2
+    - name: large
+      resources:
+        cpu: "8"
+        memory: 32Gi
+      keda:
+        maxJobs: 1
+      spill:
+        size: 50G
+        pvc:
+          storageClassName: io2

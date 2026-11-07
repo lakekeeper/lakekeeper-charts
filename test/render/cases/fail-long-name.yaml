@@ -1,0 +1,11 @@
+# expect: at most 57 are allowed, because KEDA adds 6 characters to name each Job
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+fullnameOverride: lakekeeper-production-eu-central-1
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: extralargememory
+      resources: { cpu: "8", memory: 32Gi }
+      keda: { maxJobs: 1 }

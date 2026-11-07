@@ -1,0 +1,16 @@
+# expect: optimizeWorkers.sizeClasses standard extraEnv: the chart sets LAKEKEEPER__OPTIMIZE__AVAILABLE for optimize workers; remove it.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: standard
+      resources:
+        cpu: 4
+        memory: 16Gi
+      keda:
+        maxJobs: 2
+      extraEnv:
+        - name: LAKEKEEPER__OPTIMIZE__AVAILABLE
+          value: "true"

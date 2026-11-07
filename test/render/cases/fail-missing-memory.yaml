@@ -1,0 +1,10 @@
+# expect: optimizeWorkers.sizeClasses small needs resources.cpu and resources.memory.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: small
+      resources: { cpu: "1" }
+      keda: { maxJobs: 1 }

@@ -1,6 +1,9 @@
 {{/*
 Define an init-container which checks the DB status
 EXAMPLE USAGE: {{ include "iceberg-catalog.init_container.check_db" (dict "Release" .Release "Values" .Values "Chart" .Chart "awaitMigration" true) }}
+Optional "envTemplate" names the helper that renders `env` (default "iceberg-catalog.env").
+Optional "extraEnvFrom" and "extraVolumeMounts" are added after the catalog's.
+Optional "resources" replaces catalog.initContainers.checkDb.resources.
 */}}
 {{- define "iceberg-catalog.init_container.check_db" }}
 {{/*
@@ -19,14 +22,17 @@ Wait for OpenFGA - source: https://github.com/openfga/helm-charts/blob/main/char
 - name: check-db
   {{- include "iceberg-catalog.image" . | indent 2 }}
   resources:
-    {{- toYaml .Values.catalog.initContainers.checkDb.resources | nindent 4 }}
+    {{- toYaml (.resources | default .Values.catalog.initContainers.checkDb.resources) | nindent 4 }}
   envFrom:
     {{- include "iceberg-catalog.envFrom" . | indent 4 }}
     {{- if .Values.catalog.extraEnvFrom -}}
     {{- tpl (toYaml .Values.catalog.extraEnvFrom) . | nindent 4 }}
     {{- end }}
+    {{- if .extraEnvFrom -}}
+    {{- tpl (toYaml .extraEnvFrom) . | nindent 4 }}
+    {{- end }}
   env:
-    {{- include "iceberg-catalog.env" . | indent 4 }}
+    {{- include (default "iceberg-catalog.env" .envTemplate) . | indent 4 }}
   {{- if .Values.catalog.command }}
   command:
     {{- toYaml .Values.catalog.command | nindent 4 }}
@@ -42,7 +48,7 @@ Wait for OpenFGA - source: https://github.com/openfga/helm-charts/blob/main/char
     - "100"
     - -b
     - "2"
-  {{- with .Values.catalog.extraVolumeMounts }}
+  {{- with concat (.Values.catalog.extraVolumeMounts | default list) (.extraVolumeMounts | default list) }}
   volumeMounts:
     {{- toYaml . | nindent 4 }}
   {{- end }}

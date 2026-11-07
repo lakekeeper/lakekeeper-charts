@@ -1,0 +1,8 @@
+# expect: optimizeWorkers.spill.sizePerCpu is "512Mi"; it must be a whole number with an optional suffix and at least 1Gi, such as 4Gi.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  spill:
+    sizePerCpu: 512Mi

@@ -1,0 +1,10 @@
+# expect: optimizeWorkers.sizeClasses small: resources.memory is "1.5Gi"; it must be a whole number with an optional suffix, such as 8Gi.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: small
+      resources: { cpu: "1", memory: 1.5Gi }
+      keda: { maxJobs: 1 }

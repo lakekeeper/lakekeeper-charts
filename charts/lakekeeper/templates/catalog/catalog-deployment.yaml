@@ -48,6 +48,9 @@ spec:
         {{- end }}
     spec:
       restartPolicy: Always
+      {{- if not (kindIs "invalid" .Values.catalog.terminationPeriod) }}
+      terminationGracePeriodSeconds: {{ .Values.catalog.terminationPeriod }}
+      {{- end }}
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
@@ -86,6 +89,9 @@ spec:
           {{- include "iceberg-catalog.image" . | indent 10 }}
           env:
             {{- include "iceberg-catalog.env" . | indent 12 }}
+            {{- if .Values.optimizeWorkers.enabled }}
+            {{- include "lakekeeper.optimize.sharedEnv" . | indent 12 }}
+            {{- end }}
           envFrom:
             {{- include "iceberg-catalog.envFrom" . | indent 12 }}
             {{- if .Values.catalog.extraEnvFrom -}}

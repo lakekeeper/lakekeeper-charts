@@ -1,0 +1,10 @@
+# expect: optimizeWorkers.sizeClasses small: resources.cpu is "500m"; it must be a whole number of CPUs, such as 1, 2 or 4.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: small
+      resources: { cpu: 500m, memory: 2Gi }
+      keda: { maxJobs: 1 }

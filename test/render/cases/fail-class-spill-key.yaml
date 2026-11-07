@@ -1,0 +1,11 @@
+# expect: optimizeWorkers.sizeClasses small: spill.sizePerCpu is not a known key; the keys are type, size and pvc.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: small
+      resources: { cpu: "2", memory: 8Gi }
+      keda: { maxJobs: 1 }
+      spill: { sizePerCpu: 8Gi }

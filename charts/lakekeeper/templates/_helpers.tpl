@@ -9,13 +9,13 @@
   {{- $repository = "quay.io/lakekeeper/catalog" -}}
 {{- end -}}
 {{- $tag := "" -}}
-{{- /* Default versions: enterprise=v0.14.2, community=v0.14.2 */ -}}
+{{- /* Default versions: enterprise=v0.15.0, community=v0.15.0 */ -}}
 {{- if .Values.catalog.image.tag -}}
   {{- $tag = .Values.catalog.image.tag -}}
 {{- else if $isPlus -}}
-  {{- $tag = "v0.14.2-distroless" -}}
+  {{- $tag = "v0.15.0-distroless" -}}
 {{- else -}}
-  {{- $tag = "v0.14.2" -}}
+  {{- $tag = "v0.15.0" -}}
 {{- end -}}
 {{- printf "%s:%s" $repository $tag -}}
 {{- end -}}
@@ -144,9 +144,10 @@ Used to discover the Service and Secret name created by the sub-chart.
 {{- end }}
 
 {{/*
-The list of `env` catalog Pods
+The `env` entries every Lakekeeper container needs: database, secret backend, license and
+OpenFGA credentials. Without `catalog.extraEnv`, which `iceberg-catalog.env` adds for the catalog Pods.
 */}}
-{{- define "iceberg-catalog.env" }}
+{{- define "iceberg-catalog.env.base" }}
 {{- if .Values.postgresql.enabled }}
 - name: LAKEKEEPER__PG_HOST_W
   value: {{ include "iceberg-catalog.postgresql.fullname" . }}
@@ -292,7 +293,13 @@ The list of `env` catalog Pods
 {{- end }}
 {{- end }}
 {{- end }}
+{{- end }}
 
+{{/*
+The list of `env` catalog Pods
+*/}}
+{{- define "iceberg-catalog.env" }}
+{{- include "iceberg-catalog.env.base" . }}
 {{- /* user-defined environment variables */ -}}
 {{- if .Values.catalog.extraEnv }}
 {{ tpl (toYaml .Values.catalog.extraEnv) . }}

@@ -13,6 +13,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.14.0] - 2026-11-07
+
+### Changed
+* Default to Lakekeeper Community v0.15.0, Plus v0.15.0, and update the OPA bridge policies to Lakekeeper 0.15. The policies need Lakekeeper 0.15 or later. With an older `catalog.image.tag`, Trino `CREATE VIEW` is denied, and so is a query on another user's DEFINER view that reads another view. Read the breaking changes and upgrade notes in the [release notes](https://docs.lakekeeper.io/about/release-notes/) and, for Plus, the [Plus release notes](https://docs.lakekeeper.io/about/enterprise-release-notes/) before you upgrade.
+* Update OPA to v1.22.2 and the OpenFGA Chart to v0.4.1 (OpenFGA v1.22.1).
+* CI: Update chart-releaser-action to v1.9.0 and kind-action to v1.15.2. The release job skips a chart version that is already released.
+
+### Added
+* `optimizeWorkers` for Lakekeeper Plus 0.15 or later: with `optimizeWorkers.enabled: true` (default `false`), the chart creates one KEDA ScaledJob per entry of `optimizeWorkers.sizeClasses` and a ClusterIP Service `<fullname>-metrics` that KEDA reads the demand of each size class from. Each Job runs one optimize worker with the CPU and memory of its class. The chart sets `LAKEKEEPER__OPTIMIZE__AVAILABLE=true` and the size classes on the catalog Pods and the Jobs. Requires KEDA in the cluster. See [Optimize Workers](https://docs.lakekeeper.io/docs/latest/optimize-workers/).
+
+### Fixed
+* `catalog.terminationPeriod` was ignored. The catalog Pods now get it as `terminationGracePeriodSeconds` (default 60 seconds; before, Kubernetes used its default of 30 seconds).
 * Fix invalid Deployment YAML when `OPABridge.lakekeeper.existingSecret` is set
 
 ## [0.13.0] - 2026-10-25

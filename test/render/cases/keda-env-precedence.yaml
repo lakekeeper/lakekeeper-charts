@@ -1,0 +1,49 @@
+# Worker env: each name once, the last entry wins:
+# chart entries < catalog.extraEnv (without the names the chart sets only for workers) < optimizeWorkers.extraEnv < class extraEnv.
+# With Helm 4, catalog.extraEnv cannot repeat a name of the catalog's `env`; these values test the worker env only.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+catalog:
+  extraEnv:
+    # Overrides the chart's entries: the worker uses the catalog's host and key.
+    - name: LAKEKEEPER__PG_HOST_W
+      value: pg.example
+    - name: LAKEKEEPER__PG_ENCRYPTION_KEY
+      valueFrom:
+        secretKeyRef:
+          name: my-encryption-key
+          key: key
+    # Twice: the second value wins.
+    - name: HTTPS_PROXY
+      value: http://old-proxy.example:3128
+    - name: HTTPS_PROXY
+      value: http://proxy.example:3128
+    # Set by the chart only for workers: left out, the worker keeps the chart's 0s.
+    - name: LAKEKEEPER__TASK_DRAIN_TIMEOUT
+      value: 30s
+    - name: TMPDIR
+      value: /var/tmp
+    # optimizeWorkers.extraEnv wins.
+    - name: RUST_LOG
+      value: warn
+    # optimizeWorkers.extraEnv overrides it, and the class extraEnv wins.
+    - name: AWS_REGION
+      value: eu-central-1
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: standard
+      resources:
+        cpu: "2"
+        memory: 8Gi
+      keda:
+        maxJobs: 2
+      extraEnv:
+        - name: AWS_REGION
+          value: us-east-1
+  extraEnv:
+    - name: RUST_LOG
+      value: info
+    - name: AWS_REGION
+      value: eu-west-1

@@ -1,0 +1,7 @@
+# expect: optimizeWorkers.enabled requires at least one entry in optimizeWorkers.sizeClasses.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses: []

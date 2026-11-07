@@ -1,0 +1,16 @@
+# expect: optimizeWorkers.sizeClasses: large has 8.00 GiB memory per CPU (memory 32Gi, cpu 4) and small has 4.00 GiB (memory 4Gi, cpu 1). Every class must have the same memory per CPU; Lakekeeper refuses classes that differ by more than 1 %.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  sizeClasses:
+    - name: small
+      resources: { cpu: "1", memory: 4Gi }
+      keda: { maxJobs: 1 }
+    - name: medium
+      resources: { cpu: "2", memory: 8Gi }
+      keda: { maxJobs: 1 }
+    - name: large
+      resources: { cpu: "4", memory: 32Gi }
+      keda: { maxJobs: 1 }

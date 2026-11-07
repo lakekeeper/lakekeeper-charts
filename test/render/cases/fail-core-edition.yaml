@@ -1,0 +1,3 @@
+# expect: optimizeWorkers.enabled requires lakekeeper.edition "plus"
+optimizeWorkers:
+  enabled: true
