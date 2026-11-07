@@ -2,7 +2,7 @@
 Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lakekeeper&color=3f6ec6&labelColor=&logoColor=white)](https://artifacthub.io/packages/helm/lakekeeper/lakekeeper)
-![Version: 0.12.0](https://img.shields.io/badge/Version-0.12.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.13.3](https://img.shields.io/badge/AppVersion-0.13.3-informational?style=flat-square)
+![Version: 0.13.0](https://img.shields.io/badge/Version-0.13.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.14.2](https://img.shields.io/badge/AppVersion-0.14.2-informational?style=flat-square)
 
 Please check our [Documentation](http://docs.lakekeeper.io), the [Lakekeeper Repository](https://github.com/lakekeeper/lakekeeper) and the [`values.yaml`](https://github.com/lakekeeper/lakekeeper-charts/blob/main/charts/lakekeeper/values.yaml) for more information.
 
@@ -30,14 +30,40 @@ helm install my-lakekeeper lakekeeper/lakekeeper
 
 ⚠️ This chart by default deploys the "postgresql" subchart. This setup is not production ready. For production deployments, please deploy an external database, set `postgresql.enabled` to false and use the `externalDatabase.*` parameters to configure the connection. To deploy production ready Databases on Kubernetes, we recommend to use the [`CloudNativePGOperator`](https://cloudnative-pg.io/).
 
-For potential additional steps that are required for upgrades, please check the [Changelog](./Changelog)
+For potential additional steps that are required for upgrades, please check the [Changelog](./Changelog.md)
+
+## ⚠️ Upgrading to Chart 0.13 (Lakekeeper 0.14)
+
+The 0.14 migration rewrites table and view schemas and can take several minutes on large catalogs. Reads keep working: the 0.13 pods serve them until the migration is done, apart from a short pause at its end. Changes wait until then.
+
+1. **Back up the database.** There is no downgrade to 0.13 without restoring it.
+2. **Check for tables and views that would share a location.** This query must return no rows (see the [release notes](https://docs.lakekeeper.io/about/release-notes/) to fix them):
+   ```sql
+   SELECT warehouse_id, rtrim(fs_location, '/'), array_agg(tabular_id || ' ' || typ || ' ' || array_to_string(tabular_namespace_name, '.') || '.' || name || CASE WHEN deleted_at IS NOT NULL THEN ' (dropped)' ELSE '' END) FROM tabular GROUP BY 1, 2 HAVING count(*) > 1 AND count(DISTINCT fs_location) > 1;
+   ```
+3. **Check your configuration** against the breaking changes in the [Changelog](./Changelog.md).
+4. **Upgrade** with a timeout that covers the migration:
+   ```bash
+   helm upgrade my-lakekeeper lakekeeper/lakekeeper --version 0.13.0 -f my-values.yaml --timeout 30m
+   ```
+
+**Optional: read-only mode.** To reject changes with `503` instead of letting them wait, switch the running 0.13 release to read-only first, then upgrade without the setting:
+```bash
+helm upgrade my-lakekeeper lakekeeper/lakekeeper --version 0.12.0 -f my-values.yaml \
+  --set catalog.config.LAKEKEEPER__MAINTENANCE_MODE=read-only
+kubectl rollout status deployment/my-lakekeeper
+helm upgrade my-lakekeeper lakekeeper/lakekeeper --version 0.13.0 -f my-values.yaml --timeout 30m
+```
+In 0.13, read-only mode also rejects S3 remote signing and Trino (OPA bridge) requests. With Lakekeeper Plus, also set `LAKEKEEPER__TASK_EXPIRE_SNAPSHOTS_WORKERS` and `LAKEKEEPER__TASK_REMOVE_ORPHAN_FILES_WORKERS` to `0`.
+
+To stop all 0.13 pods during the migration instead, upgrade with `--set catalog.strategy.type=Recreate`.
 
 ## Requirements
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://groundhog2k.github.io/helm-charts/ | postgresql(postgres) | 1.6.4 |
-| https://openfga.github.io/helm-charts | openfga(openfga) | 0.3.10 |
+| https://groundhog2k.github.io/helm-charts/ | postgresql(postgres) | 1.6.8 |
+| https://openfga.github.io/helm-charts | openfga(openfga) | 0.3.16 |
 
 ## Values
 
@@ -54,7 +80,7 @@ For potential additional steps that are required for upgrades, please check the 
 | OPABridge.image.gid | int | `64287` | Group ID for the OPA container. Any non-zero number works with the default OPA image. |
 | OPABridge.image.pullPolicy | string | `"IfNotPresent"` | The image pull policy |
 | OPABridge.image.repository | string | `"openpolicyagent/opa"` | The image repository to pull from |
-| OPABridge.image.tag | string | `"1.18.1"` | The image tag to pull |
+| OPABridge.image.tag | string | `"1.21.4"` | The image tag to pull |
 | OPABridge.image.uid | int | `64287` | User ID for the OPA container. Any non-zero number works with the default OPA image. |
 | OPABridge.lakekeeper | object | `{"clientId":"","clientIdSecretKey":"clientId","clientSecret":"","clientSecretSecretKey":"clientSecret","existingSecret":"","scope":"lakekeeper","scopeSecretKey":"scope","tokenEndpoint":"","tokenEndpointSecretKey":"tokenEndpoint","url":"http://localhost:8181"}` | Configuration for connecting to Lakekeeper instance. |
 | OPABridge.lakekeeper.clientId | string | `""` | The client ID used for authentication with the IdP (Client Credentials Flow). |
@@ -68,7 +94,7 @@ For potential additional steps that are required for upgrades, please check the 
 | OPABridge.lakekeeper.tokenEndpointSecretKey | string | `"tokenEndpoint"` | Key within existingSecret containing the token endpoint |
 | OPABridge.lakekeeper.url | string | `"http://localhost:8181"` | The URL where OPA can reach the Lakekeeper instance. |
 | OPABridge.maxBatchCheckSize | int | `1000` | Maximum number of checks per batch-check request to Lakekeeper. Lakekeeper server limit is 1000. |
-| OPABridge.opaConfig | object | `{}` | Additional configuration options for OPA. Please check the OPA documentation for the available options. |
+| OPABridge.opaConfig | object | `{"caching":{"inter_query_builtin_cache":{"max_size_bytes":104857600,"stale_entry_eviction_period_seconds":60}}}` | Additional configuration options for OPA. Please check the OPA documentation for the available options. The policies cache Lakekeeper responses per Trino query. OPA never evicts expired entries by default, so the chart evicts them every 60s. `max_size_bytes` only applies to serialized entries (the bundled policies use `caching_mode: deserialized`). |
 | OPABridge.resources | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html> | `{}` |  resources for the OPA sidecar container of the catalog pod |
 | OPABridge.service.annotations | object | `{}` | OPA service annotations |
 | OPABridge.service.externalPort | int | `8282` | OPA service external port |
@@ -169,6 +195,7 @@ For potential additional steps that are required for upgrades, please check the 
 | catalog.service.sessionAffinity | string | `"None"` | catalog service session affinity |
 | catalog.service.sessionAffinityConfig | object | `{}` | catalog service session affinity config |
 | catalog.service.type | string | `"ClusterIP"` | catalog service type |
+| catalog.strategy | <html><a href="https://kubernetes.io/docs/concepts/workloads/controllers/deployment/#strategy">deployment strategy</a></html> | `{"rollingUpdate":{"maxSurge":"25%","maxUnavailable":0},"type":"RollingUpdate"}` |  for the catalog Deployment. By default, the db-migration Job runs while the old pods still serve. For long migrations, concurrent writes can make the migration roll back and retry. `type: Recreate` stops all old pods first, so reads also pause until the migration is done. For write-heavy deployments that need reads during the upgrade, use the two-step upgrade with read-only mode instead (see for example "Upgrading to Chart 0.13" in the README). `rollingUpdate` is only used with `type: RollingUpdate`. |
 | catalog.terminationPeriod | int | `60` | how many seconds to wait after SIGTERM before SIGKILL of the catalog. Default is 60 seconds. |
 | catalog.tolerations | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#toleration-v1-core">toleration</a></html> | `[]` |  tolerations for the catalog Pods |
 | catalog.topologySpreadConstraints | <html><a href="https://kubernetes.io/docs/concepts/scheduling-eviction/topology-spread-constraints/">topologySpreadConstraints</a></html> | `[]` |  topology spread constraints the catalog Pods |

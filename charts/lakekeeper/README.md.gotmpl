@@ -30,7 +30,33 @@ helm install my-lakekeeper lakekeeper/lakekeeper
 
 ⚠️ This chart by default deploys the "postgresql" subchart. This setup is not production ready. For production deployments, please deploy an external database, set `postgresql.enabled` to false and use the `externalDatabase.*` parameters to configure the connection. To deploy production ready Databases on Kubernetes, we recommend to use the [`CloudNativePGOperator`](https://cloudnative-pg.io/).
 
-For potential additional steps that are required for upgrades, please check the [Changelog](./Changelog)
+For potential additional steps that are required for upgrades, please check the [Changelog](./Changelog.md)
+
+## ⚠️ Upgrading to Chart 0.13 (Lakekeeper 0.14)
+
+The 0.14 migration rewrites table and view schemas and can take several minutes on large catalogs. Reads keep working: the 0.13 pods serve them until the migration is done, apart from a short pause at its end. Changes wait until then.
+
+1. **Back up the database.** There is no downgrade to 0.13 without restoring it.
+2. **Check for tables and views that would share a location.** This query must return no rows (see the [release notes](https://docs.lakekeeper.io/about/release-notes/) to fix them):
+   ```sql
+   SELECT warehouse_id, rtrim(fs_location, '/'), array_agg(tabular_id || ' ' || typ || ' ' || array_to_string(tabular_namespace_name, '.') || '.' || name || CASE WHEN deleted_at IS NOT NULL THEN ' (dropped)' ELSE '' END) FROM tabular GROUP BY 1, 2 HAVING count(*) > 1 AND count(DISTINCT fs_location) > 1;
+   ```
+3. **Check your configuration** against the breaking changes in the [Changelog](./Changelog.md).
+4. **Upgrade** with a timeout that covers the migration:
+   ```bash
+   helm upgrade my-lakekeeper lakekeeper/lakekeeper --version 0.13.0 -f my-values.yaml --timeout 30m
+   ```
+
+**Optional: read-only mode.** To reject changes with `503` instead of letting them wait, switch the running 0.13 release to read-only first, then upgrade without the setting:
+```bash
+helm upgrade my-lakekeeper lakekeeper/lakekeeper --version 0.12.0 -f my-values.yaml \
+  --set catalog.config.LAKEKEEPER__MAINTENANCE_MODE=read-only
+kubectl rollout status deployment/my-lakekeeper
+helm upgrade my-lakekeeper lakekeeper/lakekeeper --version 0.13.0 -f my-values.yaml --timeout 30m
+```
+In 0.13, read-only mode also rejects S3 remote signing and Trino (OPA bridge) requests. With Lakekeeper Plus, also set `LAKEKEEPER__TASK_EXPIRE_SNAPSHOTS_WORKERS` and `LAKEKEEPER__TASK_REMOVE_ORPHAN_FILES_WORKERS` to `0`.
+
+To stop all 0.13 pods during the migration instead, upgrade with `--set catalog.strategy.type=Recreate`.
 
 {{ template "chart.requirementsSection" . }}
 

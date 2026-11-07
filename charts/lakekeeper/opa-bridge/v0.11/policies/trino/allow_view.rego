@@ -51,6 +51,7 @@ allow_view_rename if {
 	target_catalog := input.action.targetResource.table.catalogName
 	target_schema := input.action.targetResource.table.schemaName
 	require_schema_access_simple(target_catalog, target_schema, "create_view")
+	require_rename_target_access("view", source_catalog, source_schema, source_table, target_catalog, target_schema)
 }
 
 allow_view_drop if {
@@ -70,9 +71,9 @@ allow_view_metadata if {
 }
 
 allow_view_read if {
-	input.action.operation == "SelectFromColumns"
+	input.action.operation in ["SelectFromColumns", "CreateViewWithSelectFromColumns"]
 	catalog := input.action.resource.table.catalogName
 	schema := input.action.resource.table.schemaName
 	table := input.action.resource.table.tableName
-	require_view_access_simple(catalog, schema, table, "get_metadata")
+	require_view_access_simple(catalog, schema, table, "select")
 }
