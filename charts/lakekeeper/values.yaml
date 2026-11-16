@@ -211,6 +211,17 @@ catalog:
   # -- how many seconds to wait after SIGTERM before SIGKILL of the catalog (`terminationGracePeriodSeconds`).
   terminationPeriod: 60
 
+  # -- (<html><a href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/">lifecycle</a></html>)
+  # hooks of the catalog container. A `preStop` pause keeps a stopping pod serving until the Service has stopped sending
+  # it requests, so a rolling update drops none. Keep the pause well below `terminationPeriod`. The `sleep` action needs
+  # Kubernetes 1.30 or later and no shell in the image.
+  lifecycle: {}
+  # ____ EXAMPLE _______________
+  #   lifecycle:
+  #     preStop:
+  #       sleep:
+  #         seconds: 10
+
   # -- (list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core">containers</a></html>)
   # extra containers for the catalog Pods
   extraContainers: []

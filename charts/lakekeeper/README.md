@@ -189,6 +189,7 @@ Lakekeeper can also run optimize in the catalog Pods (`LAKEKEEPER__TASK_OPTIMIZE
 | catalog.ingress.tls.secretName | string | `""` | the name of a pre-created Secret containing a TLS private key and certificate |
 | catalog.initContainers.checkDb.resources | <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#resourcerequirements-v1-core">resource requirements</a></html> | `{}` |  resource requests/limits for the "check-db" init-containers. In optimize worker Jobs, `check-db` gets the CPU and memory of the class. |
 | catalog.labels | object | `{}` | Labels for the catalog Deployment |
+| catalog.lifecycle | <html><a href="https://kubernetes.io/docs/concepts/containers/container-lifecycle-hooks/">lifecycle</a></html> | `{}` |  hooks of the catalog container. A `preStop` pause keeps a stopping pod serving until the Service has stopped sending it requests, so a rolling update drops none. Keep the pause well below `terminationPeriod`. The `sleep` action needs Kubernetes 1.30 or later and no shell in the image. |
 | catalog.livenessProbe.enabled | bool | `true` | if the liveness probes of the catalog Pods are enabled |
 | catalog.livenessProbe.failureThreshold | int | `5` |  |
 | catalog.livenessProbe.initialDelaySeconds | int | `1` |  |

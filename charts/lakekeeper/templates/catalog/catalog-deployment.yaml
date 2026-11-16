@@ -110,6 +110,10 @@ spec:
           {{- end }}
           args:
             - serve
+          {{- with .Values.catalog.lifecycle }}
+          lifecycle:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           {{- if .Values.catalog.livenessProbe.enabled }}
           livenessProbe:
             initialDelaySeconds: {{ .Values.catalog.livenessProbe.initialDelaySeconds }}
