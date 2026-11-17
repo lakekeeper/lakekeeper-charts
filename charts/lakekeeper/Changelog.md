@@ -13,6 +13,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+## [0.14.1] - 2026-11-17
+
+### Changed
+* Default to Lakekeeper Community v0.15.1, Plus v0.15.1. See the [release notes](https://docs.lakekeeper.io/about/release-notes/) and [Plus release notes](https://docs.lakekeeper.io/about/enterprise-release-notes/).
+* Update OPA to v1.22.4 and the Postgres Chart to v1.6.9 (Postgres 18.7).
+* CI: Update setup-helm to v5.1.0.
+
+### Fixed
+* Plus: Lakekeeper now works with AWS RDS blue/green deployments and other PostgreSQL logical replication. Apply this upgrade first, then create the blue/green deployment.
+
 ## [0.14.0] - 2026-11-07
 
 ### Changed

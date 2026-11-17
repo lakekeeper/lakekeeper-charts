@@ -2,7 +2,7 @@
 Helm Chart for Lakekeeper - a rust native Iceberg Rest Catalog
 
 [![Artifact Hub](https://img.shields.io/endpoint?url=https://artifacthub.io/badge/repository/lakekeeper&color=3f6ec6&labelColor=&logoColor=white)](https://artifacthub.io/packages/helm/lakekeeper/lakekeeper)
-![Version: 0.14.0](https://img.shields.io/badge/Version-0.14.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.15.0](https://img.shields.io/badge/AppVersion-0.15.0-informational?style=flat-square)
+![Version: 0.14.1](https://img.shields.io/badge/Version-0.14.1-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 0.15.1](https://img.shields.io/badge/AppVersion-0.15.1-informational?style=flat-square)
 
 Please check our [Documentation](http://docs.lakekeeper.io), the [Lakekeeper Repository](https://github.com/lakekeeper/lakekeeper) and the [`values.yaml`](https://github.com/lakekeeper/lakekeeper-charts/blob/main/charts/lakekeeper/values.yaml) for more information.
 
@@ -87,7 +87,7 @@ Lakekeeper can also run optimize in the catalog Pods (`LAKEKEEPER__TASK_OPTIMIZE
 
 | Repository | Name | Version |
 |------------|------|---------|
-| https://groundhog2k.github.io/helm-charts/ | postgresql(postgres) | 1.6.8 |
+| https://groundhog2k.github.io/helm-charts/ | postgresql(postgres) | 1.6.9 |
 | https://openfga.github.io/helm-charts | openfga(openfga) | 0.4.1 |
 
 ## Values
@@ -105,7 +105,7 @@ Lakekeeper can also run optimize in the catalog Pods (`LAKEKEEPER__TASK_OPTIMIZE
 | OPABridge.image.gid | int | `64287` | Group ID for the OPA container. Any non-zero number works with the default OPA image. |
 | OPABridge.image.pullPolicy | string | `"IfNotPresent"` | The image pull policy |
 | OPABridge.image.repository | string | `"openpolicyagent/opa"` | The image repository to pull from |
-| OPABridge.image.tag | string | `"1.22.2"` | The image tag to pull |
+| OPABridge.image.tag | string | `"1.22.4"` | The image tag to pull |
 | OPABridge.image.uid | int | `64287` | User ID for the OPA container. Any non-zero number works with the default OPA image. |
 | OPABridge.lakekeeper | object | `{"clientId":"","clientIdSecretKey":"clientId","clientSecret":"","clientSecretSecretKey":"clientSecret","existingSecret":"","scope":"lakekeeper","scopeSecretKey":"scope","tokenEndpoint":"","tokenEndpointSecretKey":"tokenEndpoint","url":"http://localhost:8181"}` | Configuration for connecting to Lakekeeper instance. |
 | OPABridge.lakekeeper.clientId | string | `""` | The client ID used for authentication with the IdP (Client Credentials Flow). |

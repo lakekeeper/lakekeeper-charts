@@ -9,13 +9,13 @@
   {{- $repository = "quay.io/lakekeeper/catalog" -}}
 {{- end -}}
 {{- $tag := "" -}}
-{{- /* Default versions: enterprise=v0.15.0, community=v0.15.0 */ -}}
+{{- /* Default versions: enterprise=v0.15.1, community=v0.15.1 */ -}}
 {{- if .Values.catalog.image.tag -}}
   {{- $tag = .Values.catalog.image.tag -}}
 {{- else if $isPlus -}}
-  {{- $tag = "v0.15.0-distroless" -}}
+  {{- $tag = "v0.15.1-distroless" -}}
 {{- else -}}
-  {{- $tag = "v0.15.0" -}}
+  {{- $tag = "v0.15.1" -}}
 {{- end -}}
 {{- printf "%s:%s" $repository $tag -}}
 {{- end -}}
