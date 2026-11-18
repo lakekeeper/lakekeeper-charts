@@ -79,9 +79,8 @@ spec:
             restartPolicy: Always
             volumeMounts:
             - mountPath: /vault/secrets
-              name: vault-secrets          
-          
-          - name: check-db  
+              name: vault-secrets
+          - name: check-db
             image: quay.io/vakamo/lakekeeper-plus:<tag>
             imagePullPolicy: IfNotPresent
             securityContext:
@@ -94,12 +93,12 @@ spec:
               requests:
                 cpu: "2"
                 memory: 8Gi
-            envFrom:    
+            envFrom:
               - secretRef:
                   name: lk-lakekeeper-config-envs
               - secretRef:
                   name: worker-db
-            env:    
+            env:
               - name: LAKEKEEPER__PG_HOST_W
                 value: lk-lakekeeper-pg
               - name: LAKEKEEPER__PG_PORT
@@ -181,13 +180,13 @@ spec:
                 name: vault-secrets
                 readOnly: true
         containers:
-          - name: optimize-worker            
+          - name: optimize-worker
             image: quay.io/vakamo/lakekeeper-plus:<tag>
             imagePullPolicy: IfNotPresent
             securityContext:
               runAsUser: 65532
               runAsGroup: 65534
-            env:              
+            env:
               - name: LAKEKEEPER__PG_HOST_W
                 value: lk-lakekeeper-pg
               - name: LAKEKEEPER__PG_PORT
@@ -252,7 +251,7 @@ spec:
                 value: info
               - name: AWS_REGION
                 value: us-east-1
-            envFrom:              
+            envFrom:
               - secretRef:
                   name: lk-lakekeeper-config-envs
               - secretRef:
@@ -363,9 +362,8 @@ spec:
       restartPolicy: Always
       terminationGracePeriodSeconds: 90
       serviceAccountName: lk-lakekeeper
-      initContainers:        
-        
-        - name: check-db  
+      initContainers:
+        - name: check-db
           image: quay.io/vakamo/lakekeeper-plus:<tag>
           imagePullPolicy: IfNotPresent
           securityContext:
@@ -373,10 +371,10 @@ spec:
             runAsGroup: 65534
           resources:
             {}
-          envFrom:    
+          envFrom:
             - secretRef:
                 name: lk-lakekeeper-config-envs
-          env:    
+          env:
             - name: LAKEKEEPER__PG_HOST_W
               value: lk-lakekeeper-pg
             - name: LAKEKEEPER__PG_PORT
@@ -411,7 +409,6 @@ spec:
               value: 30s
             - name: LAKEKEEPER__TASK_OPTIMIZE_WORKERS
               value: "0"
-            
             - name: LAKEKEEPER__PLACEHOLDER
               value: "placeholder"
           args:
@@ -428,13 +425,13 @@ spec:
             - mountPath: /tmp
               name: tmp
       containers:
-        - name: lakekeeper          
+        - name: lakekeeper
           image: quay.io/vakamo/lakekeeper-plus:<tag>
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsUser: 65532
             runAsGroup: 65534
-          env:            
+          env:
             - name: LAKEKEEPER__PG_HOST_W
               value: lk-lakekeeper-pg
             - name: LAKEKEEPER__PG_PORT
@@ -469,14 +466,13 @@ spec:
               value: 30s
             - name: LAKEKEEPER__TASK_OPTIMIZE_WORKERS
               value: "0"
-            
             - name: LAKEKEEPER__PLACEHOLDER
-              value: "placeholder"            
+              value: "placeholder"
             - name: LAKEKEEPER__OPTIMIZE__AVAILABLE
               value: "true"
             - name: LAKEKEEPER__OPTIMIZE__SIZE_CLASSES
               value: "{\"standard\":{\"cpu\":\"2\",\"memory\":\"8Gi\"}}"
-          envFrom:            
+          envFrom:
             - secretRef:
                 name: lk-lakekeeper-config-envs
           ports:

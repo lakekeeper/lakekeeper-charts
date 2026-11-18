@@ -3,15 +3,21 @@
 #
 #   cases/<name>.yaml       must render; the optimize-worker output must equal golden/<name>.yaml
 #   cases/fail-<name>.yaml  must fail; the error must contain the text after "# expect: " on its first line
-#   With the workers off (the default), the output must have no ScaledJob and no OPTIMIZE__ variable.
+#   With the workers off (the default), the output must have no worker and no OPTIMIZE__ variable.
 #
 # UPDATE=1 rewrites the golden files. Needs `helm dependency build charts/lakekeeper` first.
 set -euo pipefail
 cd "$(dirname "$0")"
 CHART=../../charts/lakekeeper
-SHOW=(--show-only templates/optimize/optimize-scaledjob.yaml
-      --show-only templates/optimize/optimize-metrics-service.yaml
-      --show-only templates/catalog/catalog-deployment.yaml)
+# The documents of these templates, in this order. `--show-only` fails on a template that renders nothing.
+pick() {
+  awk -v order="optimize/optimize-scaledjob.yaml optimize/optimize-deployment.yaml optimize/optimize-metrics-service.yaml catalog/catalog-deployment.yaml" '
+    BEGIN { n = split(order, want, " ") }
+    /^---$/ { k++; next }
+    /^# Source: / { src[k] = $3; sub(/^[^\/]+\/templates\//, "", src[k]) }
+    { body[k] = body[k] "\n" $0 }
+    END { for (i = 1; i <= n; i++) for (j = 1; j <= k; j++) if (src[j] == want[i]) printf "---%s\n", body[j] }'
+}
 # Checksums, the chart and app version labels and image tags change with every release, not with the templates.
 normalize() {
   sed -E -e 's/^( +checksum\/[a-z-]+: ).*/\1<checksum>/' \
@@ -34,7 +40,7 @@ for f in cases/*.yaml; do
       echo "ok   $name"
     fi
   else
-    out=$(helm template lk "$CHART" -n lk -f "$f" "${SHOW[@]}" | normalize)
+    out=$(helm template lk "$CHART" -n lk -f "$f" | pick | normalize)
     if [ "${UPDATE:-0}" = 1 ]; then
       echo "$out" >"golden/$name.yaml"; echo "upd  $name"
     elif ! diff -u "golden/$name.yaml" <(echo "$out"); then
@@ -45,8 +51,8 @@ for f in cases/*.yaml; do
   fi
 done
 out=$(helm template lk "$CHART" -n lk --set lakekeeper.edition=plus --set lakekeeper.useLicenseSecret=false)
-if grep -qE '^kind: ScaledJob|OPTIMIZE__' <<<"$out"; then
-  echo "FAIL workers-off: the output has a ScaledJob or an OPTIMIZE__ variable"; failed=1
+if grep -qE '^kind: ScaledJob|optimize-worker|OPTIMIZE__' <<<"$out"; then
+  echo "FAIL workers-off: the output has a worker or an OPTIMIZE__ variable"; failed=1
 else
   echo "ok   workers-off"
 fi

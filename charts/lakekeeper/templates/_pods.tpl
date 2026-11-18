@@ -20,11 +20,11 @@ Wait for OpenFGA - source: https://github.com/openfga/helm-charts/blob/main/char
     {{- toYaml .Values.openfga.datastore.migrations.resources | nindent 12 }}
 {{- end }}
 - name: check-db
-  {{- include "iceberg-catalog.image" . | indent 2 }}
+  {{- include "iceberg-catalog.image" . | trim | nindent 2 }}
   resources:
     {{- toYaml (.resources | default .Values.catalog.initContainers.checkDb.resources) | nindent 4 }}
   envFrom:
-    {{- include "iceberg-catalog.envFrom" . | indent 4 }}
+    {{- include "iceberg-catalog.envFrom" . | trim | nindent 4 }}
     {{- if .Values.catalog.extraEnvFrom -}}
     {{- tpl (toYaml .Values.catalog.extraEnvFrom) . | nindent 4 }}
     {{- end }}
@@ -32,7 +32,7 @@ Wait for OpenFGA - source: https://github.com/openfga/helm-charts/blob/main/char
     {{- tpl (toYaml .extraEnvFrom) . | nindent 4 }}
     {{- end }}
   env:
-    {{- include (default "iceberg-catalog.env" .envTemplate) . | indent 4 }}
+    {{- include (default "iceberg-catalog.env" .envTemplate) . | trim | nindent 4 }}
   {{- if .Values.catalog.command }}
   command:
     {{- toYaml .Values.catalog.command | nindent 4 }}

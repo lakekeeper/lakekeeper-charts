@@ -1,0 +1,17 @@
+# A standing optimize worker must become Ready: `Recreate` makes `helm --wait` wait for it.
+helmWait: true
+lakekeeper:
+  edition: "plus"
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  mode: standing
+  spill:
+    sizePerCpu: 1Gi
+  sizeClasses:
+    - name: small
+      resources:
+        cpu: "1"
+        memory: 4Gi
+      standing:
+        replicas: 1

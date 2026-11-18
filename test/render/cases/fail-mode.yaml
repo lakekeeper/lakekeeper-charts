@@ -1,0 +1,7 @@
+# expect: optimizeWorkers.mode is "deployment"; it must be keda or standing.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  mode: deployment

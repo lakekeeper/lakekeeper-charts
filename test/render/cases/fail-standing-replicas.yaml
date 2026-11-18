@@ -1,0 +1,11 @@
+# expect: optimizeWorkers.sizeClasses small: standing.replicas must be a whole number of at least 1.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  mode: standing
+  sizeClasses:
+    - name: small
+      resources: { cpu: "1", memory: 4Gi }
+      keda: { maxJobs: 2 }

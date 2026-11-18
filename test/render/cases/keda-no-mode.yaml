@@ -1,0 +1,12 @@
+# `helm upgrade --reuse-values` from chart 0.14: the values have no mode and the class has no standing block. Renders
+# the same as keda-default.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  mode: null
+  sizeClasses:
+    - name: small
+      resources: { cpu: "2", memory: 8Gi }
+      keda: { maxJobs: 2 }

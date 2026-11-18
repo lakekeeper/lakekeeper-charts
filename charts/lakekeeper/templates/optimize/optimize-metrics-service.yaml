@@ -1,5 +1,6 @@
 {{- if .Values.optimizeWorkers.enabled }}
 {{- include "lakekeeper.optimize.validate" . }}
+{{- if eq (include "lakekeeper.optimize.mode" .) "keda" }}
 # Only inside the cluster: KEDA reads the demand of each size class from the metrics port of the catalog Pods.
 apiVersion: v1
 kind: Service
@@ -19,4 +20,5 @@ spec:
   selector:
     {{- include "iceberg-catalog.selectorLabels" . | nindent 4 }}
     app.kubernetes.io/component: catalog
+{{- end }}
 {{- end }}

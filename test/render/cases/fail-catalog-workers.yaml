@@ -1,4 +1,4 @@
-# expect: optimizeWorkers.enabled runs optimize tasks in the KEDA Jobs: set LAKEKEEPER__TASK_OPTIMIZE_WORKERS of the catalog
+# expect: optimizeWorkers.enabled runs optimize tasks in the worker Pods: set LAKEKEEPER__TASK_OPTIMIZE_WORKERS of the catalog
 lakekeeper:
   edition: plus
   useLicenseSecret: false

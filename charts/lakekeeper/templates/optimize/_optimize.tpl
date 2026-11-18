@@ -1,10 +1,18 @@
 {{/*
-Name of the ScaledJob of a size class. Context: dict with "root" and "className".
+Name of the ScaledJob or Deployment of a size class. Context: dict with "root" and "className".
 KEDA names each Job `<ScaledJob name>-<5 random characters>`, so the ScaledJob name keeps 6 characters free
 of the 63 a Job name may have.
 */}}
-{{- define "lakekeeper.optimize.scaledJobName" -}}
+{{- define "lakekeeper.optimize.name" -}}
 {{- printf "%s-optimize-%s" (include "iceberg-catalog.fullname" .root) .className -}}
+{{- end }}
+
+{{/*
+optimizeWorkers.mode. `helm upgrade --reuse-values` from chart 0.14 keeps the old values, which have no mode: they
+ran KEDA workers.
+*/}}
+{{- define "lakekeeper.optimize.mode" -}}
+{{- .Values.optimizeWorkers.mode | default "keda" -}}
 {{- end }}
 
 {{/*
@@ -135,6 +143,13 @@ Checks the optimizeWorkers values; fails the render with a message that names th
 {{- if ne .Values.lakekeeper.edition "plus" }}
 {{- fail "optimizeWorkers.enabled requires lakekeeper.edition \"plus\": optimize workers are part of Lakekeeper Plus." }}
 {{- end }}
+{{- $mode := include "lakekeeper.optimize.mode" . }}
+{{- if not (has $mode (list "keda" "standing")) }}
+{{- fail (printf "optimizeWorkers.mode is %q; it must be keda or standing." $mode) }}
+{{- end }}
+{{- if (.Values.optimizeWorkers.standing | default dict).replicas }}
+{{- fail "optimizeWorkers.standing.replicas is not a setting: set standing.replicas in each entry of optimizeWorkers.sizeClasses." }}
+{{- end }}
 {{- if empty .Values.optimizeWorkers.sizeClasses }}
 {{- fail "optimizeWorkers.enabled requires at least one entry in optimizeWorkers.sizeClasses." }}
 {{- end }}
@@ -148,9 +163,9 @@ Checks the optimizeWorkers values; fails the render with a message that names th
 {{- if or (not (regexMatch "^[a-z]([a-z0-9-]*[a-z0-9])?$" $name)) (has $name (list "true" "false")) }}
 {{- fail (printf "optimizeWorkers.sizeClasses: the class name %q must start with a lower case letter, contain only lower case letters, digits and hyphens, not end with a hyphen, and not be true or false." $name) }}
 {{- end }}
-{{- $jobName := include "lakekeeper.optimize.scaledJobName" (dict "root" $ "className" $name) }}
+{{- $jobName := include "lakekeeper.optimize.name" (dict "root" $ "className" $name) }}
 {{- if gt (len $jobName) 57 }}
-{{- fail (printf "optimizeWorkers.sizeClasses %s: the ScaledJob name %q has %d characters; at most 57 are allowed, because KEDA adds 6 characters to name each Job. Use a shorter class name, fullnameOverride or release name." $name $jobName (len $jobName)) }}
+{{- fail (printf "optimizeWorkers.sizeClasses %s: the name %q of its ScaledJob or Deployment has %d characters; at most 57 are allowed, because KEDA adds 6 characters to name each Job. Use a shorter class name, fullnameOverride or release name." $name $jobName (len $jobName)) }}
 {{- end }}
 {{- if has $name $seen }}
 {{- fail (printf "optimizeWorkers.sizeClasses: the class name %q appears more than once." $name) }}
@@ -197,9 +212,16 @@ Checks the optimizeWorkers values; fails the render with a message that names th
 {{- if or (empty $highest) (gt $ratio.value $highest.value) }}
 {{- $highest = $ratio }}
 {{- end }}
+{{- if eq $mode "keda" }}
 {{- $maxJobs := ($class.keda | default dict).maxJobs }}
 {{- if not (and (regexMatch "^[0-9]+$" (toString $maxJobs)) (ge (int $maxJobs) 1)) }}
 {{- fail (printf "optimizeWorkers.sizeClasses %s: keda.maxJobs must be a whole number of at least 1." $name) }}
+{{- end }}
+{{- else }}
+{{- $replicas := ($class.standing | default dict).replicas }}
+{{- if not (and (regexMatch "^[0-9]+$" (toString $replicas)) (ge (int $replicas) 1)) }}
+{{- fail (printf "optimizeWorkers.sizeClasses %s: standing.replicas must be a whole number of at least 1." $name) }}
+{{- end }}
 {{- end }}
 {{- end }}
 {{- /* Lakekeeper refuses to start when the memory per CPU of two classes differs by more than 1 %. */ -}}
@@ -229,10 +251,12 @@ Checks the optimizeWorkers values; fails the render with a message that names th
 {{- if lt (int64 .Values.optimizeWorkers.terminationGracePeriodSeconds) (add $drainSeconds 30) }}
 {{- fail (printf "optimizeWorkers.terminationGracePeriodSeconds is %v; with drainTimeout %s it must be at least %d, or Kubernetes kills the worker before it stops cleanly. Raise it or lower drainTimeout." .Values.optimizeWorkers.terminationGracePeriodSeconds $drain (add $drainSeconds 30)) }}
 {{- end }}
+{{- if eq $mode "keda" }}
 {{- $_ := include "lakekeeper.optimize.seconds" (dict "key" "keda.idleExitAfter" "value" (toString .Values.optimizeWorkers.keda.idleExitAfter) "positive" true) }}
 {{- $minDeadline := int64 (include "lakekeeper.optimize.minActiveDeadlineSeconds" .) }}
 {{- if lt (int64 (include "lakekeeper.optimize.activeDeadlineSeconds" .)) $minDeadline }}
 {{- fail (printf "optimizeWorkers.keda.activeDeadlineSeconds is %v; with keda.maxLifetime %s it must be at least %d: maxLifetime, the run limit of 3600 seconds and 600 seconds to start. A smaller value can stop a Job in the middle of a run. Leave it empty to use this minimum." .Values.optimizeWorkers.keda.activeDeadlineSeconds (toString .Values.optimizeWorkers.keda.maxLifetime) $minDeadline) }}
+{{- end }}
 {{- end }}
 {{- $reserved := include "lakekeeper.optimize.reservedEnv" . | splitList " " }}
 {{- range .Values.optimizeWorkers.extraEnv }}
@@ -255,7 +279,7 @@ Checks the optimizeWorkers values; fails the render with a message that names th
 {{- end }}
 {{- end }}
 {{- if ne (toString $catalogWorkers) "0" }}
-{{- fail "optimizeWorkers.enabled runs optimize tasks in the KEDA Jobs: set LAKEKEEPER__TASK_OPTIMIZE_WORKERS of the catalog (catalog.config or catalog.extraEnv) to 0 or remove it." }}
+{{- fail "optimizeWorkers.enabled runs optimize tasks in the worker Pods: set LAKEKEEPER__TASK_OPTIMIZE_WORKERS of the catalog (catalog.config or catalog.extraEnv) to 0 or remove it." }}
 {{- end }}
 {{- /* The chart's entry overrides catalog.config, which reaches the Pods through envFrom. */ -}}
 {{- $available := "LAKEKEEPER__OPTIMIZE__AVAILABLE" }}
@@ -333,10 +357,13 @@ The `env` entries of a worker Job in order of precedence, the last entry of a na
   value: "0"
 - name: LAKEKEEPER__TASK_LOG_CLEANUP_WORKERS
   value: "0"
+{{- /* Unset, a worker of a Deployment never stops on its own. */}}
+{{- if .job }}
 - name: LAKEKEEPER__TASK_IDLE_EXIT_AFTER
   value: {{ .Values.optimizeWorkers.keda.idleExitAfter | quote }}
 - name: LAKEKEEPER__TASK_MAX_LIFETIME
   value: {{ .Values.optimizeWorkers.keda.maxLifetime | quote }}
+{{- end }}
 - name: LAKEKEEPER__TASK_DRAIN_TIMEOUT
   value: {{ .Values.optimizeWorkers.drainTimeout | quote }}
 - name: LAKEKEEPER__PG_READ_POOL_CONNECTIONS
@@ -367,4 +394,163 @@ The `env` entries of a worker Job in order of precedence, the last entry of a na
 {{- if .classExtraEnv }}
 {{ tpl (toYaml .classExtraEnv) . }}
 {{- end }}
+{{- end }}
+
+{{/*
+The Pod template of the workers of a size class, shared by its ScaledJob and its Deployment. Context: dict with
+"root", "class" and "job" (true for the Pods of a KEDA Job, false for the Pods of a Deployment).
+*/}}
+{{- define "lakekeeper.optimize.podTemplate" }}
+{{- $root := .root }}
+{{- $class := .class }}
+{{- $c := $root.Values.optimizeWorkers }}
+{{- $name := toString $class.name }}
+{{- $spill := include "lakekeeper.optimize.spill" (dict "root" $root "class" $class) | fromJson }}
+{{- $ctx := dict "Values" $root.Values "Release" $root.Release "Chart" $root.Chart "className" $name "classExtraEnv" $class.extraEnv "spillBytes" $spill.bytes "job" .job }}
+{{- $securityContext := deepCopy ($root.Values.catalog.podSecurityContext | default dict) }}
+{{- /* A new volume belongs to root, and the worker does not run as root. */}}
+{{- if and (eq $spill.type "pvc") (not (hasKey $securityContext "fsGroup")) }}
+{{- $_ := set $securityContext "fsGroup" (int64 $root.Values.catalog.image.gid) }}
+{{- end }}
+{{- $nodeSelector := hasKey $class "nodeSelector" | ternary $class.nodeSelector $c.nodeSelector }}
+{{- $tolerations := hasKey $class "tolerations" | ternary $class.tolerations $c.tolerations }}
+{{- $affinity := hasKey $class "affinity" | ternary $class.affinity $c.affinity }}
+{{- $cpu := include "lakekeeper.optimize.cpus" $class }}
+{{- $memory := include "lakekeeper.optimize.canonicalQuantity" (dict "bytes" (include "lakekeeper.optimize.quantityBytes" $class.resources.memory) "binary" (regexMatch "i$" (toString $class.resources.memory))) }}
+metadata:
+  annotations:
+    checksum/secret-config-envs: {{ include (print $root.Template.BasePath "/config/secret-config-envs.yaml") $root | sha256sum }}
+    {{- if .job }}
+    {{- /* The chart's two keys win over the same keys in podAnnotations: the docs rely on both. */}}
+    {{- toYaml (merge (dict "karpenter.sh/do-not-disrupt" "true" "cluster-autoscaler.kubernetes.io/safe-to-evict" "false") ($c.podAnnotations | default dict)) | nindent 4 }}
+    {{- else }}
+    {{- /* The cluster-autoscaler keeps a node with an emptyDir Pod (the `local` spill) unless the Pod may be evicted. */}}
+    {{- toYaml (merge (deepCopy ($c.podAnnotations | default dict)) (dict "cluster-autoscaler.kubernetes.io/safe-to-evict" "true")) | nindent 4 }}
+    {{- end }}
+  labels:
+    {{- include "iceberg-catalog.labels" $root | nindent 4 }}
+    app.kubernetes.io/component: optimize-worker
+    lakekeeper.io/size-class: {{ $name | quote }}
+    {{- if not .job }}
+    lakekeeper.io/optimize-mode: standing
+    {{- end }}
+    {{- with $c.podLabels }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+spec:
+  restartPolicy: {{ .job | ternary "Never" "Always" }}
+  terminationGracePeriodSeconds: {{ int $c.terminationGracePeriodSeconds }}
+  {{- with $root.Values.imagePullSecrets }}
+  imagePullSecrets:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $nodeSelector }}
+  nodeSelector:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $tolerations }}
+  tolerations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $affinity }}
+  affinity:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with $c.priorityClassName }}
+  priorityClassName: {{ . | quote }}
+  {{- end }}
+  serviceAccountName: {{ include "iceberg-catalog.serviceAccountName" $root }}
+  {{- with $securityContext }}
+  securityContext:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  initContainers:
+    {{- with $c.extraInitContainers }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- include "iceberg-catalog.init_container.check_db" (merge (dict "awaitMigration" true "envTemplate" "lakekeeper.optimize.env" "extraEnvFrom" $c.extraEnvFrom "extraVolumeMounts" $c.extraVolumeMounts "resources" (dict "requests" (dict "cpu" $cpu "memory" $memory) "limits" (dict "cpu" $cpu "memory" $memory))) $ctx) | trim | nindent 4 }}
+  containers:
+    - name: optimize-worker
+      {{- include "iceberg-catalog.image" $root | trim | nindent 6 }}
+      env:
+        {{- include "lakekeeper.optimize.env" $ctx | trim | nindent 8 }}
+      envFrom:
+        {{- include "iceberg-catalog.envFrom" $root | trim | nindent 8 }}
+        {{- with $root.Values.catalog.extraEnvFrom }}
+        {{- tpl (toYaml .) $root | nindent 8 }}
+        {{- end }}
+        {{- with $c.extraEnvFrom }}
+        {{- tpl (toYaml .) $root | nindent 8 }}
+        {{- end }}
+      {{- with $root.Values.catalog.command }}
+      command:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      args:
+        - serve
+      ports:
+        - name: metrics
+          containerPort: 9000
+          protocol: TCP
+      {{- if not .job }}
+      {{- /* /health checks Postgres, secrets and auth, not the task workers: a liveness probe would not help. */}}
+      readinessProbe:
+        httpGet:
+          path: /health
+          port: 8181
+        periodSeconds: 10
+        timeoutSeconds: 5
+      {{- end }}
+      resources:
+        {{- /* In the form KEDA writes them back, see "lakekeeper.optimize.canonicalQuantity". */}}
+        requests:
+          cpu: {{ $cpu | quote }}
+          memory: {{ $memory | quote }}
+          {{- if eq $spill.type "local" }}
+          ephemeral-storage: {{ $spill.size | quote }}
+          {{- end }}
+        limits:
+          cpu: {{ $cpu | quote }}
+          memory: {{ $memory | quote }}
+      volumeMounts:
+        - name: spill
+          mountPath: /tmp
+        {{- /* The spill volume is /tmp of the worker: a /tmp mount of the catalog would be a second one. */}}
+        {{- range $root.Values.catalog.extraVolumeMounts }}
+        {{- if ne .mountPath "/tmp" }}
+        {{- list . | toYaml | nindent 8 }}
+        {{- end }}
+        {{- end }}
+        {{- with $c.extraVolumeMounts }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+  volumes:
+    - name: spill
+      {{- if eq $spill.type "pvc" }}
+      ephemeral:
+        volumeClaimTemplate:
+          metadata:
+            labels:
+              {{- include "iceberg-catalog.labels" $root | nindent 14 }}
+              app.kubernetes.io/component: optimize-worker
+              lakekeeper.io/size-class: {{ $name | quote }}
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            {{- with $spill.storageClassName }}
+            storageClassName: {{ . | quote }}
+            {{- end }}
+            resources:
+              requests:
+                storage: {{ $spill.size | quote }}
+      {{- else }}
+      emptyDir:
+        sizeLimit: {{ $spill.size | quote }}
+      {{- end }}
+    {{- with $root.Values.catalog.extraVolumes }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
+    {{- with $c.extraVolumes }}
+    {{- toYaml . | nindent 4 }}
+    {{- end }}
 {{- end }}

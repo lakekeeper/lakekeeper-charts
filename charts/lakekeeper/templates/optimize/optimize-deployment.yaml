@@ -1,0 +1,33 @@
+{{- if .Values.optimizeWorkers.enabled }}
+{{- include "lakekeeper.optimize.validate" . }}
+{{- if eq (include "lakekeeper.optimize.mode" .) "standing" }}
+{{- range $class := .Values.optimizeWorkers.sizeClasses }}
+{{- $name := toString $class.name }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "lakekeeper.optimize.name" (dict "root" $ "className" $name) }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    {{- include "iceberg-catalog.labels" $ | nindent 4 }}
+    app.kubernetes.io/component: optimize-worker
+    lakekeeper.io/size-class: {{ $name | quote }}
+spec:
+  replicas: {{ int $class.standing.replicas }}
+  # Only Recreate waits until the old Pods are gone: no second set of Pods and Postgres connections while the old
+  # workers drain. A running task stops once and continues on a new worker; meanwhile tasks wait in the queue.
+  strategy:
+    type: Recreate
+  # A selector cannot change later: the mode label keeps Job Pods of the same class out of it.
+  selector:
+    matchLabels:
+      {{- include "iceberg-catalog.selectorLabels" $ | nindent 6 }}
+      app.kubernetes.io/component: optimize-worker
+      lakekeeper.io/size-class: {{ $name | quote }}
+      lakekeeper.io/optimize-mode: standing
+  template:
+    {{- include "lakekeeper.optimize.podTemplate" (dict "root" $ "class" $class "job" false) | trim | nindent 4 }}
+{{- end }}
+{{- end }}
+{{- end }}
