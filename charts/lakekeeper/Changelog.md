@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 ### Added
+* `catalog.lifecycle` sets lifecycle hooks of the catalog container, such as a `preStop` pause so that a rolling update drops no request.
 
 ### Fixed
 

@@ -13,3 +13,7 @@ catalog:
     enabled: true
     # maxUnavailable: 1
     minAvailable: 1
+  lifecycle:
+    preStop:
+      sleep:
+        seconds: 5
