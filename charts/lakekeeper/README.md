@@ -79,7 +79,7 @@ Optimize itself is off by default. Turn it on for each warehouse that should use
 
 With `keda`, KEDA reads the demand of each size class from port 9000 of the catalog Pods, through the Service `<fullname>-metrics`. If NetworkPolicies restrict traffic to the catalog Pods, allow the KEDA operator to reach this port.
 
-Standing workers restart on every chart upgrade and every change of the catalog or worker configuration. A running task stops and continues on a new worker.
+Standing workers restart with each new chart version and each change of the catalog configuration or the worker Pods, not when only `standing.replicas` changes. A running task stops and continues on a new worker.
 
 Turning the workers off, switching the mode, renaming or removing a class, or uninstalling the chart deletes the ScaledJob or Deployment of the class, and Kubernetes stops its running workers with it.
 
@@ -289,7 +289,7 @@ Lakekeeper can also run optimize in the catalog Pods (`LAKEKEEPER__TASK_OPTIMIZE
 | optimizeWorkers.keda.maxLifetime | string | `"3600s"` | A worker Job stops taking tasks this long after it started (`LAKEKEEPER__TASK_MAX_LIFETIME`). A task picked just before can keep it running for up to the run limit of an optimize run (1 hour) after that. |
 | optimizeWorkers.keda.pollingInterval | int | `15` | How often KEDA asks the demand endpoint, in seconds. |
 | optimizeWorkers.keda.successfulJobsHistoryLimit | int | `3` | Number of finished Jobs KEDA keeps. |
-| optimizeWorkers.mode | string | `"keda"` | How the workers of every size class run. `keda`: a KEDA ScaledJob per class starts Jobs only while tasks of the class wait or run, up to `keda.maxJobs`. A Job ends after `keda.idleExitAfter` without tasks. Nodes are free while there is nothing to do. Requires KEDA in the cluster; the chart also renders a ClusterIP Service `<fullname>-metrics` that KEDA reads the demand from. `standing`: a Deployment per class runs `standing.replicas` workers all the time, so tasks start at once. No KEDA needed. The workers restart on every chart upgrade and every change of the catalog or worker configuration. |
+| optimizeWorkers.mode | string | `"keda"` | How the workers of every size class run. `keda`: a KEDA ScaledJob per class starts Jobs only while tasks of the class wait or run, up to `keda.maxJobs`. A Job ends after `keda.idleExitAfter` without tasks. Nodes are free while there is nothing to do. Requires KEDA in the cluster; the chart also renders a ClusterIP Service `<fullname>-metrics` that KEDA reads the demand from. `standing`: a Deployment per class runs `standing.replicas` workers all the time, so tasks start at once. No KEDA needed. The workers restart with each new chart version and each change of the catalog configuration or the worker Pods, not when only `standing.replicas` changes. |
 | optimizeWorkers.nodeSelector | object | `{}` | Node selector of the worker Pods. |
 | optimizeWorkers.podAnnotations | object | `{}` | Annotations of the worker Pods. KEDA Job Pods always get `karpenter.sh/do-not-disrupt: "true"` and `cluster-autoscaler.kubernetes.io/safe-to-evict: "false"`; a value for these two keys here is ignored. Standing Pods get `cluster-autoscaler.kubernetes.io/safe-to-evict: "true"`, so that they do not keep a node; a value here wins. For what happens to a running task when a node is drained, see `drainTimeout`. |
 | optimizeWorkers.podLabels | object | `{}` | Labels of the worker Pods. |

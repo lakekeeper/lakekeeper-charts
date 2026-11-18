@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * `optimizeWorkers.mode` (default `keda`): with `mode: standing`, the chart runs optimize workers as one Deployment per size class with `standing.replicas` workers that always run, so tasks start at once and KEDA is not needed. The default class has `standing.replicas: 1`. Standing workers use `strategy: Recreate`, a readiness probe on `/health`, and `cluster-autoscaler.kubernetes.io/safe-to-evict: "true"` (a value in `optimizeWorkers.podAnnotations` wins). Values of chart 0.14 keep running KEDA workers, also with `helm upgrade --reuse-values`.
 
 ### Fixed
+* `env` values that end with a newline reach the Pods unchanged: the last `env` entry of optimize workers keeps its final newline (for example a PEM certificate in `optimizeWorkers.extraEnv`), and the last `catalog.extraEnv` value of the catalog gets no extra newline.
 
 ## [0.14.1] - 2026-11-17
 

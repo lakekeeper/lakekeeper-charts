@@ -364,7 +364,8 @@ optimizeWorkers:
   # A Job ends after `keda.idleExitAfter` without tasks. Nodes are free while there is nothing to do. Requires KEDA in
   # the cluster; the chart also renders a ClusterIP Service `<fullname>-metrics` that KEDA reads the demand from.
   # `standing`: a Deployment per class runs `standing.replicas` workers all the time, so tasks start at once. No KEDA
-  # needed. The workers restart on every chart upgrade and every change of the catalog or worker configuration.
+  # needed. The workers restart with each new chart version and each change of the catalog configuration or the worker
+  # Pods, not when only `standing.replicas` changes.
   mode: keda
 
   # -- Size classes. A list, so that your list replaces the default class.
@@ -401,18 +402,24 @@ optimizeWorkers:
     #     memory: 16Gi
     #   keda:
     #     maxJobs: 2
+    #   standing:
+    #     replicas: 1
     # - name: large
     #   resources:
     #     cpu: "8"
     #     memory: 32Gi
     #   keda:
     #     maxJobs: 1
+    #   standing:
+    #     replicas: 1
     # - name: xlarge
     #   resources:
     #     cpu: "16"
     #     memory: 64Gi
     #   keda:
     #     maxJobs: 1
+    #   standing:
+    #     replicas: 1
 
   # -- How long running tasks continue after SIGTERM (`LAKEKEEPER__TASK_DRAIN_TIMEOUT`). With `0s`, a running
   # compaction stops at once and continues about 2 minutes later without counting as a failed attempt. Where nodes give

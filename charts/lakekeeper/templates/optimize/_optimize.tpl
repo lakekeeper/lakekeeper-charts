@@ -147,7 +147,7 @@ Checks the optimizeWorkers values; fails the render with a message that names th
 {{- if not (has $mode (list "keda" "standing")) }}
 {{- fail (printf "optimizeWorkers.mode is %q; it must be keda or standing." $mode) }}
 {{- end }}
-{{- if (.Values.optimizeWorkers.standing | default dict).replicas }}
+{{- if hasKey (.Values.optimizeWorkers.standing | default dict) "replicas" }}
 {{- fail "optimizeWorkers.standing.replicas is not a setting: set standing.replicas in each entry of optimizeWorkers.sizeClasses." }}
 {{- end }}
 {{- if empty .Values.optimizeWorkers.sizeClasses }}
@@ -214,12 +214,13 @@ Checks the optimizeWorkers values; fails the render with a message that names th
 {{- end }}
 {{- if eq $mode "keda" }}
 {{- $maxJobs := ($class.keda | default dict).maxJobs }}
-{{- if not (and (regexMatch "^[0-9]+$" (toString $maxJobs)) (ge (int $maxJobs) 1)) }}
+{{- /* No leading zero: `int` reads "010" as octal. */}}
+{{- if not (regexMatch "^[1-9][0-9]*$" (toString $maxJobs)) }}
 {{- fail (printf "optimizeWorkers.sizeClasses %s: keda.maxJobs must be a whole number of at least 1." $name) }}
 {{- end }}
 {{- else }}
 {{- $replicas := ($class.standing | default dict).replicas }}
-{{- if not (and (regexMatch "^[0-9]+$" (toString $replicas)) (ge (int $replicas) 1)) }}
+{{- if not (regexMatch "^[1-9][0-9]*$" (toString $replicas)) }}
 {{- fail (printf "optimizeWorkers.sizeClasses %s: standing.replicas must be a whole number of at least 1." $name) }}
 {{- end }}
 {{- end }}
@@ -324,7 +325,8 @@ the place of its first entry and the value of its last. Context: dict with "Valu
 {{- define "lakekeeper.optimize.env" }}
 {{- $order := list }}
 {{- $byName := dict }}
-{{- range include "lakekeeper.optimize.envEntries" . | fromYamlArray }}
+{{- /* `toYaml` drops the last line break, which ends the value of the last entry when it ends with a newline. */}}
+{{- range include "lakekeeper.optimize.envEntries" . | printf "%s\n" | fromYamlArray }}
 {{- if not (hasKey $byName .name) }}
 {{- $order = append $order .name }}
 {{- end }}

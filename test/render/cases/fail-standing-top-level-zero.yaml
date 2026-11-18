@@ -1,0 +1,9 @@
+# expect: optimizeWorkers.standing.replicas is not a setting
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  mode: standing
+  standing:
+    replicas: 0

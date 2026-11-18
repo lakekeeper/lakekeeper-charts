@@ -79,7 +79,7 @@ Optimize itself is off by default. Turn it on for each warehouse that should use
 
 With `keda`, KEDA reads the demand of each size class from port 9000 of the catalog Pods, through the Service `<fullname>-metrics`. If NetworkPolicies restrict traffic to the catalog Pods, allow the KEDA operator to reach this port.
 
-Standing workers restart on every chart upgrade and every change of the catalog or worker configuration. A running task stops and continues on a new worker.
+Standing workers restart with each new chart version and each change of the catalog configuration or the worker Pods, not when only `standing.replicas` changes. A running task stops and continues on a new worker.
 
 Turning the workers off, switching the mode, renaming or removing a class, or uninstalling the chart deletes the ScaledJob or Deployment of the class, and Kubernetes stops its running workers with it.
 

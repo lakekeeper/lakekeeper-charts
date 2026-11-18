@@ -151,6 +151,9 @@ spec:
                 value: info
               - name: AWS_REGION
                 value: us-east-1
+              - name: CA_BUNDLE
+                value: |
+                  -----END CERTIFICATE-----
             args:
               - wait-for-db
               - -dm
@@ -230,6 +233,9 @@ spec:
                 value: info
               - name: AWS_REGION
                 value: us-east-1
+              - name: CA_BUNDLE
+                value: |
+                  -----END CERTIFICATE-----
             envFrom:
               - secretRef:
                   name: lk-lakekeeper-config-envs
