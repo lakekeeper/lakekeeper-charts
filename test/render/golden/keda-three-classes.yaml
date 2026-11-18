@@ -74,9 +74,8 @@ spec:
           workload: compaction
         priorityClassName: "batch-low"
         serviceAccountName: lk-lakekeeper
-        initContainers:          
-          
-          - name: check-db  
+        initContainers:
+          - name: check-db
             image: quay.io/vakamo/lakekeeper-plus:<tag>
             imagePullPolicy: IfNotPresent
             securityContext:
@@ -89,12 +88,12 @@ spec:
               requests:
                 cpu: "1"
                 memory: 8Gi
-            envFrom:    
+            envFrom:
               - secretRef:
                   name: lk-lakekeeper-config-envs
               - secretRef:
                   name: s3-credentials
-            env:    
+            env:
               - name: LAKEKEEPER__PG_PASSWORD
                 valueFrom:
                   secretKeyRef:
@@ -153,13 +152,13 @@ spec:
               - -b
               - "2"
         containers:
-          - name: optimize-worker            
+          - name: optimize-worker
             image: quay.io/vakamo/lakekeeper-plus:<tag>
             imagePullPolicy: IfNotPresent
             securityContext:
               runAsUser: 65532
               runAsGroup: 65534
-            env:              
+            env:
               - name: LAKEKEEPER__PG_PASSWORD
                 valueFrom:
                   secretKeyRef:
@@ -210,7 +209,7 @@ spec:
                 value: info
               - name: LAKEKEEPER__OPTIMIZE__CPU_LIMIT
                 value: "1"
-            envFrom:              
+            envFrom:
               - secretRef:
                   name: lk-lakekeeper-config-envs
               - secretRef:
@@ -312,9 +311,8 @@ spec:
           workload: compaction
         priorityClassName: "batch-low"
         serviceAccountName: lk-lakekeeper
-        initContainers:          
-          
-          - name: check-db  
+        initContainers:
+          - name: check-db
             image: quay.io/vakamo/lakekeeper-plus:<tag>
             imagePullPolicy: IfNotPresent
             securityContext:
@@ -327,12 +325,12 @@ spec:
               requests:
                 cpu: "4"
                 memory: 32Gi
-            envFrom:    
+            envFrom:
               - secretRef:
                   name: lk-lakekeeper-config-envs
               - secretRef:
                   name: s3-credentials
-            env:    
+            env:
               - name: LAKEKEEPER__PG_PASSWORD
                 valueFrom:
                   secretKeyRef:
@@ -389,13 +387,13 @@ spec:
               - -b
               - "2"
         containers:
-          - name: optimize-worker            
+          - name: optimize-worker
             image: quay.io/vakamo/lakekeeper-plus:<tag>
             imagePullPolicy: IfNotPresent
             securityContext:
               runAsUser: 65532
               runAsGroup: 65534
-            env:              
+            env:
               - name: LAKEKEEPER__PG_PASSWORD
                 valueFrom:
                   secretKeyRef:
@@ -444,7 +442,7 @@ spec:
                 value: http://proxy.example:3128
               - name: RUST_LOG
                 value: info
-            envFrom:              
+            envFrom:
               - secretRef:
                   name: lk-lakekeeper-config-envs
               - secretRef:
@@ -550,9 +548,8 @@ spec:
             operator: Exists
         priorityClassName: "batch-low"
         serviceAccountName: lk-lakekeeper
-        initContainers:          
-          
-          - name: check-db  
+        initContainers:
+          - name: check-db
             image: quay.io/vakamo/lakekeeper-plus:<tag>
             imagePullPolicy: IfNotPresent
             securityContext:
@@ -565,12 +562,12 @@ spec:
               requests:
                 cpu: "16"
                 memory: "137438953472"
-            envFrom:    
+            envFrom:
               - secretRef:
                   name: lk-lakekeeper-config-envs
               - secretRef:
                   name: s3-credentials
-            env:    
+            env:
               - name: LAKEKEEPER__PG_PASSWORD
                 valueFrom:
                   secretKeyRef:
@@ -627,13 +624,13 @@ spec:
               - -b
               - "2"
         containers:
-          - name: optimize-worker            
+          - name: optimize-worker
             image: quay.io/vakamo/lakekeeper-plus:<tag>
             imagePullPolicy: IfNotPresent
             securityContext:
               runAsUser: 65532
               runAsGroup: 65534
-            env:              
+            env:
               - name: LAKEKEEPER__PG_PASSWORD
                 valueFrom:
                   secretKeyRef:
@@ -682,7 +679,7 @@ spec:
                 value: http://proxy.example:3128
               - name: RUST_LOG
                 value: info
-            envFrom:              
+            envFrom:
               - secretRef:
                   name: lk-lakekeeper-config-envs
               - secretRef:
@@ -779,9 +776,8 @@ spec:
       restartPolicy: Always
       terminationGracePeriodSeconds: 60
       serviceAccountName: lk-lakekeeper
-      initContainers:        
-        
-        - name: check-db  
+      initContainers:
+        - name: check-db
           image: quay.io/vakamo/lakekeeper-plus:<tag>
           imagePullPolicy: IfNotPresent
           securityContext:
@@ -789,12 +785,12 @@ spec:
             runAsGroup: 65534
           resources:
             {}
-          envFrom:    
+          envFrom:
             - secretRef:
                 name: lk-lakekeeper-config-envs
             - secretRef:
                 name: s3-credentials
-          env:    
+          env:
             - name: LAKEKEEPER__PG_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -807,7 +803,6 @@ spec:
                   key: encryptionKey
             - name: HTTPS_PROXY
               value: http://proxy.example:3128
-            
             - name: LAKEKEEPER__PLACEHOLDER
               value: "placeholder"
           args:
@@ -818,13 +813,13 @@ spec:
             - -b
             - "2"
       containers:
-        - name: lakekeeper          
+        - name: lakekeeper
           image: quay.io/vakamo/lakekeeper-plus:<tag>
           imagePullPolicy: IfNotPresent
           securityContext:
             runAsUser: 65532
             runAsGroup: 65534
-          env:            
+          env:
             - name: LAKEKEEPER__PG_PASSWORD
               valueFrom:
                 secretKeyRef:
@@ -837,14 +832,13 @@ spec:
                   key: encryptionKey
             - name: HTTPS_PROXY
               value: http://proxy.example:3128
-            
             - name: LAKEKEEPER__PLACEHOLDER
-              value: "placeholder"            
+              value: "placeholder"
             - name: LAKEKEEPER__OPTIMIZE__AVAILABLE
               value: "true"
             - name: LAKEKEEPER__OPTIMIZE__SIZE_CLASSES
               value: "{\"large\":{\"cpu\":\"16.0\",\"memory\":\"137438953472\"},\"medium\":{\"cpu\":\"4000m\",\"memory\":\"32768Mi\"},\"small\":{\"cpu\":\"1\",\"memory\":\"8Gi\"}}"
-          envFrom:            
+          envFrom:
             - secretRef:
                 name: lk-lakekeeper-config-envs
             - secretRef:

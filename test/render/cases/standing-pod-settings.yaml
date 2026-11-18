@@ -1,0 +1,24 @@
+# Standing workers of two classes: the keda block of a class is ignored (maxJobs 0 would fail with KEDA), a pvc
+# spill, podAnnotations win over the chart's safe-to-evict, the drain timeout with its grace period.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  mode: standing
+  drainTimeout: 300s
+  terminationGracePeriodSeconds: 330
+  sizeClasses:
+    - name: small
+      resources: { cpu: "2", memory: 8Gi }
+      keda: { maxJobs: 0 }
+      standing: { replicas: 2 }
+    - name: large
+      resources: { cpu: "8", memory: 32Gi }
+      standing: { replicas: 1 }
+      spill: { type: pvc, pvc: { storageClassName: fast } }
+  podAnnotations:
+    example.com/team: data
+    cluster-autoscaler.kubernetes.io/safe-to-evict: "false"
+  podLabels:
+    example.com/cost-center: "42"

@@ -70,14 +70,14 @@ spec:
         {{- if .Values.catalog.dbMigrations.extraInitContainers }}
         {{- toYaml .Values.catalog.dbMigrations.extraInitContainers | nindent 8 }}
         {{- end }}
-        {{- include "iceberg-catalog.init_container.check_db" (dict "Release" .Release "Values" .Values "Chart" .Chart "awaitMigration" false) | indent 8 }}
+        {{- include "iceberg-catalog.init_container.check_db" (dict "Release" .Release "Values" .Values "Chart" .Chart "awaitMigration" false) | trim | nindent 8 }}
       containers:
         - name: migration
-          {{- include "iceberg-catalog.image" . | indent 10 }}
+          {{- include "iceberg-catalog.image" . | trim | nindent 10 }}
           env:
-            {{- include "iceberg-catalog.env" . | indent 12 }}
+            {{- include "iceberg-catalog.env" . | trim | nindent 12 }}
           envFrom:
-            {{- include "iceberg-catalog.envFrom" . | indent 12 }}
+            {{- include "iceberg-catalog.envFrom" . | trim | nindent 12 }}
             {{- if .Values.catalog.extraEnvFrom -}}
             {{- tpl (toYaml .Values.catalog.extraEnvFrom) . | nindent 12 }}
             {{- end }}

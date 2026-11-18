@@ -304,7 +304,6 @@ The list of `env` catalog Pods
 {{- if .Values.catalog.extraEnv }}
 {{ tpl (toYaml .Values.catalog.extraEnv) . }}
 {{- end }}
-
 - name: LAKEKEEPER__PLACEHOLDER
   value: "placeholder"
 {{- end }}

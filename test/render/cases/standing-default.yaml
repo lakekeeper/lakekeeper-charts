@@ -1,0 +1,8 @@
+# Standing workers of the default class: a Deployment with Recreate, the mode label in its selector, no idle exit or
+# max lifetime, a readiness probe, safe-to-evict "true", and no ScaledJob or metrics Service.
+lakekeeper:
+  edition: plus
+  useLicenseSecret: false
+optimizeWorkers:
+  enabled: true
+  mode: standing

@@ -353,16 +353,20 @@ catalog:
     setScrapeAnnotations: false
     port: 9000
 
-# Optimize workers started by KEDA (Lakekeeper Plus 0.15 or later).
-# Each size class gets a KEDA ScaledJob. It starts Jobs only while optimize tasks of that class wait or run.
-# Each Job runs one headless worker that takes only tasks of its class. A Job ends after `keda.idleExitAfter`
-# without tasks, and takes no new task after `keda.maxLifetime`.
-# Requires KEDA in the cluster (the `keda.sh/v1alpha1` ScaledJob resource).
-# See https://docs.lakekeeper.io/docs/latest/optimize-workers/
+# Optimize workers (Lakekeeper Plus 0.15 or later). Each worker is a headless Pod that takes only tasks of its size
+# class. See https://docs.lakekeeper.io/docs/latest/optimize-workers/
 optimizeWorkers:
-  # -- Render a KEDA ScaledJob per size class and a ClusterIP Service `<fullname>-metrics` for the demand endpoint.
-  # Sets `LAKEKEEPER__OPTIMIZE__AVAILABLE=true` and the size class list on the catalog Pods and the worker Jobs.
+  # -- Run optimize workers for each size class, see `optimizeWorkers.mode`.
+  # Sets `LAKEKEEPER__OPTIMIZE__AVAILABLE=true` and the size class list on the catalog Pods and the workers.
   enabled: false
+  # -- How the workers of every size class run.
+  # `keda`: a KEDA ScaledJob per class starts Jobs only while tasks of the class wait or run, up to `keda.maxJobs`.
+  # A Job ends after `keda.idleExitAfter` without tasks. Nodes are free while there is nothing to do. Requires KEDA in
+  # the cluster; the chart also renders a ClusterIP Service `<fullname>-metrics` that KEDA reads the demand from.
+  # `standing`: a Deployment per class runs `standing.replicas` workers all the time, so tasks start at once. No KEDA
+  # needed. The workers restart with each new chart version and each change of the catalog configuration or the worker
+  # Pods, not when only `standing.replicas` changes.
+  mode: keda
 
   # -- Size classes. A list, so that your list replaces the default class.
   # Lakekeeper estimates the CPUs and memory each optimize task needs and sends it to the smallest class that fits.
@@ -371,10 +375,12 @@ optimizeWorkers:
   # they do not move to a smaller class.
   # `name` (lower case letters, digits and hyphens, starting with a letter and not ending with a hyphen) names the class
   # and its Kubernetes resources.
-  # `resources.cpu` (whole CPUs) and `resources.memory` are the request and the limit of the Job Pod. Every class needs
-  # the same memory per CPU and a different number of CPUs. We recommend at least `4Gi` per CPU: with less, a worker
-  # uses fewer CPUs than its class has.
-  # `keda.maxJobs` is the largest number of Jobs KEDA runs of this class at the same time.
+  # `resources.cpu` (whole CPUs) and `resources.memory` are the request and the limit of the worker Pod. Every class
+  # needs the same memory per CPU and a different number of CPUs. We recommend at least `4Gi` per CPU: with less, a
+  # worker uses fewer CPUs than its class has.
+  # `keda.maxJobs` is the largest number of Jobs KEDA runs of this class at the same time (`mode: keda`).
+  # `standing.replicas` is the number of workers that always run for this class (`mode: standing`).
+  # A class can keep both, so that switching the mode needs no other change.
   # `nodeSelector`, `tolerations` and `affinity` of a class replace the `optimizeWorkers.*` values for that class;
   # `extraEnv` of a class is added after `optimizeWorkers.extraEnv`.
   # `spill` of a class can set `type`, `size` and `pvc`, which override `optimizeWorkers.spill` for that class.
@@ -385,44 +391,53 @@ optimizeWorkers:
         memory: 8Gi
       keda:
         maxJobs: 2
-    # Larger classes for large tables and tables with many equality deletes. A class starts Pods only for tasks that
-    # need it, so a larger class costs nothing while no task needs it. We recommend doubling CPUs and memory from one
-    # class to the next, as below.
+      standing:
+        replicas: 1
+    # Larger classes for large tables and tables with many equality deletes. With KEDA, a class starts Pods only for
+    # tasks that need it, so a larger class costs nothing while no task needs it. We recommend doubling CPUs and memory
+    # from one class to the next, as below.
     # - name: medium
     #   resources:
     #     cpu: "4"
     #     memory: 16Gi
     #   keda:
     #     maxJobs: 2
+    #   standing:
+    #     replicas: 1
     # - name: large
     #   resources:
     #     cpu: "8"
     #     memory: 32Gi
     #   keda:
     #     maxJobs: 1
+    #   standing:
+    #     replicas: 1
     # - name: xlarge
     #   resources:
     #     cpu: "16"
     #     memory: 64Gi
     #   keda:
     #     maxJobs: 1
+    #   standing:
+    #     replicas: 1
 
   # -- How long running tasks continue after SIGTERM (`LAKEKEEPER__TASK_DRAIN_TIMEOUT`). With `0s`, a running
   # compaction stops at once and continues about 2 minutes later without counting as a failed attempt. Where nodes give
   # pods time to stop (node upgrades, `kubectl drain`), set it so the run can commit (`300s` is enough for most tables),
   # and set `terminationGracePeriodSeconds` at least 30 seconds higher. Keep `0s` on spot or preemptible nodes.
   drainTimeout: 0s
-  # -- Grace period of the Job Pods. Must be at least 30 seconds above `drainTimeout`.
+  # -- Grace period of the worker Pods. Must be at least 30 seconds above `drainTimeout`.
   terminationGracePeriodSeconds: 60
-  # -- Database connections of each worker Job, per pool (read and write).
+  # -- Database connections of each worker, per pool (read and write).
   databasePoolConnections: 2
 
   # Spill disk of each worker, mounted at `/tmp`. Compaction writes sort data there that does not fit in memory.
   spill:
     # -- `local`: an `emptyDir` on the node's disk. The Pod requests its size as `ephemeral-storage`, so it starts only
     # on a node with that much free disk.
-    # `pvc`: a PersistentVolumeClaim for each Pod. Kubernetes deletes it when KEDA deletes the finished Job, see
-    # `keda.successfulJobsHistoryLimit` and `keda.failedJobsHistoryLimit`. Use it when node disks are too small. The Pods get
+    # `pvc`: a PersistentVolumeClaim for each Pod. Kubernetes deletes it with the Pod; with KEDA, when KEDA deletes the
+    # finished Job, see `keda.successfulJobsHistoryLimit` and `keda.failedJobsHistoryLimit`. Use it when node disks are
+    # too small. The Pods get
     # the `fsGroup` `catalog.image.gid`, unless `catalog.podSecurityContext` sets one.
     type: local
     # -- Size of the spill disk per CPU of a class. A worker with more CPUs sorts more data at once.
@@ -433,6 +448,7 @@ optimizeWorkers:
       # -- Storage class of the claims. Empty: the cluster's default storage class.
       storageClassName: ""
 
+  # Settings of `mode: keda`.
   keda:
     # -- How often KEDA asks the demand endpoint, in seconds.
     pollingInterval: 15
@@ -450,28 +466,30 @@ optimizeWorkers:
     # set must be at least that.
     activeDeadlineSeconds: ~
 
-  # -- Additional `env` of the worker Jobs. The Jobs also get `catalog.config` and `catalog.extraEnv`, except the names
+  # -- Additional `env` of the workers. The workers also get `catalog.config` and `catalog.extraEnv`, except the names
   # the chart sets only for workers (such as the task worker counts and the drain timeout). A name set more than once
   # takes its last value: `catalog.extraEnv` overrides the chart, this overrides `catalog.extraEnv`, and the class
   # `extraEnv` overrides this.
   extraEnv: []
-  # -- Additional `envFrom` of the worker Jobs and their `check-db` init container, after `catalog.extraEnvFrom`.
+  # -- Additional `envFrom` of the workers and their `check-db` init container, after `catalog.extraEnvFrom`.
   extraEnvFrom: []
-  # -- Additional volumes of the worker Jobs, after `catalog.extraVolumes`.
+  # -- Additional volumes of the worker Pods, after `catalog.extraVolumes`.
   extraVolumes: []
   # -- Additional volume mounts of the worker container and its `check-db` init container, after
   # `catalog.extraVolumeMounts`.
   extraVolumeMounts: []
-  # -- Node selector of the worker Jobs.
+  # -- Node selector of the worker Pods.
   nodeSelector: {}
-  # -- Tolerations of the worker Jobs.
+  # -- Tolerations of the worker Pods.
   tolerations: []
-  # -- Affinity of the worker Jobs.
+  # -- Affinity of the worker Pods.
   affinity: {}
-  # -- Priority class of the worker Jobs.
+  # -- Priority class of the worker Pods.
   priorityClassName: ~
-  # -- Annotations of the worker Pods. `karpenter.sh/do-not-disrupt: "true"` and
-  # `cluster-autoscaler.kubernetes.io/safe-to-evict: "false"` are always set; a value for these two keys here is ignored.
+  # -- Annotations of the worker Pods. KEDA Job Pods always get `karpenter.sh/do-not-disrupt: "true"` and
+  # `cluster-autoscaler.kubernetes.io/safe-to-evict: "false"`; a value for these two keys here is ignored.
+  # Standing Pods get `cluster-autoscaler.kubernetes.io/safe-to-evict: "true"`, so that they do not keep a node; a value
+  # here wins. For what happens to a running task when a node is drained, see `drainTimeout`.
   podAnnotations: {}
   # -- Labels of the worker Pods.
   podLabels: {}

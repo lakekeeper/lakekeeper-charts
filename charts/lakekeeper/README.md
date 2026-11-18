@@ -60,26 +60,32 @@ To stop all 0.13 pods during the migration instead, upgrade with `--set catalog.
 
 ## Optimize Workers (Lakekeeper Plus)
 
-With Lakekeeper Plus 0.15 or later, the chart can run [optimize](https://docs.lakekeeper.io/docs/latest/optimize/) workers as Kubernetes Jobs that [KEDA](https://keda.sh/) starts only while optimize tasks wait. Install KEDA in the cluster first, then set:
+With Lakekeeper Plus 0.15 or later, the chart can run [optimize](https://docs.lakekeeper.io/docs/latest/optimize/) workers. `optimizeWorkers.mode` chooses how they run:
+
+- `keda` (default): [KEDA](https://keda.sh/) starts workers as Kubernetes Jobs only while optimize tasks wait. Nodes are free while there is nothing to do. Install KEDA in the cluster first.
+- `standing`: a Deployment per size class keeps workers running all the time, so tasks start at once. No KEDA needed.
 
 ```yaml
 lakekeeper:
   edition: plus
 optimizeWorkers:
   enabled: true
+  mode: keda # or standing
 ```
 
-The chart creates one KEDA ScaledJob per entry of `optimizeWorkers.sizeClasses`. The default is one class `small` with 2 CPUs, 8 GiB memory and at most 2 Jobs at the same time. The chart's `values.yaml` lists larger classes as comments. If your nodes have room for them, copy them into your `optimizeWorkers.sizeClasses` and keep `small`. By default, each Job requests 4 GiB of node disk per CPU for spilling (`optimizeWorkers.spill`). If your nodes have small disks, set `optimizeWorkers.spill.type: pvc`. With `optimizeWorkers.enabled: true`, the chart also sets `LAKEKEEPER__OPTIMIZE__AVAILABLE=true` on the catalog Pods and the Jobs. To choose the size classes and the other `optimizeWorkers.*` values, see [Optimize Workers](https://docs.lakekeeper.io/docs/latest/optimize-workers/).
+The chart creates one ScaledJob or Deployment per entry of `optimizeWorkers.sizeClasses`. The default is one class `small` with 2 CPUs and 8 GiB memory, with at most 2 Jobs (`keda.maxJobs`) or 1 standing worker (`standing.replicas`). The chart's `values.yaml` lists larger classes as comments. If your nodes have room for them, copy them into your `optimizeWorkers.sizeClasses` and keep `small`. By default, each worker requests 4 GiB of node disk per CPU for spilling (`optimizeWorkers.spill`). If your nodes have small disks, set `optimizeWorkers.spill.type: pvc`. With `optimizeWorkers.enabled: true`, the chart also sets `LAKEKEEPER__OPTIMIZE__AVAILABLE=true` on the catalog Pods and the workers. To choose the size classes and the other `optimizeWorkers.*` values, see [Optimize Workers](https://docs.lakekeeper.io/docs/latest/optimize-workers/).
 
 Optimize itself is off by default. Turn it on for each warehouse that should use it, see [Turn It On](https://docs.lakekeeper.io/docs/latest/optimize/#turn-it-on).
 
-KEDA reads the demand of each size class from port 9000 of the catalog Pods, through the Service `<fullname>-metrics`. If NetworkPolicies restrict traffic to the catalog Pods, allow the KEDA operator to reach this port.
+With `keda`, KEDA reads the demand of each size class from port 9000 of the catalog Pods, through the Service `<fullname>-metrics`. If NetworkPolicies restrict traffic to the catalog Pods, allow the KEDA operator to reach this port.
 
-Turning the workers off, renaming or removing a class, or uninstalling the chart deletes the ScaledJob of the class, and Kubernetes deletes its running Jobs with it.
+Standing workers restart with each new chart version and each change of the catalog configuration or the worker Pods, not when only `standing.replicas` changes. A running task stops and continues on a new worker.
 
-Each worker Job opens up to 2 read and 2 write connections to Postgres (`optimizeWorkers.databasePoolConnections`). Make sure Postgres allows 4 more connections for every Job that can run at the same time (`keda.maxJobs` of each class).
+Turning the workers off, switching the mode, renaming or removing a class, or uninstalling the chart deletes the ScaledJob or Deployment of the class, and Kubernetes stops its running workers with it.
 
-With Helm 4, write CPU, memory and size values that reach the worker Jobs (`catalog.extraVolumes`, `optimizeWorkers.extraInitContainers`, `optimizeWorkers.extraVolumes`) as Kubernetes writes them, and quote numbers: `"1"`, `500m`, `1Gi`, not `1`, `1000m` or `1024Mi`. KEDA rewrites other forms, and the next `helm upgrade` fails with a conflict.
+Each worker opens up to 2 read and 2 write connections to Postgres (`optimizeWorkers.databasePoolConnections`). Make sure Postgres allows 4 more connections for every worker that can run at the same time (`keda.maxJobs` or `standing.replicas` of each class).
+
+With Helm 4 and `keda`, write CPU, memory and size values that reach the worker Jobs (`catalog.extraVolumes`, `optimizeWorkers.extraInitContainers`, `optimizeWorkers.extraVolumes`) as Kubernetes writes them, and quote numbers: `"1"`, `500m`, `1Gi`, not `1`, `1000m` or `1024Mi`. KEDA rewrites other forms, and the next `helm upgrade` fails with a conflict.
 
 Lakekeeper can also run optimize in the catalog Pods (`LAKEKEEPER__TASK_OPTIMIZE_WORKERS`), but we do not recommend it: compaction needs a lot of memory and CPU, which the API then lacks.
 
@@ -268,31 +274,32 @@ Lakekeeper can also run optimize in the catalog Pods (`LAKEKEEPER__TASK_OPTIMIZE
 | openfga.postgresql.image.tag | string | `"15.4.0-debian-11-r45"` |  |
 | openfga.postgresql.serviceBindings.enabled | bool | `true` |  |
 | openfga.replicaCount | int | `1` |  |
-| optimizeWorkers.affinity | object | `{}` | Affinity of the worker Jobs. |
-| optimizeWorkers.databasePoolConnections | int | `2` | Database connections of each worker Job, per pool (read and write). |
+| optimizeWorkers.affinity | object | `{}` | Affinity of the worker Pods. |
+| optimizeWorkers.databasePoolConnections | int | `2` | Database connections of each worker, per pool (read and write). |
 | optimizeWorkers.drainTimeout | string | `"0s"` | How long running tasks continue after SIGTERM (`LAKEKEEPER__TASK_DRAIN_TIMEOUT`). With `0s`, a running compaction stops at once and continues about 2 minutes later without counting as a failed attempt. Where nodes give pods time to stop (node upgrades, `kubectl drain`), set it so the run can commit (`300s` is enough for most tables), and set `terminationGracePeriodSeconds` at least 30 seconds higher. Keep `0s` on spot or preemptible nodes. |
-| optimizeWorkers.enabled | bool | `false` | Render a KEDA ScaledJob per size class and a ClusterIP Service `<fullname>-metrics` for the demand endpoint. Sets `LAKEKEEPER__OPTIMIZE__AVAILABLE=true` and the size class list on the catalog Pods and the worker Jobs. |
-| optimizeWorkers.extraEnv | list | `[]` | Additional `env` of the worker Jobs. The Jobs also get `catalog.config` and `catalog.extraEnv`, except the names the chart sets only for workers (such as the task worker counts and the drain timeout). A name set more than once takes its last value: `catalog.extraEnv` overrides the chart, this overrides `catalog.extraEnv`, and the class `extraEnv` overrides this. |
-| optimizeWorkers.extraEnvFrom | list | `[]` | Additional `envFrom` of the worker Jobs and their `check-db` init container, after `catalog.extraEnvFrom`. |
+| optimizeWorkers.enabled | bool | `false` | Run optimize workers for each size class, see `optimizeWorkers.mode`. Sets `LAKEKEEPER__OPTIMIZE__AVAILABLE=true` and the size class list on the catalog Pods and the workers. |
+| optimizeWorkers.extraEnv | list | `[]` | Additional `env` of the workers. The workers also get `catalog.config` and `catalog.extraEnv`, except the names the chart sets only for workers (such as the task worker counts and the drain timeout). A name set more than once takes its last value: `catalog.extraEnv` overrides the chart, this overrides `catalog.extraEnv`, and the class `extraEnv` overrides this. |
+| optimizeWorkers.extraEnvFrom | list | `[]` | Additional `envFrom` of the workers and their `check-db` init container, after `catalog.extraEnvFrom`. |
 | optimizeWorkers.extraInitContainers | list of <html><a href="https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.29/#container-v1-core">containers</a></html> | `[]` |  Extra init containers of the worker Pods, before `check-db`. Also takes native sidecars (`restartPolicy: Always`, Kubernetes 1.29 or later), for example a Vault agent. There is no key for regular extra containers: a container that keeps running keeps the Job from completing. |
 | optimizeWorkers.extraVolumeMounts | list | `[]` | Additional volume mounts of the worker container and its `check-db` init container, after `catalog.extraVolumeMounts`. |
-| optimizeWorkers.extraVolumes | list | `[]` | Additional volumes of the worker Jobs, after `catalog.extraVolumes`. |
+| optimizeWorkers.extraVolumes | list | `[]` | Additional volumes of the worker Pods, after `catalog.extraVolumes`. |
 | optimizeWorkers.keda.activeDeadlineSeconds | int | `nil` | Kubernetes stops a Job that runs longer than this, in seconds (`activeDeadlineSeconds`). Empty: `keda.maxLifetime` plus the run limit of an optimize run (3600 seconds) plus 600 seconds to start. A value you set must be at least that. |
 | optimizeWorkers.keda.failedJobsHistoryLimit | int | `10` | Number of failed Jobs KEDA keeps. |
 | optimizeWorkers.keda.idleExitAfter | string | `"180s"` | A worker Job stops after it ran no task for this long (`LAKEKEEPER__TASK_IDLE_EXIT_AFTER`). |
 | optimizeWorkers.keda.maxLifetime | string | `"3600s"` | A worker Job stops taking tasks this long after it started (`LAKEKEEPER__TASK_MAX_LIFETIME`). A task picked just before can keep it running for up to the run limit of an optimize run (1 hour) after that. |
 | optimizeWorkers.keda.pollingInterval | int | `15` | How often KEDA asks the demand endpoint, in seconds. |
 | optimizeWorkers.keda.successfulJobsHistoryLimit | int | `3` | Number of finished Jobs KEDA keeps. |
-| optimizeWorkers.nodeSelector | object | `{}` | Node selector of the worker Jobs. |
-| optimizeWorkers.podAnnotations | object | `{}` | Annotations of the worker Pods. `karpenter.sh/do-not-disrupt: "true"` and `cluster-autoscaler.kubernetes.io/safe-to-evict: "false"` are always set; a value for these two keys here is ignored. |
+| optimizeWorkers.mode | string | `"keda"` | How the workers of every size class run. `keda`: a KEDA ScaledJob per class starts Jobs only while tasks of the class wait or run, up to `keda.maxJobs`. A Job ends after `keda.idleExitAfter` without tasks. Nodes are free while there is nothing to do. Requires KEDA in the cluster; the chart also renders a ClusterIP Service `<fullname>-metrics` that KEDA reads the demand from. `standing`: a Deployment per class runs `standing.replicas` workers all the time, so tasks start at once. No KEDA needed. The workers restart with each new chart version and each change of the catalog configuration or the worker Pods, not when only `standing.replicas` changes. |
+| optimizeWorkers.nodeSelector | object | `{}` | Node selector of the worker Pods. |
+| optimizeWorkers.podAnnotations | object | `{}` | Annotations of the worker Pods. KEDA Job Pods always get `karpenter.sh/do-not-disrupt: "true"` and `cluster-autoscaler.kubernetes.io/safe-to-evict: "false"`; a value for these two keys here is ignored. Standing Pods get `cluster-autoscaler.kubernetes.io/safe-to-evict: "true"`, so that they do not keep a node; a value here wins. For what happens to a running task when a node is drained, see `drainTimeout`. |
 | optimizeWorkers.podLabels | object | `{}` | Labels of the worker Pods. |
-| optimizeWorkers.priorityClassName | string | `nil` | Priority class of the worker Jobs. |
-| optimizeWorkers.sizeClasses | list | `[{"keda":{"maxJobs":2},"name":"small","resources":{"cpu":"2","memory":"8Gi"}}]` | Size classes. A list, so that your list replaces the default class. Lakekeeper estimates the CPUs and memory each optimize task needs and sends it to the smallest class that fits. A task larger than every class runs in the largest class and takes more runs. If a task turns out larger than its class, or its worker runs out of memory, it moves to a larger class. Tasks of a class whose Pods cannot start wait; they do not move to a smaller class. `name` (lower case letters, digits and hyphens, starting with a letter and not ending with a hyphen) names the class and its Kubernetes resources. `resources.cpu` (whole CPUs) and `resources.memory` are the request and the limit of the Job Pod. Every class needs the same memory per CPU and a different number of CPUs. We recommend at least `4Gi` per CPU: with less, a worker uses fewer CPUs than its class has. `keda.maxJobs` is the largest number of Jobs KEDA runs of this class at the same time. `nodeSelector`, `tolerations` and `affinity` of a class replace the `optimizeWorkers.*` values for that class; `extraEnv` of a class is added after `optimizeWorkers.extraEnv`. `spill` of a class can set `type`, `size` and `pvc`, which override `optimizeWorkers.spill` for that class. |
+| optimizeWorkers.priorityClassName | string | `nil` | Priority class of the worker Pods. |
+| optimizeWorkers.sizeClasses | list | `[{"keda":{"maxJobs":2},"name":"small","resources":{"cpu":"2","memory":"8Gi"},"standing":{"replicas":1}}]` | Size classes. A list, so that your list replaces the default class. Lakekeeper estimates the CPUs and memory each optimize task needs and sends it to the smallest class that fits. A task larger than every class runs in the largest class and takes more runs. If a task turns out larger than its class, or its worker runs out of memory, it moves to a larger class. Tasks of a class whose Pods cannot start wait; they do not move to a smaller class. `name` (lower case letters, digits and hyphens, starting with a letter and not ending with a hyphen) names the class and its Kubernetes resources. `resources.cpu` (whole CPUs) and `resources.memory` are the request and the limit of the worker Pod. Every class needs the same memory per CPU and a different number of CPUs. We recommend at least `4Gi` per CPU: with less, a worker uses fewer CPUs than its class has. `keda.maxJobs` is the largest number of Jobs KEDA runs of this class at the same time (`mode: keda`). `standing.replicas` is the number of workers that always run for this class (`mode: standing`). A class can keep both, so that switching the mode needs no other change. `nodeSelector`, `tolerations` and `affinity` of a class replace the `optimizeWorkers.*` values for that class; `extraEnv` of a class is added after `optimizeWorkers.extraEnv`. `spill` of a class can set `type`, `size` and `pvc`, which override `optimizeWorkers.spill` for that class. |
 | optimizeWorkers.spill.pvc.storageClassName | string | `""` | Storage class of the claims. Empty: the cluster's default storage class. |
 | optimizeWorkers.spill.sizePerCpu | string | `"4Gi"` | Size of the spill disk per CPU of a class. A worker with more CPUs sorts more data at once. A class can set `spill.size` instead. The worker's spill limit (`LAKEKEEPER__OPTIMIZE__SPILL_DISK_LIMIT_BYTES`) is 90 % of the size. |
-| optimizeWorkers.spill.type | string | `"local"` | `local`: an `emptyDir` on the node's disk. The Pod requests its size as `ephemeral-storage`, so it starts only on a node with that much free disk. `pvc`: a PersistentVolumeClaim for each Pod. Kubernetes deletes it when KEDA deletes the finished Job, see `keda.successfulJobsHistoryLimit` and `keda.failedJobsHistoryLimit`. Use it when node disks are too small. The Pods get the `fsGroup` `catalog.image.gid`, unless `catalog.podSecurityContext` sets one. |
-| optimizeWorkers.terminationGracePeriodSeconds | int | `60` | Grace period of the Job Pods. Must be at least 30 seconds above `drainTimeout`. |
-| optimizeWorkers.tolerations | list | `[]` | Tolerations of the worker Jobs. |
+| optimizeWorkers.spill.type | string | `"local"` | `local`: an `emptyDir` on the node's disk. The Pod requests its size as `ephemeral-storage`, so it starts only on a node with that much free disk. `pvc`: a PersistentVolumeClaim for each Pod. Kubernetes deletes it with the Pod; with KEDA, when KEDA deletes the finished Job, see `keda.successfulJobsHistoryLimit` and `keda.failedJobsHistoryLimit`. Use it when node disks are too small. The Pods get the `fsGroup` `catalog.image.gid`, unless `catalog.podSecurityContext` sets one. |
+| optimizeWorkers.terminationGracePeriodSeconds | int | `60` | Grace period of the worker Pods. Must be at least 30 seconds above `drainTimeout`. |
+| optimizeWorkers.tolerations | list | `[]` | Tolerations of the worker Pods. |
 | postgresql.enabled | bool | `true` | if the `groundhog2k/postgres` chart is used. [WARNING] embedded Postgres is NOT recommended for production. Use an external database instead. set to `false` if using `externalDatabase.*` |
 | postgresql.nameOverride | string | `"lakekeeper-pg"` |  |
 | postgresql.service.port | int | `5432` |  |
